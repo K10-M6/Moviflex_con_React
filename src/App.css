@@ -1,0 +1,197 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Register.css */
+.register-container {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  min-height: 100vh;
+}
+
+/* Navbar con azul claro */
+.navbar-custom {
+  background: linear-gradient(135deg, #87CEEB 0%, #6cb6d8 100%);
+  box-shadow: 0 4px 12px rgba(135, 206, 235, 0.3);
+  padding: 1rem 0;
+}
+
+.navbar-brand-custom {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Card principal con sombras */
+.card-custom {
+  background: white;
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-custom:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Encabezado de la card con azul claro */
+.card-header-custom {
+  background: linear-gradient(135deg, #87CEEB 0%, #6cb6d8 100%);
+  color: white;
+  text-align: center;
+  padding: 2rem;
+  border-bottom: none;
+}
+
+.card-header-custom h4 {
+  margin: 0;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Cuerpo de la card */
+.card-body {
+  padding: 2.5rem;
+}
+
+/* Secciones del formulario */
+.form-section {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #87CEEB;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.form-section h5 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Inputs personalizados */
+.form-input {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.form-input:focus {
+  border-color: #87CEEB;
+  box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.2);
+  outline: none;
+}
+
+/* Grupo de input para archivos */
+.input-group-custom {
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.input-group-custom .form-input {
+  border-radius: 10px 0 0 10px;
+  border-right: none;
+  flex: 1;
+}
+
+.input-group-text-custom {
+  background: linear-gradient(135deg, #87CEEB 0%, #6cb6d8 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
+/* Sección especial para conductores */
+.driver-section {
+  background: linear-gradient(135deg, #f8fdff 0%, #f0f9ff 100%);
+  border-left: 4px solid #28a745;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.alert-info-custom {
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+  border: 1px solid #87CEEB;
+  border-radius: 10px;
+  padding: 1rem;
+  color: #0c5460;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Botón de envío */
+.btn-submit {
+  background: linear-gradient(135deg, #87CEEB 0%, #6cb6d8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  width: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(135, 206, 235, 0.4);
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(135, 206, 235, 0.6);
+  background: linear-gradient(135deg, #6cb6d8 0%, #5aa6c8 100%);
+}
+
+/* Enlace de login */
+.login-link {
+  color: #6c757d;
+  margin: 0;
+}
+
+.login-anchor {
+  color: #87CEEB;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.login-anchor:hover {
+  color: #6cb6d8;
+  text-decoration: underline;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  .form-section {
+    padding: 1rem;
+  }
+  
+  .card-header-custom {
+    padding: 1.5rem;
+  }
+}
