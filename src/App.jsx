@@ -1,11 +1,16 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-
-import Register from './Register'
+import Inicio from './Inicio'
+import UsersAdmin from './UsersAdmin'
 
 function App() {
     return (
-        <Register></Register>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Inicio />} />
+                <Route path="/users-admin" element={<UsersAdmin />} />
+            </Routes>
+        </BrowserRouter>
     )
 }
 
