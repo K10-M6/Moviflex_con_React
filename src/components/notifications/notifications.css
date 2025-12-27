@@ -1,0 +1,314 @@
+.conversation-tracker,
+.ticket-notifications {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.tracker-header,
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.conversation-stats,
+.notifications-actions {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.stat {
+  background: #f8f9fa;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.unread-count {
+  background: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.mark-all-read {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.mark-all-read:hover {
+  background: #545b62;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #f8f9fa;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tab.active {
+  background: #007bff;
+  color: white;
+}
+
+.tab:hover:not(.active) {
+  background: #e9ecef;
+}
+
+.conversations-list,
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.conversation-card,
+.notification-item {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-left: 4px solid #007bff;
+}
+
+.notification-item.unread {
+  border-left-color: #dc3545;
+  background: #fff5f5;
+}
+
+.notification-item.read {
+  opacity: 0.8;
+}
+
+.conversation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.conversation-title {
+  margin: 0;
+  color: #333;
+  flex: 1;
+}
+
+.conversation-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.activity-time,
+.notification-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.unread-badge {
+  background: #dc3545;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.participants {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.last-message,
+.notification-message {
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.conversation-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.action-btn.primary {
+  background: #007bff;
+}
+
+.action-btn.delete {
+  background: #dc3545;
+}
+
+.action-btn:hover {
+  opacity: 0.9;
+}
+
+.status {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.resolved {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.notifications-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.notification-icon {
+  font-size: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 5px;
+}
+
+.notification-header h4 {
+  margin: 0;
+  color: #333;
+}
+
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.notifications-settings {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  height: fit-content;
+}
+
+.notifications-settings h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+}
+
+.setting-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.setting-text {
+  color: #333;
+  font-size: 14px;
+}
+
+.notification-preview {
+  border-top: 1px solid #dee2e6;
+  padding-top: 20px;
+}
+
+.notification-preview h4 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.preview-icon {
+  font-size: 24px;
+}
+
+.preview-content p {
+  margin: 0 0 5px 0;
+  font-weight: bold;
+}
+
+.preview-content small {
+  color: #666;
+}
