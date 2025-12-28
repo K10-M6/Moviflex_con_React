@@ -14,44 +14,41 @@ function Register() {
     const [idRol, setIdRol] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [loading, setLoading] = useState(false);
 
     async function guardar(e) {
         e.preventDefault();
         setError("");
         setSuccess("");
-        const respuesta = await fetch("http://backendmovi-production.up.railway.app/api/auth/registro", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({nombre, email, telefono, password, idRol})
-        });
+        setLoading(true);
+        
+        try {
+            const respuesta = await fetch("https://backendmovi-production.up.railway.app/api/auth/registro", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({nombre, email, telefono, password, idRol})
+            });
 
-        const data = await respuesta.json();
-        console.log(data);
+            const data = await respuesta.json();
 
-        if (respuesta.ok) {
-            if (data.token) {
-                guardarToken(data.token);
-            }
-            if (data.usuario) {
-                guardarUsuario(data.usuario);
-            }
+            if (respuesta.ok) {
+                if (data.token) guardarToken(data.token);
+                if (data.usuario) guardarUsuario(data.usuario);
 
-            setSuccess("¡Registro exitoso!");
-            if(idRol === "3"){
-                setTimeout(() => {
-                    navigate("/documentacion"); 
-                }, 1500); 
+                setSuccess("¡Registro exitoso!");
+                navigate("/login");
             } else {
-                navigate("/dashboard");
+                setError(data.message || 'Error al registrarse');
             }
-
-        } else {
-            setError(data.message || 'Error al Registrarse');
+        } catch (error) {
+            setError("Error de conexión con el servidor");
+        } finally {
+            setLoading(false);
         }
     } 
 
     return (
-        <div style={{background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', minHeight: '100vh', width: '100vw'}}>
+        <div style={{background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', minHeight: '100vh', width: '90vw'}}>
             <Navbar/>
             <Container className="my-4">
                 <Row className="justify-content-center">
@@ -73,6 +70,7 @@ function Register() {
                                             value={nombre}
                                             onChange={(e) => setNombre(e.target.value)}
                                             required
+                                            disabled={loading}
                                         />
                                     </Form.Group>
 
@@ -83,6 +81,7 @@ function Register() {
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             required
+                                            disabled={loading}
                                         />
                                     </Form.Group>
 
@@ -92,6 +91,7 @@ function Register() {
                                             placeholder="Ingrese su teléfono"
                                             value={telefono}
                                             onChange={(e) => setTelefono(e.target.value)}
+                                            disabled={loading}
                                         />
                                     </Form.Group>
 
@@ -102,6 +102,7 @@ function Register() {
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             required
+                                            disabled={loading}
                                         />
                                     </Form.Group>
 
@@ -109,15 +110,23 @@ function Register() {
                                         <Form.Select
                                             value={idRol}
                                             onChange={(e) => setIdRol(e.target.value)}
+                                            required
+                                            disabled={loading}
                                         >
                                             <option value="">Seleccione un rol</option>
-                                            <option value="2">Pasajero</option>
-                                            <option value="3">Conductor</option>
+                                            <option value="2">Conductor</option>
+                                            <option value="3">Viajero</option>
                                         </Form.Select>
                                     </Form.Group>
 
-                                    <Button type="submit" size="lg" className="w-100" style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}}>
-                                        Registrarse
+                                    <Button 
+                                        type="submit" 
+                                        size="lg" 
+                                        className="w-100" 
+                                        style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}}
+                                        disabled={loading}
+                                    >
+                                        {loading ? "Registrando..." : "Registrarse"}
                                     </Button>
                                 </Form>
 

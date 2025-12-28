@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Navbar from '../components/Navbar';
-import { Row, Col, Card, Form, Button } from "react-bootstrap";
+import { Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -20,15 +20,24 @@ function Login() {
         setLoading(true);
 
         try {
-            const respuesta = await fetch("http://backendmovi-production.up.railway.app/api/auth/login", {
+            const respuesta = await fetch("https://backendmovi-production.up.railway.app/api/auth/login", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({email, password})
             });
 
             const data = await respuesta.json();
-
             if (respuesta.ok) {
+                if (!data.token || !data.usuario) {
+                    setError('Credenciales inválidas. El servidor no devolvió token/usuario.');
+                    return;
+                }
+                
+                if (data.message && (data.message.includes('error') || data.message.includes('inválido') || data.message.includes('incorrecto'))) {
+                    setError(data.message || 'Credenciales incorrectas');
+                    return;
+                }
+                
                 login(data.token, data.usuario);
                 setSuccess("¡Login exitoso!");
                 navigate("/dashboard");
@@ -36,7 +45,7 @@ function Login() {
                 setError(data.message || 'Error al iniciar sesión');
             }
         } catch (error) {
-            setError('Error en la conexión');
+            setError('Error en la conexión: ' + error.message);
         } finally {
             setLoading(false);
         }
@@ -45,31 +54,34 @@ function Login() {
     return (
         <div style={{
             background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-            minHeight: '100vh',
-            minWidth: '100vw'}}>
+            minHeight: '90vh',
+            minWidth: '90vw'}}>
         <Navbar />
             
             <Row className="h-100 justify-content-center align-items-center mt-5">
-                <Col xs={12} md={6} lg={4}>
+                <Col xs={12} md={6} lg={6}>
                     <Card className="shadow border-0">
                         <Card.Body className="p-4">
                             <Card.Title as="h2" className="text-center mb-4">
                                 Iniciar Sesión
                             </Card.Title>
+                            
+                            {/* Mejorar las alertas */}
                             {error && (
-                                <div className="alert alert-danger" role="alert">
-                                    {error}
-                                </div>
+                                <Alert variant="danger" onClose={() => setError("")} dismissible>
+                                    <strong>Error:</strong> {error}
+                                </Alert>
                             )}
                             
                             {success && (
-                                <div className="alert alert-success" role="alert">
-                                    {success}
-                                </div>
+                                <Alert variant="success" onClose={() => setSuccess("")} dismissible>
+                                    <strong>Éxito:</strong> {success}
+                                </Alert>
                             )}                           
+                            
                             <Form onSubmit={guardar}>
                                 <Form.Group className="mb-3" controlId="email">
-                                    <Form.Label>Correo Electrónico</Form.Label>
+                                    <Form.Label>Correo Electrónico <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
                                         type="email"
                                         placeholder="ejemplo@email.com"
@@ -81,7 +93,7 @@ function Login() {
                                 </Form.Group>
 
                                 <Form.Group className="mb-4" controlId="password">
-                                    <Form.Label>Contraseña</Form.Label>
+                                    <Form.Label>Contraseña <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
                                         type="password"
                                         placeholder="Ingrese su contraseña"
@@ -89,6 +101,7 @@ function Login() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         disabled={loading}
+                                        minLength={1}
                                     />
                                 </Form.Group>
 
@@ -99,7 +112,12 @@ function Login() {
                                     className="w-100"
                                     disabled={loading}
                                 >
-                                    {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                                    {loading ? (
+                                        <>
+                                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                            Iniciando sesión...
+                                        </>
+                                    ) : 'Iniciar Sesión'}
                                 </Button>
                             </Form>
 

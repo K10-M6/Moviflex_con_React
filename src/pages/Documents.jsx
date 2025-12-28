@@ -25,7 +25,7 @@ function RegisterDocumentacion() {
         if (imagenFrontal) formData.append('imagenFrontal', imagenFrontal);
         if (imagenDorsal) formData.append('imagenDorsal', imagenDorsal);
 
-        const respuesta = await fetch("http://localhost:3000/api/auth/documentacion_subir", {
+        const respuesta = await fetch("https://backendmovi-production.up.railway.app/api/documentacion/documentacion_subir", {
             method: "POST",
             body: formData
         });
@@ -86,9 +86,8 @@ function RegisterDocumentacion() {
                 <Form.Group className="mb-3" controlId="imagenFrontal">
                   <Form.Label>Imagen Frontal del Documento</Form.Label>
                   <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImagenFrontal(e.target.files[0])}
+                    type="text"
+                    onChange={(e) => setImagenFrontal(e.target.value)}
                     required
                   />
                 </Form.Group>
@@ -96,9 +95,8 @@ function RegisterDocumentacion() {
                 <Form.Group className="mb-4" controlId="imagenDorsal">
                   <Form.Label>Imagen Dorsal del Documento</Form.Label>
                   <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImagenDorsal(e.target.files[0])}
+                    type="text"
+                    onChange={(e) => setImagenDorsal(e.target.value)}
                     required
                   />
                 </Form.Group>

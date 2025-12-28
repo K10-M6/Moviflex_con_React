@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import NavbarAdmin from "./NavAdmin";
 import { Container, Row, Col, Card, Table, Button, Badge } from "react-bootstrap";
 
 function AdminViajes(){
+    const { token } = useAuth();
     const [viajes, setViajes] = useState([]);
     
     useEffect(()=> {
@@ -10,29 +12,35 @@ function AdminViajes(){
     }, []);
     
     async function traerViajes(){
-        await fetch("",{
+        await fetch("https://backendmovi-production.up.railway.app/api/auth/viajes",{
             method:"GET",
             headers: {
+                "Authorization":"Bearer "+token,
                 "Content-Type":"application/json"
             }
         }).then(response => response.json())
-        .then(data => setViajes(data));
+        .then(data => setViajes(data))
+        .catch(error => console.error("Error al traer viajes:", error));
     }
 
     async function eliminarViaje(id) {
-        await fetch(`http://localhost:3000/api/auth/viajes/${id}`,{
-            method: "DELETE",
-            headers:{
-                "Content-Type":"application/json"
-            }
-        });
-        traerViajes();
+        if (window.confirm("¿Estás seguro de eliminar este viaje?")) {
+            await fetch(`https://backendmovi-production.up.railway.app/api/auth/viajes/${id}`,{
+                method: "DELETE",
+                headers:{
+                    "Authorization":"Bearer "+token,
+                    "Content-Type":"application/json"
+                }
+            });
+            traerViajes();
+        }
     }
     
     async function cambiarEstadoViaje(id) {
-        await fetch(`http://localhost:3000/api/auth/viajes/${id}/estado`,{
+        await fetch(`https://backendmovi-production.up.railway.app/api/auth/viajes/${id}/estado`,{
             method: "PATCH",
             headers:{
+                "Authorization":"Bearer "+token,
                 "Content-Type":"application/json"
             }
         });
@@ -100,7 +108,27 @@ function AdminViajes(){
                                                 <td>{formatearFecha(viaje.fechaHoraSalida)}</td>
                                                 <td>{viaje.cuposTotales}</td>
                                                 <td>{viaje.cuposDisponibles}</td>
+                                                <td>{getEstadoBadge(viaje.estado)}</td>
                                                 <td>{formatearFecha(viaje.creadoEn)}</td>
+                                                <td>
+                                                    <div className="d-flex gap-2">
+                                                        <Button 
+                                                            variant="warning" 
+                                                            size="sm"
+                                                            onClick={() => cambiarEstadoViaje(viaje.idViajes)}
+                                                            title="Cambiar estado"
+                                                        >
+                                                            ↻
+                                                        </Button>
+                                                        <Button 
+                                                            variant="danger" 
+                                                            size="sm"
+                                                            onClick={() => eliminarViaje(viaje.idViajes)}
+                                                            title="Eliminar viaje"
+                                                        >
+                                                        </Button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>

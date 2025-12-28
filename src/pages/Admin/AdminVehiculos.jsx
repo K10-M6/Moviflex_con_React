@@ -12,7 +12,7 @@ function AdminVehiculos(){
     }, []);
     
     async function traerVehiculos(){
-        await fetch("http://localhost:3000/api/auth/mis-vehiculos",{
+        await fetch("https://backendmovi-production.up.railway.app/api/vehiculos/",{
             method:"GET",
             headers: {
                 "Content-Type":"application/json",
@@ -23,7 +23,7 @@ function AdminVehiculos(){
     }
 
     async function eliminarVehiculo(id) {
-        await fetch(`http://localhost:3000/api/auth/:${id}`,{
+        await fetch(`https://backendmovi-production.up.railway.app/ /api/vehiculos/${id}`,{
             method: "DELETE",
             headers:{
                 "Content-Type":"application/json",
@@ -34,7 +34,7 @@ function AdminVehiculos(){
     }
     
     async function cambiarEstadoVehiculo(id) {
-        await fetch(`http://localhost:3000/api/auth/`,{
+        await fetch(`https://backendmovi-production.up.railway.app/api/auth/vehiculos/${id}/estado`,{
             method: "PATCH",
             headers:{
                 "Content-Type":"application/json",
@@ -66,7 +66,7 @@ function AdminVehiculos(){
         style={{
         background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
         minHeight: '100vh',
-        minWidth: '100vw'}}>
+        minWidth: '95vw'}}>
             <NavbarAdmin />
             <Container fluid className="py-4">
                 <Row className="mb-4">
@@ -116,7 +116,7 @@ function AdminVehiculos(){
                                                             size="sm"
                                                             onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos)}
                                                         >
-                                                            {vehiculo.estado === 'ACTIVO' ? '' : 'Activar'}
+                                                            {vehiculo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}
                                                         </Button>
                                                     </div>
                                                 </td>

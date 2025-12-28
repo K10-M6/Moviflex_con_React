@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import NavbarAdmin from "./NavAdmin";
+import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge } from "react-bootstrap";
 
 function AdminConductores(){
+    const { token } = useAuth();
     const [conductores, setConductores] = useState([]);
     
     useEffect(()=> {
@@ -10,18 +12,21 @@ function AdminConductores(){
     }, []);
     
     async function traerConductores(){
-        await fetch("http://localhost:3000/api/",{
+        await fetch("https://backendmovi-production.up.railway.app/api/auth/",{
             method:"GET",
             headers: {
                 "Content-Type":"application/json",
                 "Authorization":"Bearer "+token
             }
         }).then(response => response.json())
-        .then(data => setConductores(data));
+        .then(data => {
+            const conductoresFiltrados = data.filter(usuario => usuario.idRol === 2);
+            setConductores(conductoresFiltrados);
+        });
     }
 
     async function eliminarConductor(id) {
-        await fetch(`http://localhost:3000/api//${id}`,{
+        await fetch(`https://backendmovi-production.up.railway.app/api/auth/${id}`,{
             method: "DELETE",
             headers:{
                 "Content-Type":"application/json",
@@ -32,7 +37,7 @@ function AdminConductores(){
     }
     
     async function cambiarEstadoConductor(id) {
-        await fetch(`http://localhost:3000/api//${id}`,{
+        await fetch(`https://backendmovi-production.up.railway.app/api/auth/${id}/estado`,{
             method: "PATCH",
             headers:{
                 "Content-Type":"application/json",
@@ -62,7 +67,7 @@ function AdminConductores(){
         <div style={{
         background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
         minHeight: '100vh',
-        minWidth: '100vw'}}>
+        minWidth: '95vw'}}>
             <NavbarAdmin />
             <Container fluid className="py-4">
                 <Row className="mb-4">
@@ -83,7 +88,6 @@ function AdminConductores(){
                                             <th>Nombre</th>
                                             <th>Email</th>
                                             <th>Teléfono</th>
-                                            <th>Vehículo</th>
                                             <th>Estado</th>
                                             <th>Creado En</th>
                                             <th>Acciones</th>
@@ -96,13 +100,6 @@ function AdminConductores(){
                                                 <td>{conductor.nombre}</td>
                                                 <td>{conductor.email}</td>
                                                 <td>{conductor.telefono || "No especificado"}</td>
-                                                <td>
-                                                    {conductor.vehiculos && conductor.vehiculos.length > 0 ? (
-                                                        <Badge bg="info">{conductor.vehiculos[0]?.placa || "Con vehículo"}</Badge>
-                                                    ) : (
-                                                        <Badge bg="secondary">Sin vehículo</Badge>
-                                                    )}
-                                                </td>
                                                 <td>{getEstadoBadge(conductor.estado)}</td>
                                                 <td>{formatearFecha(conductor.creadoEn)}</td>
                                                 <td>

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import NavbarAdmin from "./NavAdmin";
+import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge } from "react-bootstrap";
 
 function AdminDocuments(){
+    const { token } = useAuth();
     const [documentacion, setDocumentacion] = useState([]);
     
     useEffect(()=> {
@@ -10,7 +12,7 @@ function AdminDocuments(){
     }, []);
     
     async function traerDocumentacion(){
-        await fetch("http://localhost:3000/api/auth/documentacion_mis/",{
+        await fetch("https://backendmovi-production.up.railway.app/api/auth/documentacion_mis/",{
             method:"GET",
             headers: {
                 "Content-Type":"application/json",
@@ -21,7 +23,7 @@ function AdminDocuments(){
     }
     
     async function cambiarEstadoDocumentacion(id) {
-        await fetch(`http://localhost:3000/api/auth/documentacion_validate/${id}/estado`,{
+        await fetch(`https://backendmovi-production.up.railway.app/api/auth/documentacion_validate/${id}/estado`,{
             method: "PATCH",
             headers:{
                 "Content-Type":"application/json",
@@ -51,7 +53,7 @@ function AdminDocuments(){
         <div style={{
             background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
             minHeight: '100vh',
-            minWidth: '100vw'
+            minWidth: '95vw '
         }}>
             <NavbarAdmin />
             <Container fluid className="py-4">
@@ -82,7 +84,7 @@ function AdminDocuments(){
                                         {documentacion.map((doc) => (
                                             <tr key={doc.idDocumentacion}>
                                                 <td className="fw-semibold">{doc.idDocumentacion}</td>
-                                                <td>{doc.idUsuario}</td>
+                                                <td>{doc.idUsuarios}</td>
                                                 <td>{doc.tipoDocumento}</td>
                                                 <td>{doc.numeroDocumento}</td>
                                                 <td>{getEstadoBadge(doc.estado)}</td>
@@ -90,7 +92,7 @@ function AdminDocuments(){
                                                 <td>{doc.observaciones || "Sin observaciones"}</td>
                                                 <td>
                                                     <div className="d-flex gap-2">
-                                                        <Button variant="outline-danger" size="sm"onClick={() => eliminarDocumentacion(doc.idDocumentacion)}>
+                                                        <Button variant="outline-danger" size="sm" onClick={() => eliminarDocumentacion(doc.idDocumentacion)}>
                                                             Eliminar
                                                         </Button>
                                                         <Button variant="outline-warning"  size="sm" onClick={() => cambiarEstadoDocumentacion(doc.idDocumentacion)}>
