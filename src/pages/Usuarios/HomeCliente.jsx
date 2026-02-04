@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
-  Container, Row, Col, 
+  Container,
   Navbar, Button, 
   Badge, Card, ListGroup, 
   Offcanvas, Dropdown, 
@@ -40,7 +40,6 @@ function HomeCliente() {
       setLoading(true);
       setError("");
       
-      // 1. Obtener perfil del usuario
       const userResponse = await fetch(`${API_BASE_URL}/user/profile`, {
         method: "GET",
         headers: {
@@ -106,7 +105,6 @@ function HomeCliente() {
         first_name: "Juan",
         last_name: "Pérez",
         email: "juan@ejemplo.com",
-        profile_picture: "https://via.placeholder.com/40"
       });
       
       setTrips([
@@ -167,8 +165,6 @@ function HomeCliente() {
       setError("Error al calificar el viaje");
     }
   };
-
-  // Función para cancelar un viaje
   const cancelTrip = async (tripId) => {
     if (!window.confirm("¿Estás seguro de cancelar este viaje?")) return;
     
@@ -614,37 +610,7 @@ function HomeCliente() {
                             <ArrowRight size={14} />
                           </Button>
                         </div>
-                        
-                        {/* Botones de acción para viajes en curso */}
-                        {trip.status === 'in_progress' && (
-                          <div className="mt-2 d-flex justify-content-end">
-                            <Button 
-                              variant="outline-danger" 
-                              size="sm"
-                              onClick={() => cancelTrip(trip.id)}
-                            >
-                              Cancelar viaje
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {/* Botón para calificar viajes completados */}
-                        {trip.status === 'completed' && !trip.rated && (
-                          <div className="mt-2">
-                            <small className="text-muted d-block mb-1">Califica este viaje:</small>
-                            <div className="d-flex gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Button
-                                  key={star}
-                                  variant="outline-warning"
-                                  size="sm"
-                                  onClick={() => rateTrip(trip.id, star)}
-                                >
-                                </Button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+        
                       </ListGroup.Item>
                     ))}
                   </ListGroup>
