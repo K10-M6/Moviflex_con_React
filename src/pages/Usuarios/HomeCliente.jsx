@@ -5,7 +5,8 @@ import {
   Navbar, Button, 
   Badge, Card, ListGroup, 
   Offcanvas, Dropdown, 
-  Spinner, OverlayTrigger, Tooltip
+  Spinner, OverlayTrigger, Tooltip,
+  Alert
 } from "react-bootstrap";
 import { 
   Bell, PersonCircle, 
@@ -25,85 +26,236 @@ function HomeCliente() {
   const [trips, setTrips] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [userData, setUserData] = useState(null);
+  const [error, setError] = useState("");
   
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  const logout = () => {
-    console.log("Cerrar sesión");
+  
+  const API_BASE_URL = "https://backendmovi-production.up.railway.app/api";
+
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      // 1. Obtener perfil del usuario
+      const userResponse = await fetch(`${API_BASE_URL}/user/profile`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+    
+        }
+      });
+      
+      if (!userResponse.ok) {
+        if (userResponse.status === 401) {
+          throw new Error("No estás autenticado. Por favor inicia sesión.");
+        }
+        throw new Error(`Error ${userResponse.status}: ${userResponse.statusText}`);
+      }
+      
+      const userData = await userResponse.json();
+      setUserData(userData);
+      
+      const tripsResponse = await fetch(`${API_BASE_URL}/user/trips?limit=5`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (!tripsResponse.ok) {
+        throw new Error(`Error al cargar viajes: ${tripsResponse.statusText}`);
+      }
+      
+      const tripsData = await tripsResponse.json();
+      
+      if (!Array.isArray(tripsData)) {
+        throw new Error("La respuesta de viajes no es válida");
+      }
+      
+      setTrips(tripsData);
+      
+  
+      const notificationsResponse = await fetch(`${API_BASE_URL}/user/notifications`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (!notificationsResponse.ok) {
+        throw new Error(`Error al cargar notificaciones: ${notificationsResponse.statusText}`);
+      }
+      
+      const notificationsData = await notificationsResponse.json();
+      
+      if (!Array.isArray(notificationsData)) {
+        throw new Error("La respuesta de notificaciones no es válida");
+      }
+      
+      setNotifications(notificationsData);
+      
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+      setError(error.message);
+      
+      setUserData({
+        first_name: "Juan",
+        last_name: "Pérez",
+        email: "juan@ejemplo.com",
+        profile_picture: "https://via.placeholder.com/40"
+      });
+      
+      setTrips([
+        {
+          id: 1,
+          created_at: new Date().toISOString(),
+          status: 'completed',
+          start_address: "Calle Falsa 123",
+          end_address: "Avenida Siempre Viva 456",
+          final_fare: 15.50
+        },
+        {
+          id: 2,
+          created_at: new Date(Date.now() - 86400000).toISOString(),
+          status: 'in_progress',
+          start_address: "Centro Comercial",
+          end_address: "Aeropuerto",
+          estimated_fare: 25.00
+        }
+      ]);
+      
+      setNotifications([
+        {
+          id: 1,
+          type: 'trip',
+          message: 'Tu viaje ha sido confirmado',
+          created_at: new Date(Date.now() - 3600000).toISOString()
+        }
+      ]);
+      
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const rateTrip = async (tripId, rating, comment = "") => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/trips/${tripId}/rate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+
+        },
+        body: JSON.stringify({
+          rating: rating,
+          comment: comment
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al calificar: ${response.statusText}`);
+      }
+      
+      fetchUserData();
+      
+    } catch (error) {
+      console.error("Error al calificar viaje:", error);
+      setError("Error al calificar el viaje");
+    }
+  };
+
+  // Función para cancelar un viaje
+  const cancelTrip = async (tripId) => {
+    if (!window.confirm("¿Estás seguro de cancelar este viaje?")) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/trips/${tripId}/cancel`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al cancelar: ${response.statusText}`);
+      }
+
+      fetchUserData();
+      
+    } catch (error) {
+      console.error("Error al cancelar viaje:", error);
+      setError("Error al cancelar el viaje");
+    }
+  };
+
+
+  const requestNewTrip = async (tripData) => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const response = await fetch(`${API_BASE_URL}/trips/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+
+        },
+        body: JSON.stringify(tripData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al solicitar viaje: ${response.statusText}`);
+      }
+      
+      const newTrip = await response.json();
+      
+
+      window.location.href = `/trip/${newTrip.id}`;
+      
+    } catch (error) {
+      console.error("Error al solicitar viaje:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/stats`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al obtener estadísticas: ${response.statusText}`);
+      }
+      
+      const stats = await response.json();
+      return stats;
+      
+    } catch (error) {
+      console.error("Error al obtener estadísticas:", error);
+      return null;
+    }
   };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        
-        setTimeout(() => {
-          setUserData({
-            first_name: "Juan",
-            last_name: "Pérez",
-            email: "juan@ejemplo.com",
-            profile_picture: "https://via.placeholder.com/40"
-          });
-          
-          setTrips([
-            {
-              id: 1,
-              created_at: new Date().toISOString(),
-              status: 'completed',
-              start_address: "Calle Falsa 123",
-              end_address: "Avenida Siempre Viva 456",
-              final_fare: 15.50
-            },
-            {
-              id: 2,
-              created_at: new Date(Date.now() - 86400000).toISOString(),
-              status: 'in_progress',
-              start_address: "Centro Comercial",
-              end_address: "Aeropuerto",
-              estimated_fare: 25.00
-            },
-            {
-              id: 3,
-              created_at: new Date(Date.now() - 172800000).toISOString(),
-              status: 'cancelled',
-              start_address: "Parque Central",
-              end_address: "Estación Norte",
-              estimated_fare: 12.00
-            }
-          ]);
-          
-          setNotifications([
-            {
-              id: 1,
-              type: 'trip',
-              message: 'Tu viaje ha sido confirmado',
-              created_at: new Date(Date.now() - 3600000).toISOString()
-            },
-            {
-              id: 2,
-              type: 'message',
-              message: 'Nuevo mensaje del conductor',
-              created_at: new Date(Date.now() - 7200000).toISOString()
-            },
-            {
-              id: 3,
-              type: 'payment',
-              message: 'Pago recibido $15.50',
-              created_at: new Date(Date.now() - 10800000).toISOString()
-            }
-          ]);
-          
-          setLoading(false);
-        }, 1000);
-        
-      } catch (error) {
-        console.error("Error al cargar datos:", error);
-        setLoading(false);
-      }
-    };
-    
     fetchUserData();
+    
+    const intervalId = setInterval(() => {
+      fetchUserData();
+    }, 30000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const formatDate = (dateString) => {
@@ -124,10 +276,10 @@ function HomeCliente() {
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
     
-    if (diffDays > 0) return `${diffDays} días`;
-    if (diffHours > 0) return `${diffHours} horas`;
-    if (diffMins > 0) return `${diffMins} minutos`;
-    return 'Hace un momento';
+    if (diffDays > 0) return `${diffDays}d`;
+    if (diffHours > 0) return `${diffHours}h`;
+    if (diffMins > 0) return `${diffMins}m`;
+    return 'Ahora';
   };
 
   const getStatusBadge = (status) => {
@@ -157,6 +309,10 @@ function HomeCliente() {
     }
   };
 
+  const logout = () => {
+    console.log("Cerrar sesión");
+  };
+
   if (loading) {
     return (
       <Container fluid className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
@@ -170,6 +326,12 @@ function HomeCliente() {
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ paddingTop: '56px' }}>
+      {error && (
+        <Alert variant="danger" className="m-3" onClose={() => setError("")} dismissible>
+          <strong>Error:</strong> {error}
+        </Alert>
+      )}
+
       <Navbar bg="white" expand="lg" fixed="top" className="border-bottom shadow-sm py-2">
         <Container fluid className="px-3">
           <Navbar.Brand as={Link} to="/" className="fw-bold fs-3">
@@ -184,7 +346,6 @@ function HomeCliente() {
           </Navbar.Brand>
 
           <div className="d-flex align-items-center gap-3">
-
             <OverlayTrigger
               placement="bottom"
               overlay={<Tooltip id="tooltip-sidebar">{sidebarCollapsed ? "Expandir panel" : "Colapsar panel"}</Tooltip>}
@@ -225,7 +386,7 @@ function HomeCliente() {
                 className="d-flex align-items-center gap-2 border-0 bg-transparent"
               >
                 <img 
-                  src={userData?.profile_picture || "https://via.placeholder.com/40"} 
+                  src={userData?.profile_picture || "https://"} 
                   alt="Perfil" 
                   className="rounded-circle border"
                   style={{ width: '40px', height: '40px', objectFit: 'cover' }}
@@ -241,7 +402,7 @@ function HomeCliente() {
                 <div className="px-3 py-3">
                   <div className="d-flex align-items-center">
                     <img 
-                      src={userData?.profile_picture || "https://via.placeholder.com/50"} 
+                      src={userData?.profile_picture || "https://"} 
                       alt="Perfil" 
                       className="rounded-circle me-3"
                       style={{ width: '50px', height: '50px', objectFit: 'cover' }}
@@ -291,7 +452,12 @@ function HomeCliente() {
           ) : (
             <ListGroup variant="flush">
               {notifications.map((notification) => (
-                <ListGroup.Item key={notification.id} className="py-3 border-bottom">
+                <ListGroup.Item 
+                  key={notification.id} 
+                  className="py-3 border-bottom"
+                  onClick={() => markNotificationAsRead(notification.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="d-flex">
                     <div className="me-3">
                       {notification.type === 'trip' ? (
@@ -448,6 +614,37 @@ function HomeCliente() {
                             <ArrowRight size={14} />
                           </Button>
                         </div>
+                        
+                        {/* Botones de acción para viajes en curso */}
+                        {trip.status === 'in_progress' && (
+                          <div className="mt-2 d-flex justify-content-end">
+                            <Button 
+                              variant="outline-danger" 
+                              size="sm"
+                              onClick={() => cancelTrip(trip.id)}
+                            >
+                              Cancelar viaje
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {/* Botón para calificar viajes completados */}
+                        {trip.status === 'completed' && !trip.rated && (
+                          <div className="mt-2">
+                            <small className="text-muted d-block mb-1">Califica este viaje:</small>
+                            <div className="d-flex gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Button
+                                  key={star}
+                                  variant="outline-warning"
+                                  size="sm"
+                                  onClick={() => rateTrip(trip.id, star)}
+                                >
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </ListGroup.Item>
                     ))}
                   </ListGroup>
