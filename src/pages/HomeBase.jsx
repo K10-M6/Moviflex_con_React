@@ -46,7 +46,7 @@ function HomeBase() {
             </Col>
             <Col lg={6}>
               <Card>
-                <Card.Body className="p-4 text-center">
+                <Card.Body className="position-absolute top-0 start-0 w-100 h-100">
                   <Mapa/>
                 </Card.Body>
               </Card>

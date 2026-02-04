@@ -71,7 +71,7 @@ function AdminViajes(){
         <div style={{
             background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
             minHeight: '100vh',
-            minWidth: '100vw'
+            minWidth: '95vh'
         }}>
             <NavbarAdmin />
             <Container fluid className="py-4">

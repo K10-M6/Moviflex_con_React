@@ -1,47 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './InternalChat.css';
+import { Container, Row, Col, Card, Form, Button, Badge } from 'react-bootstrap';
 
-const InternalChat = () => {
+const UserChat = () => {
   const [messages, setMessages] = useState([
-    {
-      id: 1,
-      user: 'Ana García',
-      text: 'Hola equipo, ¿alguien tiene actualizaciones sobre el proyecto de viajes a Barcelona?',
-      timestamp: '2024-02-10 09:30',
-      isEncrypted: true
-    },
-    {
-      id: 2,
-      user: 'Carlos López',
-      text: 'Sí, acabo de terminar la integración con la API de mapas. Está lista para testing.',
-      timestamp: '2024-02-10 09:32',
-      isEncrypted: true
-    },
-    {
-      id: 3,
-      user: 'Tú',
-      text: 'Excelente! Yo estoy trabajando en el módulo de reservas. Espero terminarlo hoy.',
-      timestamp: '2024-02-10 09:35',
-      isEncrypted: true
-    }
+    { id: 1, user: 'Juan Pérez', text: 'Hola, ¿a qué hora pasas por mi ubicación?', timestamp: '10:30 AM', isSender: false },
+    { id: 2, user: 'Tú', text: 'Estoy llegando en 5 minutos, ya casi llego', timestamp: '10:32 AM', isSender: true },
+    { id: 3, user: 'Juan Pérez', text: 'Perfecto, te espero en la entrada principal', timestamp: '10:33 AM', isSender: false },
   ]);
 
   const [newMessage, setNewMessage] = useState('');
-  const [activeUsers] = useState([
-    { id: 1, name: 'Ana García', role: 'Project Manager', status: 'online' },
-    { id: 2, name: 'Carlos López', role: 'Backend Developer', status: 'online' },
-    { id: 3, name: 'María Torres', role: 'Designer', status: 'away' },
-    { id: 4, name: 'Pedro Sánchez', role: 'QA Tester', status: 'offline' }
-  ]);
-
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSendMessage = (e) => {
@@ -51,107 +22,134 @@ const InternalChat = () => {
         id: messages.length + 1,
         user: 'Tú',
         text: newMessage,
-        timestamp: new Date().toLocaleString('es-ES', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        isEncrypted: true
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isSender: true
       };
       setMessages([...messages, message]);
       setNewMessage('');
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'online': return '#28a745';
-      case 'away': return '#ffc107';
-      case 'offline': return '#6c757d';
-      default: return '#6c757d';
-    }
-  };
-
   return (
-    <div className="internal-chat">
-      <div className="chat-header">
-        <h2>🔒 Chat Interno Cifrado</h2>
-        <div className="encryption-status">
-          <span className="encryption-badge">🔐 Cifrado de Extremo a Extremo</span>
-          <span className="security-info">Todas las mensajes están protegidos</span>
-        </div>
-      </div>
+    <div style={{ 
+      background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
+      minHeight: '100vh',
+      padding: '1rem'
+    }}>
+      <Container fluid>
+        <Row className="justify-content-center">
+          <Col xs={12} md={10} lg={8}>
+            <Card className="shadow border-0" style={{ height: '90vh' }}>
+              <Card.Header className="py-3" style={{ 
+                background: 'linear-gradient(20deg, #6f42c1, #00a2ffff)',
+                borderBottom: 'none'
+              }}>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex align-items-center">
+                    <div className="rounded-circle bg-white text-primary d-flex align-items-center justify-content-center me-3"
+                         style={{ width: '40px', height: '40px' }}>
+                      JP
+                    </div>
+                    <div>
+                      <Card.Title as="h5" className="text-white mb-0">Juan Pérez</Card.Title>
+                      <small className="text-white-50">Conductor · Toyota Corolla</small>
+                    </div>
+                  </div>
+                  <div>
+                    <Badge bg="success" className="me-2">● En línea</Badge>
+                    <Badge bg="light" text="dark">🔒</Badge>
+                  </div>
+                </div>
+              </Card.Header>
+              
+              <Card.Body className="p-0 d-flex flex-column">
+                <div className="flex-grow-1 p-3 overflow-auto" style={{ minHeight: '0' }}>
+                  {messages.map(message => (
+                    <div 
+                      key={message.id} 
+                      className={`mb-3 ${message.isSender ? 'text-end' : ''}`}
+                    >
+                      <div 
+                        className="d-inline-block p-3 rounded"
+                        style={{
+                          maxWidth: '80%', // COMO EN TU ORIGINAL
+                          background: message.isSender 
+                            ? 'linear-gradient(20deg, #6f42c1, #00a2ffff)' 
+                            : '#f8f9fa',
+                          border: message.isSender ? 'none' : '1px solid #dee2e6',
+                          color: message.isSender ? 'white' : 'inherit',
+                          // LAS 4 PROPIEDADES CLAVE DE TU ORIGINAL:
+                          wordBreak: 'break-word',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          maxWidth: '100%', // IMPORTANTE: dentro del inline-block
+                        }}
+                      >
+                        {!message.isSender && (
+                          <div className="fw-bold mb-1" style={{ fontSize: '0.9rem' }}>
+                            {message.user}
+                          </div>
+                        )}
+                        
+                        {/* ¡ESTA ES LA CLAVE! - Usar un <p> tag como en tu original */}
+                        <p className="mb-1" style={{ 
+                          margin: 0,
+                          wordBreak: 'break-word',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          whiteSpace: 'normal',
+                          maxWidth: '100%',
+                          overflow: 'hidden'
+                        }}>
+                          {message.text}
+                        </p>
+                        
+                        <div className="text-end mt-2">
+                          <small style={{ 
+                            color: message.isSender ? 'rgba(255,255,255,0.7)' : '#6c757d',
+                            fontSize: '0.75rem',
+                            opacity: '0.8'
+                          }}>
+                            {message.timestamp}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
 
-      <div className="chat-container">
-        {/* Lista de usuarios */}
-        <div className="users-sidebar">
-          <h3>Miembros del Equipo</h3>
-          <div className="users-list">
-            {activeUsers.map(user => (
-              <div key={user.id} className="user-item">
-                <div className="user-avatar">
-                  <span className="user-initial">{user.name.charAt(0)}</span>
-                  <span 
-                    className="user-status"
-                    style={{ backgroundColor: getStatusColor(user.status) }}
-                  ></span>
+                {/* Input */}
+                <div className="border-top p-3 bg-white">
+                  <Form onSubmit={handleSendMessage}>
+                    <div className="input-group">
+                      <Form.Control
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Escribe tu mensaje..."
+                        className="border-end-0"
+                      />
+                      <Button 
+                        type="submit"
+                        style={{ 
+                          background: 'linear-gradient(20deg, #6f42c1, #00a2ffff)',
+                          border: 'none'
+                        }}
+                        className="px-4"
+                      >
+                        Enviar
+                      </Button>
+                    </div>
+                  </Form>
                 </div>
-                <div className="user-info">
-                  <span className="user-name">{user.name}</span>
-                  <span className="user-role">{user.role}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Área de mensajes */}
-        <div className="messages-area">
-          <div className="messages-container">
-            {messages.map(message => (
-              <div 
-                key={message.id} 
-                className={`message ${message.user === 'Tú' ? 'own-message' : 'other-message'}`}
-              >
-                <div className="message-header">
-                  <span className="message-user">{message.user}</span>
-                  <span className="message-time">{message.timestamp}</span>
-                  {message.isEncrypted && (
-                    <span className="encryption-indicator">🔒</span>
-                  )}
-                </div>
-                <div className="message-content">
-                  <p>{message.text}</p>
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input de mensaje */}
-          <form onSubmit={handleSendMessage} className="message-input-form">
-            <div className="input-container">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Escribe un mensaje seguro..."
-                className="message-input"
-              />
-              <button type="submit" className="send-button">
-                <span className="send-icon">➤</span>
-              </button>
-            </div>
-            <div className="security-notice">
-              <small>🔒 Este mensaje será cifrado antes de enviarse</small>
-            </div>
-          </form>
-        </div>
-      </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };
 
-export default InternalChat;
+export default UserChat;
