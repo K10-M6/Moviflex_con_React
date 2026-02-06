@@ -8,8 +8,8 @@ function HomeBase() {
   return (
     <div style={{
         background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-        minHeight: '100%',
-        minWidth: '100%'}}>
+        minHeight: '100vh',
+        minWidth: '100vw'}}>
       <Navbar/>
       <section className="py-5" >
         <Container>
@@ -46,7 +46,7 @@ function HomeBase() {
             </Col>
             <Col lg={6}>
               <Card>
-                <Card.Body className="position-absolute top-0 start-0 w-100 h-100">
+                <Card.Body style={{minHeight: "50hv", minWidth: "50vw"}}>
                   <Mapa/>
                 </Card.Body>
               </Card>
@@ -56,7 +56,10 @@ function HomeBase() {
       </section>
 
       <section className="py-5 bg-light">
-        <Container style={{background: 'linear-gradient(20deg, #00a2ffff, #00dfccff)'}} className="p-4 rounded shadow">
+        <Container style={{background: 'linear-gradient(20deg, #00a2ffff, #00dfccff)',
+          minHeight: '100vh',
+          minWidth: '100vw'
+        }} className="p-4 rounded shadow">
           <Row className="text-center mb-4">
             <Col>
               <h2 className="mb-3">¿Cómo Funciona?</h2>

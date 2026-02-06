@@ -54,19 +54,20 @@ function Login() {
     return (
         <div style={{
             background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-            minHeight: '90vh',
-            minWidth: '90vw'}}>
+            minHeight: '100vh',
+            minWidth: '100vw',   
+            display: 'flex',
+            flexDirection: 'column'}}>
         <Navbar />
             
-            <Row className="h-100 justify-content-center align-items-center mt-5">
-                <Col xs={12} md={6} lg={6}>
-                    <Card className="shadow border-0">
+            <Row className="flex-grow-1 justify-content-center align-items-center">
+                <Col xs={9} sm={8} md={6} lg={4}>
+                    <Card className="shadow border-2" style={{ maxWidth: '400px', width: '100%' }}>
                         <Card.Body className="p-4">
                             <Card.Title as="h2" className="text-center mb-4">
                                 Iniciar Sesión
                             </Card.Title>
                             
-                            {/* Mejorar las alertas */}
                             {error && (
                                 <Alert variant="danger" onClose={() => setError("")} dismissible>
                                     <strong>Error:</strong> {error}
