@@ -2,6 +2,7 @@
     import { useNavigate } from "react-router-dom";
     import { useAuth } from "./context/AuthContext";
     import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
+    import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
     import Navbar from '../components/Navbar';
 
     function Register() {
@@ -15,6 +16,7 @@
         const [error, setError] = useState("");
         const [success, setSuccess] = useState("");
         const [loading, setLoading] = useState(false);
+        const [showPassword, setShowPassword] = useState(false);
 
         async function guardar(e) {
             e.preventDefault();
@@ -48,16 +50,36 @@
         } 
 
         return (
-            <div style={{background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', minHeight: '100vh', width: '90vw'}}>
+            <div style={{
+            background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff, #6C3BFF 80%)',
+            minHeight: '100vh',
+            minWidth: '100vw',
+            display: 'flex',
+            flexDirection: 'column'}}>
                 <Navbar/>
-                <Container className="my-4">
+                <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
                     <Row className="justify-content-center">
                         <Col xs={12} md={5} lg={5}>
-                            <Card className="shadow border-4">
+                            <Card className="shadow border-2">
                                 <Card.Body className="p-4">
-                                    <Card.Title as="h2" className="text-center mb-4">
-                                        Registrarse
-                                    </Card.Title>
+                                    <div className="text-center mb-3">
+                                        <div style={{
+                                            width: '150px',
+                                            height: '70px',
+                                            borderRadius: '50%',
+                                            background: 'linear-gradient(135deg, #6C3BFF, #EDE7FF)',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginBottom: '5px'
+                                        }}>
+                                            <i className="bi bi-person-circle text-white">
+                                                <Card.Title as="h2" className="text-center mb-3" style={{textShadow: '1px 1px 1px rgba(0,0,0,2)'}}>
+                                                    Registrarse
+                                                </Card.Title>
+                                            </i>
+                                        </div>
+                                    </div>
                                     
                                     {error && <Alert variant="danger">{error}</Alert>}
                                     {success && <Alert variant="success">{success}</Alert>}
@@ -71,17 +93,19 @@
                                                 onChange={(e) => setNombre(e.target.value)}
                                                 required
                                                 disabled={loading}
+                                                style={{paddingLeft: '40px'}}
                                             />
                                         </Form.Group>
 
                                         <Form.Group className="mb-3" controlId="email">
                                             <Form.Control
                                                 type="email"
-                                                placeholder="ejemplo@email.com"
+                                                placeholder="Ingrese su correo electrónico"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
                                                 disabled={loading}
+                                                style={{paddingLeft: '40px'}}
                                             />
                                         </Form.Group>
 
@@ -92,6 +116,7 @@
                                                 value={telefono}
                                                 onChange={(e) => setTelefono(e.target.value)}
                                                 disabled={loading}
+                                                style={{paddingLeft: '40px'}}
                                             />
                                         </Form.Group>
 
@@ -103,6 +128,7 @@
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 disabled={loading}
+                                                style={{paddingLeft: '40px'}}
                                             />
                                         </Form.Group>
 
@@ -125,6 +151,7 @@
                                             className="w-100" 
                                             style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}}
                                             disabled={loading}
+                                            
                                         >
                                             {loading ? "Registrando..." : "Registrarse"}
                                         </Button>

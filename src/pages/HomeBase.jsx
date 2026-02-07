@@ -8,8 +8,8 @@ function HomeBase() {
   return (
     <div style={{
         background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-        minHeight: '100%',
-        minWidth: '100%'}}>
+        minHeight: '100vh',
+        minWidth: '100vw'}}>
       <Navbar/>
       <section className="py-5" >
         <Container>
