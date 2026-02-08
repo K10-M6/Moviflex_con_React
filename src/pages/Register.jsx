@@ -73,7 +73,7 @@
 
             return (
                 <div style={{
-                background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff, #6C3BFF 80%)',
+                background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)',
                 minHeight: '100vh',
                 minWidth: '100vw',
                 display: 'flex',
@@ -91,7 +91,7 @@
                                                 width: '150px',
                                                 height: '50px',
                                                 borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, #6C3BFF, #EDE7FF)',
+                                                background: 'linear-gradient(135deg, #a385ff, #EDE7FF)',
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
@@ -229,7 +229,7 @@
 
                                             </Form.Group>
 
-                                            <Form.Group className="mb-2" controlId="rol">
+                                            <Form.Group className="mb-3" controlId="rol">
                                                 <Form.Label>Rol <span className="text-danger">*</span></Form.Label>
                                                 <Form.Select
                                                     value={idRol}
@@ -246,8 +246,9 @@
                                             <Button 
                                                 type="submit" 
                                                 size="lg" 
-                                                className="w-100" 
-                                                style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}}
+                                                className="w-70 mb-1 d-block mx-auto py-1" 
+                                                style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)',
+                                                }}
                                                 disabled={loading}
                                                 
                                             >
