@@ -70,7 +70,7 @@ function Login() {
                                 <div className="text-center mb-3">
                                     <div style={{
                                         width: '150px',
-                                        height: '70px',
+                                        height: '50px',
                                         borderRadius: '50%',
                                         background: 'linear-gradient(135deg, #6C3BFF, #EDE7FF)',
                                         display: 'inline-flex',
@@ -79,7 +79,7 @@ function Login() {
                                         marginBottom: '5px'
                                     }}>
                                         <i className="bi bi-person-circle text-white">
-                                            <Card.Title as="h2" className="text-center mb-3" style={{textShadow: '1px 1px 1px rgba(0,0,0,2)'}}>
+                                            <Card.Title as="h4" className="text-center mb-3" style={{textShadow: '1px 1px 1px rgba(0,0,0,2)'}}>
                                                 Iniciar Sesión
                                             </Card.Title>
                                         </i>
