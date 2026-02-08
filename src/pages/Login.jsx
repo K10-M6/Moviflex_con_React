@@ -55,7 +55,7 @@ function Login() {
 
     return (
         <div style={{
-            background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff, #6C3BFF 80%)',
+            background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff',
             minHeight: '100vh',
             minWidth: '100vw',
             display: 'flex',
@@ -64,7 +64,7 @@ function Login() {
         <Navbar />
             <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
                 <Row className="justify-content-center">
-                    <Col xs={10} md={4} lg={4}>
+                    <Col xs={12} md={6} lg={5} xl={4} className="order-1 order-md-0 mb-4 mb-md-0">
                         <Card className="shadow border-2">
                             <Card.Body className="p-4">
                                 <div className="text-center mb-3">
@@ -181,6 +181,35 @@ function Login() {
                                 </p>
                             </Card.Body>
                         </Card>
+                    </Col>
+                    <Col xs={12} md={6} lg={7} xl={8} className="order-0 order-md-1 mt-4 mt-md-0">
+                        <div className=" text-center w-100">
+                            <div style={{
+                                width: '100%',
+                                maxWidth: '1000px',
+                                margin: '4 auto',
+                                borderRadius: '200px',
+                                overflow: 'hidden',
+                                border: '2px solid white',
+                            }}>
+                                <img 
+                                    src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800" // Cambia esta ruta
+                                    alt="Conductores y Viajeros"
+                                    className="img-fluid rounded shadow"
+                                    style={{
+                                        height: 'auto',
+                                        display: 'block'
+                                    }}
+                                />
+                            </div>
+                                
+                            <h3 className="mt-3" style={{ color: '#6C3BFF' }}>
+                                Únete a nuestra comunidad
+                            </h3>
+                            <p className="text-muted">
+                                Conéctate con conductores y viajeros de confianza
+                            </p>
+                        </div>
                     </Col>
                 </Row>
             </Container>
