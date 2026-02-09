@@ -9,7 +9,6 @@ import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 import AdminVehiculos from "./pages/Admin/AdminVehiculos";
 import { AuthProvider, useAuth } from "./pages/context/AuthContext";
 import Viajes from "./pages/Admin/ViajesAdmin";
-import "./App.css";
 import RegisterDocumentacion from "./pages/Documents";
 import AdminDocuments from "./pages/Admin/AdminDocuments";
 import Profile from "./pages/User/Profile";
