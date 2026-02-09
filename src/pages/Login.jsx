@@ -40,7 +40,9 @@ function Login() {
                 
                 login(data.token, data.usuario);
                 setSuccess("¡Login exitoso!");
-                navigate("/dashboard");
+                
+                
+                navigate("/"); 
             } else {
                 setError(data.message || 'Error al iniciar sesión');
             }
@@ -66,7 +68,6 @@ function Login() {
                                 Iniciar Sesión
                             </Card.Title>
                             
-                            {/* Mejorar las alertas */}
                             {error && (
                                 <Alert variant="danger" onClose={() => setError("")} dismissible>
                                     <strong>Error:</strong> {error}

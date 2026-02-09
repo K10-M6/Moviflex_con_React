@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "boostrap": "^2.0.0",
     "bootstrap": "^5.3.8",
     "cors": "^2.8.5",
     "i": "^0.3.7",
@@ -21,6 +22,7 @@
     "react-bootstrap-icons": "^1.11.6",
     "react-dom": "^19.2.0",
     "react-leaflet": "^5.0.0",
+    "react-router-bootstrap": "^0.26.3",
     "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
