@@ -1,0 +1,28 @@
+
+
+
+.icon {
+    vertical-align: middle;
+    line-height: 1px;
+    font-size: 20px;
+}
+.icon_header {
+    font-size: 26px;
+    line-height: 1px;
+    vertical-align: middle;
+}
+.icon, .icon_header {
+    margin-right: 5px;
+}
+
+.header {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    padding: 0 30px 0 30px;
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.35);
+}
+
+.menu-icon {
+    display: none;
+}

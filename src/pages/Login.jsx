@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Navbar from '../components/Navbar';
-import { Row, Col, Card, Form, Button, Alert, Container } from "react-bootstrap";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -55,46 +55,67 @@ function Login() {
 
     return (
         <div style={{
-            background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-            minHeight: '90vh',
-            minWidth: '90vw'}}>
-        <Navbar />
-            
-            <Row className="h-100 justify-content-center align-items-center mt-5">
-                <Col xs={12} md={6} lg={6}>
-                    <Card className="shadow border-0">
-                        <Card.Body className="p-4">
-                            <Card.Title as="h2" className="text-center mb-4">
-                                Iniciar Sesión
-                            </Card.Title>
-                            
-                            {/* Mejorar las alertas */}
-                            {error && (
-                                <Alert variant="danger" onClose={() => setError("")} dismissible>
-                                    <strong>Error:</strong> {error}
-                                </Alert>
-                            )}
-                            
-                            {success && (
-                                <Alert variant="success" onClose={() => setSuccess("")} dismissible>
-                                    <strong>Éxito:</strong> {success}
-                                </Alert>
-                            )}                           
-                            
-                            <Form onSubmit={guardar}>
-                                <Form.Group className="mb-3" controlId="email">
-                                    <Form.Label>Correo Electrónico <span className="text-danger">*</span></Form.Label>
-                                    <Form.Control
-                                        type="email"
-                                        placeholder="ejemplo@email.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                        disabled={loading}
-                                    />
-                                </Form.Group>
+            background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)',
+            minHeight: '100vh',
+            minWidth: '100vw',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
+            <Navbar />
+            <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
+                <Row className="justify-content-center">
+                    <Col xs={12} md={4} lg={4} xl={3} className="mt-4">
+                        <Card className="shadow border-2" style={{
+                            fontSize: '0.9rem'
+                        }}>
+                            <Card.Body className="p-3">
+                                <div className="text-center mb-3">
+                                    <div style={{
+                                        width: '150px',
+                                        height: '50px',
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #a385ff, #EDE7FF)',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginBottom: '5px'
+                                    }}>
+                                        <i className="bi bi-person-circle text-white">
+                                            <Card.Title as="h4" className="text-center mb-2" style={{textShadow: '1px 1px 1px rgba(0,0,0,2)'}}>
+                                                Iniciar Sesión
+                                            </Card.Title>
+                                        </i>
+                                    </div>
+                                </div>
+                                
+                                {error && <Alert variant="danger">{error}</Alert>}
+                                {success && <Alert variant="success">{success}</Alert>}
+                                
+                                <Form onSubmit={guardar}>
+                                    <Form.Group className="mb-2" controlId="email">
+                                        <Form.Label>Correo Electrónico <span className="text-danger">*</span></Form.Label>
+                                        <div style={{ position: 'relative' }}>
+                                            <FaEnvelope style={{
+                                                position: 'absolute',
+                                                left: '15px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                color: '#6c757d',
+                                                zIndex: 10
+                                            }} />
+                                            <Form.Control
+                                                type="email"
+                                                placeholder="Ingrese su correo electrónico"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                required
+                                                disabled={loading}
+                                                style={{paddingLeft: '40px'}}
+                                            />
+                                        </div>
+                                    </Form.Group>
 
-                                    <Form.Group className="mb-4" controlId="password">
+                                    <Form.Group className="mb-2" controlId="password">
                                         <Form.Label>Contraseña <span className="text-danger">*</span></Form.Label>
                                         <div style={{ position: 'relative' }}>
                                             <FaLock style={{
@@ -115,25 +136,29 @@ function Login() {
                                                 style={{paddingLeft: '40px', paddingRight: '40px'}}
                                             />
                                             <Button
-                                            variant="link"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            style={{
-                                                position: 'absolute',
-                                                right: '15px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                zIndex: 10
-                                            }} >
+                                                variant="link"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '10px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    color: '#6c757d',
+                                                    zIndex: 10,
+                                                    padding: 0,
+                                                    border: 'none'
+                                                }}
+                                            >
                                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                                             </Button>
                                         </div>
                                     </Form.Group>
 
                                     <Button 
-                                        style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}} 
                                         type="submit" 
                                         size="lg" 
-                                        className="w-100"
+                                        className="w-70 mb-1 d-block mx-auto py-1" 
+                                        style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}}
                                         disabled={loading}
                                     >
                                         {loading ? (
@@ -153,8 +178,8 @@ function Login() {
                                 </p>
                             </Card.Body>
                         </Card>
-                    </Col>
-                    <Col xs={12} md={6} lg={7} xl={8} className="order-0 order-md-1 mt-4 mt-md-0">
+                    </Col> 
+                    <Col xs={13} md={8} lg={9} xl={9} className="mt-4">
                         <div className=" text-center w-100">
                             <div style={{
                                 width: '100%',
@@ -165,7 +190,7 @@ function Login() {
                                 border: '2px solid white',
                             }}>
                                 <img 
-                                    src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800" // Cambia esta ruta
+                                    src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800"
                                     alt="Conductores y Viajeros"
                                     className="img-fluid rounded shadow"
                                     style={{
@@ -174,12 +199,12 @@ function Login() {
                                     }}
                                 />
                             </div>
-                                
+                        
                             <h3 className="mt-3" style={{ color: '#6C3BFF' }}>
-                                Únete a nuestra comunidad
+                                Bienvenido de Nuevo
                             </h3>
                             <p className="text-muted">
-                                Conéctate con conductores y viajeros de confianza
+                                Accede a tu cuenta para gestionar tus viajes
                             </p>
                         </div>
                     </Col>
