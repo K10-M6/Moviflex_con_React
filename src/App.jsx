@@ -11,7 +11,6 @@ import AdminVehiculos from "./pages/Admin/AdminVehiculos";
 import { AuthProvider, useAuth } from "./pages/context/AuthContext";
 import Viajes from "./pages/Admin/ViajesAdmin";
 import RegisterDocumentacion from "./pages/Documents";
-import AdminDocuments from "./pages/Admin/AdminDocuments";
 import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
 import Home from "./Dashboard/Home";
@@ -43,7 +42,6 @@ function App() {
             <Route path="/admin/vehiculos" element={<RequiredAuth> <AdminVehiculos /></RequiredAuth>} />
             <Route path="/admin/viajes" element={<RequiredAuth> <Viajes/></RequiredAuth>} />
             <Route path="/documentacion" element={ <RegisterDocumentacion />}/>
-            <Route path="/admin/documentacion" element={<RequiredAuth> <AdminDocuments/></RequiredAuth>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
