@@ -6,12 +6,18 @@ import { useAuth } from '../pages/context/AuthContext';
 
 export default function NavbarCustom() {
   const { token, usuario, logout } = useAuth();
-  const getFirstName = () => usuario?.nombre?.split(' ') || 'Perfil';
+  const getFirstName = () => usuario?.nombre?.split(' ')[0] || 'Perfil';
+
+  // Lógica para determinar las rutas según el rol
+  const idRol = usuario?.idRol || usuario?.rol?.id;
+  const isDriver = idRol === 2 || idRol === "2";
+  const homePath = isDriver ? "/driver-home" : "/user-home";
+  const profilePath = isDriver ? "/driver-profile" : "/profile";
 
   return (
     <Navbar bg="white" variant="light" expand="lg" className="border-bottom shadow-sm sticky-top">
       <Container>
-        <Navbar.Brand as={Link} to="/">
+        <Navbar.Brand as={Link} to={token ? homePath : "/"}>
           <img src={Logo} height="40" className="me-2" alt="Logo MoviFlexx" /> 
           <span style={{background: 'linear-gradient(20deg, #6f42c1, #00a2ffff)',
                     WebkitBackgroundClip: 'text',
@@ -26,9 +32,8 @@ export default function NavbarCustom() {
           <Nav className="mx-auto align-items-center">
               <Nav.Link as={Link} to="/conductor" className="fw-bold">Moviflex Conductor🚗 </Nav.Link>
               <Nav.Link as={Link} to="/pasajero" className="fw-bold">Moviflex Pasajero👥 </Nav.Link>
-              <Nav.Link as={Link} to="/sobre-didi" className="fw-bold">Sobre Moviflex🌐</Nav.Link>
+              <Nav.Link as={Link} to="/sobre-moviflex" className="fw-bold">Sobre Moviflex🌐</Nav.Link>
           </Nav>
-
 
           <Nav className="align-items-center">
             {!token ? (
@@ -50,7 +55,11 @@ export default function NavbarCustom() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  <Dropdown.Item as={Link} to="/profile">Editar Perfil</Dropdown.Item>
+                  {/* Navegación dinámica según el Rol */}
+                  <Dropdown.Item as={Link} to={profilePath}>
+                    Editar Perfil
+                  </Dropdown.Item>
+                  
                   <Dropdown.Item as={Link} to="/profile/stats">Estadísticas</Dropdown.Item>
                   <Dropdown.Item as={Link} to="/tus-viajes">Mis Viajes</Dropdown.Item>
                   <Dropdown.Divider />
