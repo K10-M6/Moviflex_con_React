@@ -1,5 +1,0 @@
-.message-content p {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%; /* ¡Esto es clave! */
-}

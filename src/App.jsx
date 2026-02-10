@@ -1,9 +1,10 @@
 import React from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import './App.css'
+import Login from "./pages/Login"
 import HomeBase from "./pages/HomeBase";
-import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Admin/Dashboard";
 import AdminConductores from "./pages/Admin/AdminConductores";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 import AdminVehiculos from "./pages/Admin/AdminVehiculos";
@@ -12,36 +13,27 @@ import Viajes from "./pages/Admin/ViajesAdmin";
 import "./App.css";
 import RegisterDocumentacion from "./pages/Documents";
 import AdminDocuments from "./pages/Admin/AdminDocuments";
-import Profile from "./pages/User/Profile";
-import UserHome from "./pages/User/UserHome";
-import DriverHome from "./pages/Driver/DriverHome";
-import DriverProfile from "./pages/Driver/DriverProfile";
 
 function App() {
+
+  const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
+  const OpenSidebar =() => {
+    setOpenSidebarToggle(!openSidebarToggle);
+  }
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<RequiredAuth><HomeBase /></RequiredAuth>} />
+          <Route path="/" element={<HomeBase />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
-          <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
-          <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
-          
-          <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
-          <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
-          
-          <Route path="/documentacion" element={<RequiredAuth><RegisterDocumentacion /></RequiredAuth>}/>
-          
           <Route path="/dashboard" element={<RequiredAuth><Dashboard /></RequiredAuth>} />
-          <Route path="/admin/conductores" element={<RequiredAuth><AdminConductores /></RequiredAuth>} />
-          <Route path="/admin/usuarios" element={<RequiredAuth><AdminUsuarios /></RequiredAuth>} />
-          <Route path="/admin/vehiculos" element={<RequiredAuth><AdminVehiculos /></RequiredAuth>} />
-          <Route path="/admin/viajes" element={<RequiredAuth><Viajes/></RequiredAuth>} />
-          <Route path="/admin/documentacion" element={<RequiredAuth><AdminDocuments/></RequiredAuth>} />
-          
-          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/admin/conductores" element={ <AdminConductores />} />
+          <Route path="/admin/usuarios" element={<RequiredAuth> <AdminUsuarios /></RequiredAuth>} />
+          <Route path="/admin/vehiculos" element={<RequiredAuth> <AdminVehiculos /></RequiredAuth>} />
+          <Route path="/admin/viajes" element={<RequiredAuth> <Viajes/></RequiredAuth>} />
+          <Route path="/documentacion" element={ <RegisterDocumentacion />}/>
+          <Route path="/admin/documentacion" element={<RequiredAuth> <AdminDocuments/></RequiredAuth>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

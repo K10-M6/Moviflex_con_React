@@ -20,7 +20,9 @@ function AdminConductores(){
             }
         }).then(response => response.json())
         .then(data => {
-            const conductoresFiltrados = data.filter(usuario => usuario.idRol === 2);
+            const conductoresFiltrados = data.filter(usuario => 
+                usuario.idRol === 3 || usuario.rol?.nombre?.toUpperCase() === 'CONDUCTOR'
+        );
             setConductores(conductoresFiltrados);
         });
     }

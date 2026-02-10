@@ -20,7 +20,7 @@ function NavbarAdmin() {
   return (
     <Navbar bg="white" variant="light" expand="lg" className="border-bottom shadow-sm rounded">
       <Container>
-        <Navbar.Brand as={Link} to="/dashboard">
+        <Navbar.Brand as={Link} to="/dashboard/home">
           <img src={Logo} height="40" className="me-2" /> 
           <span style={{
             background: 'linear-gradient(20deg, #6f42c1, #00a2ffff)',
