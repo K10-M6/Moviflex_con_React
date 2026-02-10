@@ -12,24 +12,33 @@ import Viajes from "./pages/Admin/ViajesAdmin";
 import RegisterDocumentacion from "./pages/Documents";
 import AdminDocuments from "./pages/Admin/AdminDocuments";
 import Profile from "./pages/User/Profile";
+import UserHome from "./pages/User/UserHome";
+import DriverHome from "./pages/Driver/DriverHome";
+import DriverProfile from "./pages/Driver/DriverProfile"
+
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Rutas públicas */}
+          
           <Route path="/" element={<HomeBase />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
-          {/* Ruta del perfil (accesible para todos los usuarios autenticados) */}
+          
+          <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
           <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
           
-          {/* Ruta de documentación (accesible para todos los usuarios autenticados) */}
+          
+          <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
+          <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
+          
+          
           <Route path="/documentacion" element={<RequiredAuth><RegisterDocumentacion /></RequiredAuth>}/>
           
-          {/* Rutas exclusivas para administradores */}
+          
           <Route path="/dashboard" element={<RequiredAuth><Dashboard /></RequiredAuth>} />
           <Route path="/admin/conductores" element={<RequiredAuth><AdminConductores /></RequiredAuth>} />
           <Route path="/admin/usuarios" element={<RequiredAuth><AdminUsuarios /></RequiredAuth>} />
@@ -46,19 +55,24 @@ export default App;
 
 function RequiredAuth({ children }) {
   const { token, usuario } = useAuth();
+  const location = window.location.pathname;
   
-  // Si no hay token, redirigir al login
   if (!token) {
     return <Navigate to="/login" />;
   }
 
-  // Verificar si es una ruta protegida (admin)
-  const isProtectedRoute = window.location.pathname.includes("admin") || 
-                           window.location.pathname === "/dashboard";
-  
-  // Si es ruta de admin y el usuario no es admin, redirigir al perfil
+  // 1. Redirección desde el Home base según el Rol al iniciar sesión
+  if (location === "/") {
+    if (usuario?.role === 'admin') return <Navigate to="/dashboard" />;
+    if (usuario?.idRol === 2 || usuario?.idRol === "2") return <Navigate to="/driver-home" />;
+    if (usuario?.idRol === 3 || usuario?.idRol === "3") return <Navigate to="/user-home" />;
+  }
+
+  // 2. Protección de rutas de Admin
+  const isProtectedRoute = location.includes("admin") || location === "/dashboard";
   if (isProtectedRoute && usuario?.role !== 'admin') {
-    return <Navigate to="/profile" />;
+    // Si intenta entrar a admin y es conductor va a su home, si es pasajero al suyo
+    return usuario?.idRol === 2 ? <Navigate to="/driver-home" /> : <Navigate to="/user-home" />;
   }
 
   return children;
