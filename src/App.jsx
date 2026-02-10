@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomeBase from "./pages/HomeBase";
 import './App.css'
@@ -14,29 +15,37 @@ import RegisterDocumentacion from "./pages/Documents";
 import AdminDocuments from "./pages/Admin/AdminDocuments";
 import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
+import Home from "./Dashboard/Home";
 
 
 function App() {
+
+  const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
+  const OpenSidebar =() => {
+    setOpenSidebarToggle(!openSidebarToggle);
+  }
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Sidebar />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<RequiredAuth><Dashboard /></RequiredAuth>} />
-          <Route path="/admin/conductores" element={ <AdminConductores />} />
-          <Route path="/admin/usuarios" element={<RequiredAuth> <AdminUsuarios /></RequiredAuth>} />
-          <Route path="/admin/vehiculos" element={<RequiredAuth> <AdminVehiculos /></RequiredAuth>} />
-          <Route path="/admin/viajes" element={<RequiredAuth> <Viajes/></RequiredAuth>} />
-          <Route path="/documentacion" element={ <RegisterDocumentacion />}/>
-          <Route path="/admin/documentacion" element={<RequiredAuth> <AdminDocuments/></RequiredAuth>} />
-        </Routes>
-      </BrowserRouter>
-      <div>
-        
-      </div>
-    </AuthProvider>
+    <div className="grid-container">
+      <Header OpenSidebar={OpenSidebar}/>
+      <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
+      <Home/>
+      {/*<AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Sidebar><Header /></Sidebar>} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/dashboard" element={<RequiredAuth><Dashboard /></RequiredAuth>} />
+            <Route path="/admin/conductores" element={ <AdminConductores />} />
+            <Route path="/admin/usuarios" element={<RequiredAuth> <AdminUsuarios /></RequiredAuth>} />
+            <Route path="/admin/vehiculos" element={<RequiredAuth> <AdminVehiculos /></RequiredAuth>} />
+            <Route path="/admin/viajes" element={<RequiredAuth> <Viajes/></RequiredAuth>} />
+            <Route path="/documentacion" element={ <RegisterDocumentacion />}/>
+            <Route path="/admin/documentacion" element={<RequiredAuth> <AdminDocuments/></RequiredAuth>} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>*/}
+    </div>
   );
 }
 

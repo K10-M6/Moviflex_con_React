@@ -1,8 +1,8 @@
-.body {
+body {
     margin: 0;
     padding: 0;
     font-family: 'Montserrat', sans-serif;
-    background-color: #6C3BFF;
+    background-color: #000000;
     color: #EDE7FF;
 }
 .grid-container {
@@ -13,4 +13,192 @@
         "sidebar header header header"
         "sidebar main main main";
     height: 100vh;
+    width: 100%;
+}
+
+.icon {
+    vertical-align: middle;
+    line-height: 1px;
+    font-size: 20px;
+}
+
+.icon_header {
+    vertical-align: middle;
+    line-height: 1px;
+    font-size: 26px;
+}
+
+.icon, .icon_header {
+    margin-right: 5px;
+}
+
+.close_icon {
+    color: red;
+    margin-left: 30px;
+    margin-top: 10px;
+}
+
+
+/* Estilos para el header */
+.header {
+    grid-area: header;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px 0 30px;
+    box-shadow: 0px 6px 7px -3px rgba(0, 0, 0, 0.35);
+    background-color: #af95ff;
+    color: #333; /* Color de texto para contraste */
+}
+
+.menu-icon {
+    display: none;
+    cursor: pointer;
+}
+/* Estilos para el sidebar */
+
+#sidebar {
+    grid-area: sidebar;
+    height: 100%;
+    background-color: #af95ff;
+    overflow-y: auto;
+    transition: all 0.5s;
+    box-shadow: 0px 6px 7px -3px rgba(0, 0, 0, 0.35);
+    -webkit-transition: all 0.5s;
+}
+
+.sidebar-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px 0px 30px;
+}
+
+.sidebar-title > span{
+    display: none;
+}
+
+.sidebar-brand {
+    margin-top: 15px;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.sidebar-list{
+    padding: 0;
+    list-style-type: none;
+}
+
+.sidebar-item{
+    padding: 20px 20px 20px 20px;
+    font-size: 18px;
+}
+
+.sidebar-item:hover {
+    background-color: #6C3BFF;
+    cursor: pointer;
+}
+.sidebar-item a {
+    text-decoration: none;
+    color: #000000;
+}
+
+.sidebar-responsive {
+    display: inline !important;
+    position: absolute;
+
+    z-index: 12 !important;
+}
+
+/* Estilos para el main */
+.main-container {
+    grid-area: main;
+    overflow-y: auto;
+    padding: 20px 20px;
+    background-color: #f0f0f0;
+}
+
+.main-title {
+    display: flex;
+    justify-content: space-between;
+}
+
+.main-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 20px;
+    margin: 15px 0px;
+}
+
+.card{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+.card:first-child {
+    background-color: #6C3BFF;
+}
+.card:nth-child(2) {
+    background-color: #af95ff;
+}
+.card:nth-child(3) {
+    background-color: #6C3BFF;
+}
+.card:nth-child(4) {
+    background-color: #af95ff;
+}
+
+.card-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-inner > .card_icon {
+    font-size: 30px;
+}
+
+.charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 60px;
+    height: 300px;
+}
+
+/*Medio y pequeño*/
+@media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: 0.2fr 3fr;
+        grid-template-areas:
+            "header"
+            "main";
+    }
+    .main-cards {
+        grid-template-columns: 1fr;
+    }
+
+    #sidebar {
+        display: none;
+    }
+
+    .menu-icon {
+        display: inline;
+    }
+    .charts {
+        grid-template-columns: 1fr;
+        margin-top: 30px;
+    }
+}   
+
+/*Super pequeños*/
+@media screen and (max-width: 576px) {
+    .header-left {
+        display: none;
+    }
 }
