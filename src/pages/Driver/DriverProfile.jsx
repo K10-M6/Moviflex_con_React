@@ -19,21 +19,21 @@ const DriverProfile = () => {
                                 <h3 className="fw-bold">{usuario?.nombre}</h3>
                                 <div className="d-flex justify-content-center gap-2 mb-4">
                                     <Badge bg="warning" text="dark" className="px-3 rounded-pill"><FaStar /> 4.9</Badge>
-                                    <Badge bg="info" className="px-3 rounded-pill text-white"><FaShieldAlt /> Conductor Verificado</Badge>
+                                    <Badge bg="info" className="px-3 rounded-pill text-white"><FaShieldAlt /> Verificado</Badge>
                                 </div>
                                 <hr className="my-4" />
                                 <Row className="text-start px-3">
                                     <Col xs={6} className="mb-3">
-                                        <small className="text-muted d-block">CORREO</small>
-                                        <span className="fw-bold">{usuario?.email}</span>
+                                        <small className="text-muted d-block uppercase">CORREO</small>
+                                        <span className="fw-bold small">{usuario?.email}</span>
                                     </Col>
                                     <Col xs={6} className="mb-3">
-                                        <small className="text-muted d-block">TELÉFONO</small>
-                                        <span className="fw-bold">{usuario?.telefono}</span>
+                                        <small className="text-muted d-block uppercase">TELÉFONO</small>
+                                        <span className="fw-bold small">{usuario?.telefono}</span>
                                     </Col>
                                 </Row>
-                                <Button className="w-100 mt-4 rounded-pill py-2 border-0 fw-bold" style={{ background: 'linear-gradient(135deg, #a385ff, #8a65ff)' }}>
-                                    <FaUserEdit /> Editar Perfil
+                                <Button className="w-100 mt-4 rounded-pill py-2 border-0 fw-bold text-white" style={{ background: 'linear-gradient(135deg, #a385ff, #8a65ff)' }}>
+                                    <FaUserEdit className="me-2" /> Editar Perfil
                                 </Button>
                             </Card.Body>
                         </Card>

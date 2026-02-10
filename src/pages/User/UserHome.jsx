@@ -15,24 +15,36 @@ const UserHome = () => {
                     <p className="lead">Tu viaje seguro comienza aquí.</p>
                 </div>
                 <Row className="justify-content-center g-4">
-                    {.map((item, idx) => (
-                        <Col key={idx} xs={12} md={4} lg={3}>
-                            <Card className="shadow border-0 text-center h-100 py-3" style={{ borderRadius: '15px' }}>
-                                <Card.Body>
-                                    <div className="mb-3" style={{ fontSize: '2.5rem', color: '#a385ff' }}>{item.icon}</div>
-                                    <Card.Title className="fw-bold">{item.title}</Card.Title>
-                                    <p className="text-muted small">{item.text}</p>
-                                    <Button 
-                                        variant={item.variant} 
-                                        className="rounded-pill px-4 btn-sm fw-bold"
-                                        style={item.bg ? { backgroundColor: item.bg, border: 'none' } : {}}
-                                    >
-                                        {item.btn}
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    ))}
+                    <Col xs={12} md={4} lg={3}>
+                        <Card className="shadow border-0 text-center h-100 py-3" style={{ borderRadius: '15px' }}>
+                            <Card.Body>
+                                <div className="mb-3" style={{ fontSize: '2.5rem', color: '#a385ff' }}><FaChartLine /></div>
+                                <Card.Title className="fw-bold">Estadísticas</Card.Title>
+                                <p className="text-muted small">Ahorro acumulado: $50</p>
+                                <Button variant="outline-primary" className="rounded-pill px-4 btn-sm fw-bold">Ver más</Button>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs={12} md={4} lg={3}>
+                        <Card className="shadow border-0 text-center h-100 py-3" style={{ borderRadius: '15px' }}>
+                            <Card.Body>
+                                <div className="mb-3" style={{ fontSize: '2.5rem', color: '#a385ff' }}><FaRoute /></div>
+                                <Card.Title className="fw-bold">Mis Viajes</Card.Title>
+                                <p className="text-muted small">Tienes 1 viaje hoy</p>
+                                <Button style={{ backgroundColor: "#a385ff", border: 'none' }} className="rounded-pill px-4 btn-sm fw-bold text-white">Ver ruta</Button>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs={12} md={4} lg={3}>
+                        <Card className="shadow border-0 text-center h-100 py-3" style={{ borderRadius: '15px' }}>
+                            <Card.Body>
+                                <div className="mb-3" style={{ fontSize: '2.5rem', color: '#a385ff' }}><FaWallet /></div>
+                                <Card.Title className="fw-bold">Pagos</Card.Title>
+                                <p className="text-muted small">Saldo: $25.00</p>
+                                <Button variant="outline-success" className="rounded-pill px-4 btn-sm fw-bold">Recargar</Button>
+                            </Card.Body>
+                        </Card>
+                    </Col>
                 </Row>
             </Container>
         </div>

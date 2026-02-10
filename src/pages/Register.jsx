@@ -64,6 +64,7 @@
                     } else {
                         setError(data.message || 'Error al registrarse');
                     }
+                // eslint-disable-next-line no-unused-vars
                 } catch (error) {
                     setError("Error de conexión con el servidor");
                 } finally {
