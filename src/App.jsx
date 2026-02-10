@@ -1,11 +1,10 @@
 import React from "react";
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import HomeBase from "./pages/HomeBase";
 import './App.css'
-import Login from "./pages/Login";
+import Login from "./pages/Login"
+import HomeBase from "./pages/HomeBase";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Admin/Dashboard";
 import AdminConductores from "./pages/Admin/AdminConductores";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 import AdminVehiculos from "./pages/Admin/AdminVehiculos";
@@ -26,16 +25,19 @@ function App() {
   }
   return (
     <div className="grid-container">
-      <Header OpenSidebar={OpenSidebar}/>
-      <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
-      <Home/>
-      {/*<AuthProvider>
+      <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Sidebar><Header /></Sidebar>} />
+            <Route path="/dashboard/home" element={
+              <RequiredAuth>
+                <Header OpenSidebar={OpenSidebar}/>
+                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
+                <Home/>
+              </RequiredAuth>
+            } />
+            <Route path="/" element={<HomeBase />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<RequiredAuth><Dashboard /></RequiredAuth>} />
             <Route path="/admin/conductores" element={ <AdminConductores />} />
             <Route path="/admin/usuarios" element={<RequiredAuth> <AdminUsuarios /></RequiredAuth>} />
             <Route path="/admin/vehiculos" element={<RequiredAuth> <AdminVehiculos /></RequiredAuth>} />
@@ -44,7 +46,7 @@ function App() {
             <Route path="/admin/documentacion" element={<RequiredAuth> <AdminDocuments/></RequiredAuth>} />
           </Routes>
         </BrowserRouter>
-      </AuthProvider>*/}
+      </AuthProvider>
     </div>
   );
 }

@@ -42,7 +42,14 @@ function Login() {
                 
                 login(data.token, data.usuario);
                 setSuccess("¡Login exitoso!");
-                navigate("/homeuser");
+                
+                if (data.usuario.idRol === 1 || data.usuario.rol?.id === 1) {
+                    navigate("/dashboard/home");
+                } else if (data.usuario.idRol === 2 || data.usuario.rol?.id === 2) {
+                    navigate("/");
+                } else if (data.usuario.idRol === 3 || data.usuario.rol?.id === 3) {
+                    navigate("/");
+                }
             } else {
                 setError(data.message || 'Error al iniciar sesión');
             }
