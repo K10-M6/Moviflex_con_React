@@ -22,7 +22,7 @@ function AdminConductores(){
         .then(data => {
             const conductoresFiltrados = data.filter(usuario => 
                 usuario.idRol === 3 || usuario.rol?.nombre?.toUpperCase() === 'CONDUCTOR'
-            );
+        );
             setConductores(conductoresFiltrados);
         });
     }

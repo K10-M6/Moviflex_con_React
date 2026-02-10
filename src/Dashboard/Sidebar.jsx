@@ -39,7 +39,7 @@ function Sidebar({openSidebarToggle, OpenSidebar}) {
         
         <ul className="sidebar-list">
             <li className="sidebar-item">
-                <a href="" onClick={(e) => {
+                <a onClick={(e) => {
                     e.preventDefault();
                     handleDashboardClick();
                 }}>
