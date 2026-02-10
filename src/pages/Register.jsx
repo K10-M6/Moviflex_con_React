@@ -276,7 +276,7 @@
                                         border: '2px solid white',
                                     }}>
                                         <img 
-                                            src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800" // Cambia esta ruta
+                                            src="https://resizer.glanacion.com/resizer/v2/los-autos-mas-caros-que-se-vendieron-este-2023-no-FQFIMWVMVZGXHIS7BH2SIXGGZQ.jpg?auth=f76b37a176625c85e2fb9ae828be3d4c686100df1081520c6661f90841a3d52b&width=1200&quality=70&smart=false&height=800"
                                             alt="Conductores y Viajeros"
                                             className="img-fluid rounded shadow"
                                             style={{
