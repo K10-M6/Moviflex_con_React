@@ -73,7 +73,7 @@ import { useState } from "react";
 
             return (
                 <div style={{
-                background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)',
+                backgroundcColor: '#124c83',
                 minHeight: '100vh',
                 minWidth: '100vw',
                 display: 'flex',

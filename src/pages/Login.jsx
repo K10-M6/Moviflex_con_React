@@ -70,7 +70,7 @@ function Login() {
 
     return (
         <div style={{
-            background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)',
+            backgroundColor: '#124c83',
             minHeight: '100vh',
             minWidth: '100vw',
             display: 'flex',
