@@ -2,13 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Navbar, Container, Nav, Button, Dropdown } from "react-bootstrap";
 import Logo from '../pages/Imagenes/LOGO.jpeg';
-import { useAuth } from '../pages/context/AuthContext';
 
 export default function NavbarCustom() {
-  const { token, usuario, logout } = useAuth();
   const getFirstName = () => usuario?.nombre?.split(' ')[0] || 'Perfil';
 
-  // Lógica para determinar las rutas según el rol
   const idRol = usuario?.idRol || usuario?.rol?.id;
   const isDriver = idRol === 2 || idRol === "2";
   const homePath = isDriver ? "/driver-home" : "/user-home";
@@ -28,12 +25,6 @@ export default function NavbarCustom() {
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbar-basico" />
         <Navbar.Collapse id="navbar-basico">
-          
-          <Nav className="mx-auto align-items-center">
-              <Nav.Link as={Link} to="/conductor" className="fw-bold">Moviflex Conductor🚗 </Nav.Link>
-              <Nav.Link as={Link} to="/pasajero" className="fw-bold">Moviflex Pasajero👥 </Nav.Link>
-              <Nav.Link as={Link} to="/sobre-moviflex" className="fw-bold">Sobre Moviflex🌐</Nav.Link>
-          </Nav>
 
           <Nav className="align-items-center">
             {!token ? (
@@ -55,7 +46,6 @@ export default function NavbarCustom() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {/* Navegación dinámica según el Rol */}
                   <Dropdown.Item as={Link} to={profilePath}>
                     Editar Perfil
                   </Dropdown.Item>

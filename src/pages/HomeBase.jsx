@@ -7,9 +7,10 @@ import imagen from '../pages/Imagenes/Viajes.jpeg';
 function HomeBase() {
   return (
     <div style={{
-        background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-        minHeight: '100vh',
-        minWidth: '100vw'}}>
+      background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
+      minHeight: '100vh',
+      minWidth: '100vw'
+    }}>
       <Navbar/>
       <section className="py-5" >
         <Container>

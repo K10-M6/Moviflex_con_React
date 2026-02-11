@@ -5,7 +5,6 @@ import { BsPeopleFill, BsPersonCircle,BsTruck,BsCarFrontFill} from "react-icons/
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,ResponsiveContainer} from 'recharts';
 
 function Home() {
-  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
