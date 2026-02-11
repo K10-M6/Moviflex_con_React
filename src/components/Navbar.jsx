@@ -1,9 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Navbar, Container, Nav, Button, Dropdown } from "react-bootstrap";
-import Logo from '../pages/Imagenes/LOGO.jpeg';
+import Logo from '../pages/Imagenes/TODO_MOVI.png';
+import { useAuth } from '../pages/context/AuthContext';
 
 export default function NavbarCustom() {
+  const { token, usuario, logout } = useAuth();
   const getFirstName = () => usuario?.nombre?.split(' ')[0] || 'Perfil';
 
   const idRol = usuario?.idRol || usuario?.rol?.id;
@@ -15,18 +17,12 @@ export default function NavbarCustom() {
     <Navbar bg="white" variant="light" expand="lg" className="border-bottom shadow-sm sticky-top">
       <Container>
         <Navbar.Brand as={Link} to={token ? homePath : "/"}>
-          <img src={Logo} height="40" className="me-2" alt="Logo MoviFlexx" /> 
-          <span style={{background: 'linear-gradient(20deg, #6f42c1, #00a2ffff)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    display: 'inline-block'
-                  }}>MoviFlexx</span>
+          <img src={Logo} height="50px" className="me-1" alt="Logo MoviFlexx" /> 
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbar-basico" />
         <Navbar.Collapse id="navbar-basico">
 
-          <Nav className="align-items-center">
+          <Nav className="ms-auto align-items-center">
             {!token ? (
               <>
                 <Nav.Link as={Link} to="/login" className="fw-bold">
