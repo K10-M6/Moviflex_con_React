@@ -47,7 +47,7 @@ import { useState } from "react";
                     return;
                 }
                 try {
-                    const respuesta = await fetch("https://backendmovi-production.up.railway.app/api/auth/registro", {
+                    const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/registro", {
                         method: "POST",
                         headers: {"Content-Type": "application/json"},
                         body: JSON.stringify({nombre, email, telefono, password, idRol})
