@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";  
 import { useAuth } from "../pages/context/AuthContext";
 import { Container, Row, Col, Card, Alert, Spinner, Badge } from "react-bootstrap";
-import {BsGrid1X2Fill, BsPeopleFill, BsPersonCircle,BsTruck,BsCarFrontFill} from "react-icons/bs";
+import { BsPeopleFill, BsPersonCircle,BsTruck,BsCarFrontFill} from "react-icons/bs";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,ResponsiveContainer} from 'recharts';
 
 function Home() {
@@ -114,59 +114,62 @@ function Home() {
     {
       title: "Total Usuarios",
       value: stats.totalUsuarios,
-      icon: <BsPeopleFill className="text-white fs-4" />,
-      color: "linear-gradient(135deg, #a385ff, #EDE7FF)",
-      iconBg: "linear-gradient(20deg, #6f42c1, #59c2ffff)"
+      icon: <BsPeopleFill className="text-black fs-4" />,
+      backgroundcolor: "#EDE7FF)",
     },
     {
       title: "Viajeros",
       value: stats.totalViajeros,
-      icon: <BsPersonCircle className="text-white fs-4" />,
-      color: "linear-gradient(135deg, #a385ff, #EDE7FF)",
-      iconBg: "linear-gradient(20deg, #6f42c1, #59c2ffff)"
+      icon: <BsPersonCircle className="text-black fs-4" />,
+      backgroundcolor: "#EDE7FF)",
     },
     {
       title: "Conductores",
       value: stats.totalConductores,
-      icon: <BsTruck className="text-white fs-4" />,
-      color: "linear-gradient(135deg, #a385ff, #EDE7FF)",
-      iconBg: "linear-gradient(20deg, #6f42c1, #59c2ffff)"
+      icon: <BsTruck className="text-black fs-4" />,
+      backgroundcolor: "#EDE7FF)",
     },
     {
       title: "Vehículos",
       value: stats.totalVehiculos,
-      icon: <BsCarFrontFill className="text-white fs-4" />,
-      color: "linear-gradient(135deg, #a385ff, #EDE7FF)",
-      iconBg: "linear-gradient(20deg, #6f42c1, #59c2ffff)"
+      icon: <BsCarFrontFill className="text-black fs-4" />,
+    backgroundcolor: "#EDE7FF)",
     }
   ];
 
   return (
     <div style={{
-      background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)',
+      background: '#124c83',
       minHeight: '100vh',
       padding: '20px'
     }}>
       <Container fluid>
-        {/* Header */}
         <Row className="mb-4">
-          <Col>
-            <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <h1 className="fw-bold" style={{ color: '#6C3BFF' }}>Dashboard</h1>
-                <p className="text-muted mb-0">Panel de control y estadísticas</p>
-              </div>
-              <Badge bg="light" text="dark" className="px-3 py-2">
-                <small>Última actualización: Hoy</small>
-              </Badge>
-            </div>
-            {error && (
-              <Alert variant="danger" className="mt-3">
-                {error}
-              </Alert>
-            )}
-          </Col>
-        </Row>
+  <Col>
+    <Card 
+      className="border-0 shadow"
+      style={{
+        backgroundcolor: '#EDE7FF',
+        borderRadius: '15px'
+      }}
+    >
+      <Card.Body className="p-4">
+            <Row className="align-items-center">
+                <Col xs={9}>
+                    <h1 className="fw-bold mb-2">Dashboard</h1>
+                    <p className="text-muted mb-0">Panel de control y estadísticas</p>
+                </Col>
+            </Row>
+        </Card.Body>
+    </Card>
+                
+        {error && (
+        <Alert variant="danger" className="mt-3 border-0 shadow" style={{ borderRadius: '10px' }}>
+            {error}
+        </Alert>
+                )}
+    </Col>
+</Row>
 
         {loading ? (
           <Row className="justify-content-center py-5">
@@ -177,7 +180,6 @@ function Home() {
           </Row>
         ) : (
           <>
-            {/* Stats Cards */}
             <Row className="g-4 mb-5">
               {statCards.map((stat, index) => (
                 <Col key={index} xs={12} sm={6} lg={3}>
@@ -214,9 +216,7 @@ function Home() {
               ))}
             </Row>
 
-            {/* Charts Section */}
             <Row className="g-4">
-              {/* Bar Chart */}
               <Col lg={6}>
                 <Card className="shadow border-0 h-100" style={{ borderRadius: '15px' }}>
                   <Card.Body>
@@ -301,40 +301,6 @@ function Home() {
               </Col>
             </Row>
 
-            <Row className="mt-5">
-              <Col>
-                <Card className="shadow border-0" style={{ borderRadius: '15px' }}>
-                  <Card.Body>
-                    <Row className="align-items-center">
-                      <Col md={8}>
-                        <h5 className="fw-bold mb-2" style={{ color: '#6C3BFF' }}>
-                          Resumen del Sistema
-                        </h5>
-                        <p className="text-muted mb-0">
-                          El sistema cuenta con <strong>{stats.totalUsuarios} usuarios</strong> registrados, 
-                          de los cuales <strong>{stats.totalConductores} son conductores</strong> y 
-                          <strong> {stats.totalViajeros} son viajeros</strong>. 
-                          Actualmente hay <strong>{stats.totalVehiculos} vehículos</strong> activos en la plataforma.
-                        </p>
-                      </Col>
-                      <Col md={4} className="text-end">
-                        <div 
-                          className="rounded-circle d-inline-flex align-items-center justify-content-center"
-                          style={{
-                            width: '80px',
-                            height: '80px',
-                            background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)',
-                            margin: '0 auto'
-                          }}
-                        >
-                          <BsGrid1X2Fill className="text-white fs-2" />
-                        </div>
-                      </Col>
-                    </Row>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
           </>
         )}
       </Container>

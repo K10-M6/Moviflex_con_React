@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import NavbarAdmin from "./NavAdmin";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner } from "react-bootstrap";
 
 function AdminUsuarios(){
@@ -47,24 +46,6 @@ function AdminUsuarios(){
             setUsuarios([]);
         } finally {
             setLoading(false);
-        }
-    }
-
-    async function eliminarUsuario(id) {
-        if (!window.confirm("¿Estás seguro de eliminar este usuario?")) return;
-        
-        try {
-            await fetch(`https://backendmovi-production.up.railway.app/api/auth/${id}`,{
-                method: "DELETE",
-                headers:{
-                    "Content-Type":"application/json",
-                    "Authorization":"Bearer "+token
-                }
-            });
-            traerUsuarios();
-        } catch (error) {
-            console.error("Error al eliminar:", error);
-            setError("Error al eliminar usuario");
         }
     }
 
@@ -176,7 +157,6 @@ function AdminUsuarios(){
             minHeight: '100%',
             minWidth: '95vw'
         }}>
-            <NavbarAdmin />
             <Container fluid className="py-4">
                 <Row className="mb-4">
                     <Col>
@@ -267,14 +247,6 @@ function AdminUsuarios(){
                                                         </td>
                                                         <td>
                                                             <div className="d-flex flex-column gap-1">
-                                                                <Button 
-                                                                    variant="outline-danger" 
-                                                                    size="sm" 
-                                                                    onClick={() => eliminarUsuario(usuario.idUsuarios)}
-                                                                    className="w-100"
-                                                                >
-                                                                    Eliminar
-                                                                </Button>
                                                                 <Button 
                                                                     variant="outline-warning" 
                                                                     size="sm" 

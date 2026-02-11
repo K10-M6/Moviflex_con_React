@@ -2,15 +2,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge } from "react-bootstrap";
 
-function AdminConductores(){
+function AdminViajeros(){
     const { token } = useAuth();
-    const [conductores, setConductores] = useState([]);
+    const [viajeros, setViajeros] = useState([]);
     
     useEffect(()=> {
-        traerConductores();
+        traerViajeros();
     }, []);
     
-    async function traerConductores(){
+    async function traerViajeros(){
         await fetch("https://backendmovi-production.up.railway.app/api/auth/",{
             method:"GET",
             headers: {
@@ -19,14 +19,16 @@ function AdminConductores(){
             }
         }).then(response => response.json())
         .then(data => {
-            const conductoresFiltrados = data.filter(usuario => 
-                usuario.idRol === 3 || usuario.rol?.nombre?.toUpperCase() === 'CONDUCTOR'
-        );
-            setConductores(conductoresFiltrados);
+            const viajerosFiltrados = data.filter(usuario => 
+                usuario.idRol === 3 || 
+                usuario.rol?.nombre?.toUpperCase() === 'VIAJERO' || 
+                usuario.rol?.nombre?.toUpperCase() === 'PASAJERO'
+            );
+            setViajeros(viajerosFiltrados);
         });
     }
-
-    async function cambiarEstadoConductor(id) {
+    
+    async function cambiarEstadoViajero(id) {
         await fetch(`https://backendmovi-production.up.railway.app/api/auth/${id}/estado`,{
             method: "PATCH",
             headers:{
@@ -34,7 +36,7 @@ function AdminConductores(){
                 "Authorization":"Bearer "+token
             }
         });
-        traerConductores();
+        traerViajeros();
     }
     
     function getEstadoBadge(estado) {
@@ -61,8 +63,8 @@ function AdminConductores(){
             <Container fluid className="py-4">
                 <Row className="mb-4">
                     <Col>
-                        <h1 className="display-5 fw-bold">Lista de Conductores</h1>
-                        <p className="text-muted">Administra los conductores registrados en la plataforma</p>
+                        <h1 className="display-5 fw-bold">Lista de Viajeros</h1>
+                        <p className="text-muted">Administra los viajeros registrados en la plataforma</p>
                     </Col>
                 </Row>
                 
@@ -83,18 +85,22 @@ function AdminConductores(){
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {conductores.map((conductor) => (
-                                            <tr key={conductor.idUsuarios}>
-                                                <td className="fw-semibold">{conductor.idUsuarios}</td>
-                                                <td>{conductor.nombre}</td>
-                                                <td>{conductor.email}</td>
-                                                <td>{conductor.telefono || "No especificado"}</td>
-                                                <td>{getEstadoBadge(conductor.estado)}</td>
-                                                <td>{formatearFecha(conductor.creadoEn)}</td>
+                                        {viajeros.map((viajero) => (
+                                            <tr key={viajero.idUsuarios}>
+                                                <td className="fw-semibold">{viajero.idUsuarios}</td>
+                                                <td>{viajero.nombre}</td>
+                                                <td>{viajero.email}</td>
+                                                <td>{viajero.telefono || "No especificado"}</td>
+                                                <td>{getEstadoBadge(viajero.estado)}</td>
+                                                <td>{formatearFecha(viajero.creadoEn)}</td>
                                                 <td>
                                                     <div className="d-flex gap-2">
-                                                        <Button variant="outline-warning" size="sm" onClick={() => cambiarEstadoConductor(conductor.idUsuarios)}>
-                                                            {conductor.estado === 'ACTIVO' ? 'Suspender' : 'Activar'}
+                                                        <Button 
+                                                            variant="outline-warning" 
+                                                            size="sm" 
+                                                            onClick={() => cambiarEstadoViajero(viajero.idUsuarios)}
+                                                        >
+                                                            {viajero.estado === 'ACTIVO' ? 'Suspender' : 'Activar'}
                                                         </Button>
                                                     </div>
                                                 </td>
@@ -111,4 +117,4 @@ function AdminConductores(){
     )
 }
 
-export default AdminConductores;
+export default AdminViajeros;

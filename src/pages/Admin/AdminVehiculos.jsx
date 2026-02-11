@@ -1,17 +1,39 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import NavbarAdmin from "./NavAdmin";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner } from "react-bootstrap";
 
 function AdminVehiculos(){
     const { token } = useAuth();
     const [vehiculos, setVehiculos] = useState([]);
+    const [usuarios, setUsuarios] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     
     useEffect(()=> {
+        traerUsuarios();
         traerVehiculos();
     }, []);
+    
+    async function traerUsuarios() {
+        try {
+            const response = await fetch("https://backendmovi-production.up.railway.app/api/auth/", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error ${response.status} al obtener usuarios`);
+            }
+            
+            const data = await response.json();
+            setUsuarios(data);
+        } catch (error) {
+            console.error("Error al traer usuarios:", error);
+        }
+    }
     
     async function traerVehiculos(){
         try {
@@ -50,24 +72,6 @@ function AdminVehiculos(){
         }
     }
 
-    async function eliminarVehiculo(id) {
-        if (!window.confirm("¿Estás seguro de eliminar este vehículo?")) return;
-        
-        try {
-            await fetch(`https://backendmovi-production.up.railway.app/api/vehiculos/${id}`,{
-                method: "DELETE",
-                headers:{
-                    "Content-Type":"application/json",
-                    "Authorization":"Bearer "+token
-                }
-            });
-            traerVehiculos();
-        } catch (error) {
-            console.error("Error al eliminar:", error);
-            setError("Error al eliminar vehículo");
-        }
-    }
-    
     async function cambiarEstadoVehiculo(id) {
         try {
             await fetch(`https://backendmovi-production.up.railway.app/api/vehiculos/${id}/estado`,{
@@ -83,6 +87,14 @@ function AdminVehiculos(){
             setError("Error al cambiar estado del vehículo");
         }
     }
+    
+    function obtenerNombreUsuario(idUsuario) {
+        if (!idUsuario) return "Sin propietario";
+        
+        const usuario = usuarios.find(u => u.idUsuarios === idUsuario);
+        return usuario ? usuario.nombre : `Usuario #${idUsuario}`;
+    }
+    
     
     function getEstadoBadge(estado) {
         if (estado === 'ACTIVO') {
@@ -104,12 +116,10 @@ function AdminVehiculos(){
     const vehiculosFiltrados = vehiculos;
 
     return(
-        <div
-        style={{
+        <div style={{
         background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
         minHeight: '100vh',
         minWidth: '95vw'}}>
-            <NavbarAdmin />
             <Container fluid className="py-4">
                 <Row className="mb-4">
                     <Col>
@@ -156,7 +166,7 @@ function AdminVehiculos(){
                                         <thead className="table-light">
                                             <tr>
                                                 <th>ID</th>
-                                                <th>ID Usuario</th>
+                                                <th>Propietario</th>
                                                 <th>Marca</th>
                                                 <th>Modelo</th>
                                                 <th>Placa</th>
@@ -173,47 +183,45 @@ function AdminVehiculos(){
                                                     </td>
                                                 </tr>
                                             ) : (
-                                                vehiculosFiltrados.map((vehiculo) => (
-                                                    <tr key={vehiculo.idVehiculos}>
-                                                        <td className="fw-semibold">{vehiculo.idVehiculos}</td>
-                                                        <td>
-                                                            <div className="fw-medium">{vehiculo.idUsuario}</div>
-                                                            <small className="text-muted">ID: {vehiculo.idUsuario}</small>
-                                                        </td>
-                                                        <td>{vehiculo.marca || "No especificado"}</td>
-                                                        <td>{vehiculo.modelo || "No especificado"}</td>
-                                                        <td>{vehiculo.placa || "Sin placa"}</td>
-                                                        <td>{formatearCapacidad(vehiculo.capacidad)}</td>
-                                                        <td>
-                                                            <div>{getEstadoBadge(vehiculo.estado)}</div>
-                                                            <small className="text-muted">
-                                                                {vehiculo.estado === 'ACTIVO' ? 'Activo' : 
-                                                                 vehiculo.estado === 'INACTIVO' ? 'Inactivo' : 
-                                                                 vehiculo.estado || "Sin estado"}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex flex-column gap-1">
-                                                                <Button 
-                                                                    variant="outline-danger" 
-                                                                    size="sm" 
-                                                                    onClick={() => eliminarVehiculo(vehiculo.idVehiculos)}
-                                                                    className="w-100"
-                                                                >
-                                                                    Eliminar
-                                                                </Button>
-                                                                <Button 
-                                                                    variant="outline-warning" 
-                                                                    size="sm" 
-                                                                    onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos)}
-                                                                    className="w-100"
-                                                                >
-                                                                    {vehiculo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
+                                                vehiculosFiltrados.map((vehiculo) => {
+                                                    const nombreUsuario = obtenerNombreUsuario(vehiculo.idUsuario);
+                                                    
+                                                    return (
+                                                        <tr key={vehiculo.idVehiculos}>
+                                                            <td className="fw-semibold">{vehiculo.idVehiculos}</td>
+                                                            <td>
+                                                                <div className="fw-medium">{nombreUsuario}</div>
+                                                                <small className="text-muted">
+                                                                    ID: {vehiculo.idUsuario}
+                                                                </small>
+                                                            </td>
+                                                            <td>{vehiculo.marca }</td>
+                                                            <td>{vehiculo.modelo}</td>
+                                                            <td>{vehiculo.placa }</td>
+                                                            <td>{formatearCapacidad(vehiculo.capacidad)}</td>
+                                                            <td>
+                                                                <div>{getEstadoBadge(vehiculo.estado)}</div>
+                                                                <small className="text-muted">
+                                                                    {vehiculo.estado === 'ACTIVO' ? 'Activo' : 
+                                                                     vehiculo.estado === 'INACTIVO' ? 'Inactivo' : 
+                                                                     vehiculo.estado || "Sin estado"}
+                                                                </small>
+                                                            </td>
+                                                            <td>
+                                                                <div className="d-flex flex-column gap-1">
+                                                                    <Button 
+                                                                        variant="outline-warning" 
+                                                                        size="sm" 
+                                                                        onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos)}
+                                                                        className="w-100"
+                                                                    >
+                                                                        {vehiculo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
                                             )}
                                         </tbody>
                                     </Table>

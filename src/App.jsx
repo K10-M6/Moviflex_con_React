@@ -9,7 +9,7 @@ import AdminConductores from "./pages/Admin/AdminConductores";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 import AdminVehiculos from "./pages/Admin/AdminVehiculos";
 import { AuthProvider, useAuth } from "./pages/context/AuthContext";
-import Viajes from "./pages/Admin/ViajesAdmin";
+import AdminViajeros from "./pages/Admin/AdminViajeros";
 import Profile from "./pages/User/Profile";
 import UserHome from "./pages/User/UserHome";
 import DriverHome from "./pages/Driver/DriverHome";
@@ -46,10 +46,30 @@ function App() {
             
             <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
             <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
-            <Route path="/admin/conductores" element={ <AdminConductores />} />
-            <Route path="/admin/usuarios" element={<RequiredAuth> <AdminUsuarios /></RequiredAuth>} />
-            <Route path="/admin/vehiculos" element={<RequiredAuth> <AdminVehiculos /></RequiredAuth>} />
-            <Route path="/admin/viajes" element={<RequiredAuth> <Viajes/></RequiredAuth>} />
+            <Route path="/admin/conductores" element={ 
+              <RequiredAuth>
+                <Header OpenSidebar={OpenSidebar}/>
+                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
+                <AdminConductores />
+              </RequiredAuth>} />
+            <Route path="/admin/usuarios" element={
+              <RequiredAuth> 
+                <Header OpenSidebar={OpenSidebar}/>
+                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
+                <AdminUsuarios />
+              </RequiredAuth>} />
+            <Route path="/admin/vehiculos" element={
+              <RequiredAuth> 
+                <Header OpenSidebar={OpenSidebar}/>
+                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
+                <AdminVehiculos />
+              </RequiredAuth>} />
+            <Route path="/admin/viajeros" element={
+              <RequiredAuth>
+                <Header OpenSidebar={OpenSidebar}/>
+                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/> 
+                <AdminViajeros/>
+              </RequiredAuth>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

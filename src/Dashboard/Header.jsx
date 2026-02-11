@@ -1,44 +1,46 @@
 import React from "react";
-import { 
-  BsFillBellFill, 
-  BsPersonCircle, 
-  BsJustify 
-} from "react-icons/bs";
+import { BsPersonCircle, BsJustify } from "react-icons/bs";
 
 function Header({ OpenSidebar }) {
   return (
-    <header className="bg-white border-bottom py-2">
-      <div className="container-fluid px-3">
+    <header className="py-3" style={{
+      backgroundColor: '#124c83',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+    }}>
+      <div className="container-fluid px-4">
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
             <button 
-              className="btn btn-link text-dark me-2 d-md-none p-1"
+              className="btn btn-link text-white me-3 d-md-none p-0"
               onClick={OpenSidebar}
             >
-              <BsJustify className="fs-4" />
+              <BsJustify className="fs-3" />
             </button>
-            <h6 className="mb-0 text-dark d-none d-md-block">Administración</h6>
+            <div>
+              <h4 className="fw-bold mb-0 text-white">
+                <BsPersonCircle className="me-2" />
+                MOVIFLEX
+              </h4>
+              <small className="text-white opacity-75">Panel Administrativo</small>
+            </div>
           </div>
 
           <div className="d-flex align-items-center">
-            <button className="btn btn-link text-dark position-relative p-1">
-              <BsFillBellFill className="fs-5" />
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger" 
-                    style={{ fontSize: "0.5rem", width: "8px", height: "8px" }}>
-              </span>
-            </button>
-            
-            <div className="dropdown ms-2">
-              <button 
-                className="btn btn-link text-dark p-1 dropdown-toggle"
-                type="button"
-                data-bs-toggle="dropdown"
-              >
-                <BsPersonCircle className="fs-5" />
-              </button>
-              <ul className="dropdown-menu dropdown-menu-end">
-                <li><button className="dropdown-item">Cerrar sesión</button></li>
-              </ul>
+            <div className="text-end me-3 d-none d-md-block">
+              <p className="mb-0 text-white fw-medium">Administrador</p>
+              <small className="text-white opacity-75">admin@moviflex.com</small>
+            </div>
+            <div 
+              className="rounded-circle d-flex align-items-center justify-content-center"
+              style={{
+                width: '45px',
+                height: '45px',
+                backgroundColor: '#ffffff',
+                border: '1px solid black',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+              }}
+            >
+              <span className="text-black fw-bold">A</span>
             </div>
           </div>
         </div>
