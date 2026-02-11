@@ -260,7 +260,7 @@ function Register() {
                                         type="submit" 
                                         size="lg" 
                                         className="w-70 mb-1 d-block mx-auto py-1" 
-                                        style={{ background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)' }}
+                                        style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))' }}
                                         disabled={loading || passwordError}
                                     >
                                         {loading ? (
