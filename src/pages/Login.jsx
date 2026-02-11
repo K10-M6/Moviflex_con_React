@@ -15,6 +15,12 @@ function Login() {
     const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
 
+    const ROLES = {
+        ADMIN: 1,
+        CONDUCTOR: 2,
+        VIAJERO: 3
+    };
+
     async function guardar(e) {
         e.preventDefault();
         setError("");
@@ -42,13 +48,15 @@ function Login() {
                 
                 login(data.token, data.usuario);
                 setSuccess("¡Login exitoso!");
+
+                const usuario = data.usuario;
                 
-                if (data.usuario.idRol === 1 || data.usuario.rol?.id === 1) {
+                if (data.usuario.idRol === ROLES.ADMIN || data.usuario.rol?.id === ROLES.ADMIN) {
                     navigate("/dashboard/home");
-                } else if (data.usuario.idRol === 2 || data.usuario.rol?.id === 2) {
-                    navigate("/user-home");
-                } else if (data.usuario.idRol === 3 || data.usuario.rol?.id === 3) {
+                } else if (data.usuario.idRol === ROLES.CONDUCTOR || data.usuario.rol?.id === ROLES.CONDUCTOR) {
                     navigate("/driver-home");
+                } else if (data.usuario.idRol === ROLES.VIAJERO || data.usuario.rol?.id === ROLES.VIAJERO) {
+                    navigate("/user-home");
                 }
             } else {
                 setError(data.message || 'Error al iniciar sesión');

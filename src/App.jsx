@@ -44,7 +44,10 @@ function App() {
             <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
             <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
             
-            <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
+            <Route path="/driver-home" element={ <RequiredAuth>
+              
+              <DriverHome />
+              </RequiredAuth>} />
             <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
             <Route path="/admin/conductores" element={ 
               <RequiredAuth>
