@@ -156,8 +156,8 @@ function Home() {
       <Card.Body className="p-4">
             <Row className="align-items-center">
                 <Col xs={9}>
-                    <h1 className="fw-bold mb-2">Dashboard</h1>
-                    <p className="text-muted mb-0">Panel de control y estadísticas</p>
+                    <h1 className="fw-bold mb-2">Bienvenido al panel de Administración</h1>
+                    <p className="text-muted mb-0">Aquí podrás tener el control de la página y observar las estadísticas de Moviflex</p>
                 </Col>
             </Row>
         </Card.Body>
@@ -255,7 +255,6 @@ function Home() {
                 </Card>
               </Col>
 
-              {/* Line Chart */}
               <Col lg={6}>
                 <Card className="shadow border-0 h-100" style={{ borderRadius: '15px' }}>
                   <Card.Body>
