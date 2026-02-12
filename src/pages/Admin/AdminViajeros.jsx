@@ -11,7 +11,7 @@ function AdminViajeros(){
     }, []);
     
     async function traerViajeros(){
-        await fetch("https://backendmovi-production.up.railway.app/api/auth/",{
+        await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/pasajeros",{
             method:"GET",
             headers: {
                 "Content-Type":"application/json",

@@ -17,7 +17,7 @@ function AdminUsuarios(){
             setLoading(true);
             setError("");
             
-            const response = await fetch("https://backendmovi-production.up.railway.app/api/auth/",{
+            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/",{
                 method:"GET",
                 headers: {
                     "Content-Type":"application/json",
