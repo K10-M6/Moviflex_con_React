@@ -63,7 +63,7 @@ function Register() {
                 rol: rol
             };
 
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/registro", {
+            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/registro", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(datosEnviar)
