@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Button, Alert, Carousel } from "react-bootstrap";
+import Logo  from './Imagenes/TODO_MOVI.png';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Navbar from '../components/Navbar';
 
@@ -28,7 +29,7 @@ function Login() {
         setLoading(true);
 
         try {
-            const respuesta = await fetch("https://backendmovi-production.up.railway.app/api/auth/login", {
+            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/login", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({email, password})
@@ -68,9 +69,16 @@ function Login() {
         }
     }
 
+    const imagenes = [
+        "https://periodicolafuente.com/wp-content/uploads/2018/09/%C2%BFPor-qu%C3%A9-viajar-en-carro-por-M%C3%A9xico-es-algo-que-debes-vivir_LA-FUENTE-QUERETARO-.jpg",
+        "https://www.elcarrocolombiano.com/wp-content/uploads/2021/11/Los-10-carros-mas-rapidos-del-mundo-2021.jpg",
+        "https://https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg",
+        
+    ];
+
     return (
         <div style={{
-            background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)',
+            backgroundColor: '#124c83',
             minHeight: '100vh',
             minWidth: '100vw',
             display: 'flex',
@@ -79,35 +87,30 @@ function Login() {
             <Navbar />
             <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
                 <Row className="justify-content-center">
-                    <Col xs={12} md={4} lg={4} xl={3} className="mt-4">
+                    <Col xs={12} md={4} lg={4} xl={3}
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
                         <Card className="shadow border-2" style={{
                             fontSize: '0.9rem'
                         }}>
                             <Card.Body className="p-3">
-                                <div className="text-center mb-3">
-                                    <div style={{
-                                        width: '150px',
-                                        height: '50px',
-                                        borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #a385ff, #EDE7FF)',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        marginBottom: '5px'
-                                    }}>
-                                        <i className="bi bi-person-circle text-white">
-                                            <Card.Title as="h4" className="text-center mb-2" style={{textShadow: '1px 1px 1px rgba(0,0,0,2)'}}>
-                                                Iniciar Sesión
-                                            </Card.Title>
-                                        </i>
-                                    </div>
+                                <div className="text-center mb-4">
+                                   <img src={Logo} alt="Logo Moviflexx" 
+                                        style={{
+                                            width: '200px',
+                                            height: 'auto',
+                                        }}
+                                    />
                                 </div>
-                                
                                 {error && <Alert variant="danger">{error}</Alert>}
                                 {success && <Alert variant="success">{success}</Alert>}
                                 
                                 <Form onSubmit={guardar}>
-                                    <Form.Group className="mb-2" controlId="email">
+                                    <Form.Group className="mb-1" controlId="email">
                                         <Form.Label>Correo Electrónico <span className="text-danger">*</span></Form.Label>
                                         <div style={{ position: 'relative' }}>
                                             <FaEnvelope style={{
@@ -130,7 +133,7 @@ function Login() {
                                         </div>
                                     </Form.Group>
 
-                                    <Form.Group className="mb-2" controlId="password">
+                                    <Form.Group className="mb-4" controlId="password">
                                         <Form.Label>Contraseña <span className="text-danger">*</span></Form.Label>
                                         <div style={{ position: 'relative' }}>
                                             <FaLock style={{
@@ -173,7 +176,7 @@ function Login() {
                                         type="submit" 
                                         size="lg" 
                                         className="w-70 mb-1 d-block mx-auto py-1" 
-                                        style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}}
+                                        style={{background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))'}}
                                         disabled={loading}
                                     >
                                         {loading ? (
@@ -194,31 +197,44 @@ function Login() {
                             </Card.Body>
                         </Card>
                     </Col> 
-                    <Col xs={13} md={8} lg={9} xl={9} className="mt-4">
+                    <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
                         <div className=" text-center w-100">
                             <div style={{
                                 width: '100%',
-                                maxWidth: '1000px',
-                                margin: '4 auto',
+                                maxWidth: '900px',
+                                margin: '50px auto',
                                 borderRadius: '200px',
                                 overflow: 'hidden',
                                 border: '2px solid white',
                             }}>
-                                <img 
-                                    src="https://resizer.glanacion.com/resizer/v2/los-autos-mas-caros-que-se-vendieron-este-2023-no-FQFIMWVMVZGXHIS7BH2SIXGGZQ.jpg?auth=f76b37a176625c85e2fb9ae828be3d4c686100df1081520c6661f90841a3d52b&width=1200&quality=70&smart=false&height=800"
-                                    alt="Conductores y Viajeros"
-                                    className="img-fluid rounded shadow"
-                                    style={{
-                                        height: 'auto',
-                                        display: 'block'
-                                    }}
-                                />
+                                <Carousel fade indicators={true} controls={false} interval={2500}>
+                                    {imagenes.map((img, index) => (
+                                        <Carousel.Item key={index}>
+                                            <img
+                                                src={img}
+                                                alt={`slide-${index}`}
+                                                className="d-block w-100"
+                                                style={{
+                                                    height: '400px',
+                                                    width: '100%',
+                                                    objectFit: 'cover',
+                                                }}
+                                            />
+                                        </Carousel.Item>
+                                    ))}
+                                </Carousel>
                             </div>
                         
-                            <h3 className="mt-3" style={{ color: '#6C3BFF' }}>
+                            <h3 className="mt-3" style={{ color: '#fdfdfd' }}>
                                 Bienvenido de Nuevo
                             </h3>
-                            <p className="text-muted">
+                            <p className="text-white mt-2" style={{ fontSize: '1.1rem' }}>
                                 Accede a tu cuenta para gestionar tus viajes
                             </p>
                         </div>

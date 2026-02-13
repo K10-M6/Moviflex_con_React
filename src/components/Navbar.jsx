@@ -1,47 +1,34 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Navbar, Container, Nav, Button, Dropdown } from "react-bootstrap";
-import Logo from '../pages/Imagenes/LOGO.jpeg';
+import Logo from '../pages/Imagenes/TODO_MOVI.png';
 import { useAuth } from '../pages/context/AuthContext';
 
 export default function NavbarCustom() {
   const { token, usuario, logout } = useAuth();
   const getFirstName = () => usuario?.nombre?.split(' ')[0] || 'Perfil';
 
-  // Lógica para determinar las rutas según el rol
   const idRol = usuario?.idRol || usuario?.rol?.id;
   const isDriver = idRol === 2 || idRol === "2";
   const homePath = isDriver ? "/driver-home" : "/user-home";
   const profilePath = isDriver ? "/driver-profile" : "/profile";
 
   return (
-    <Navbar bg="white" variant="light" expand="lg" className="border-bottom shadow-sm sticky-top">
+    <Navbar variant="light" expand="lg" className="shadow-sm sticky-top" >
       <Container>
         <Navbar.Brand as={Link} to={token ? homePath : "/"}>
-          <img src={Logo} height="40" className="me-2" alt="Logo MoviFlexx" /> 
-          <span style={{background: 'linear-gradient(20deg, #6f42c1, #00a2ffff)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    display: 'inline-block'
-                  }}>MoviFlexx</span>
+          <img src={Logo} height="50px" className="me-1" alt="Logo MoviFlexx" /> 
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="navbar-basico" />
         <Navbar.Collapse id="navbar-basico">
-          
-          <Nav className="mx-auto align-items-center">
-              <Nav.Link as={Link} to="/conductor" className="fw-bold">Moviflex Conductor🚗 </Nav.Link>
-              <Nav.Link as={Link} to="/pasajero" className="fw-bold">Moviflex Pasajero👥 </Nav.Link>
-              <Nav.Link as={Link} to="/sobre-moviflex" className="fw-bold">Sobre Moviflex🌐</Nav.Link>
-          </Nav>
 
-          <Nav className="align-items-center">
+          <Nav className="ms-auto align-items-center">
             {!token ? (
               <>
-                <Nav.Link as={Link} to="/login" className="fw-bold">
+                <Nav.Link as={Link} to="/login" className="fw-bold" style={{color: '#ffffff'}}>
                   Iniciar Sesión
                 </Nav.Link>
-                <Nav.Link as={Link} to="/register" className="btn text-white rounded-pill px-4" style={{background: 'linear-gradient(20deg, #6f42c1, #59c2ffff)'}}> 
+                <Nav.Link as={Link} to="/register" className="text-white" style={{ fontWeight: 'bold' }}> 
                   Registrarse
                 </Nav.Link>
               </>
@@ -50,12 +37,11 @@ export default function NavbarCustom() {
                 <Dropdown.Toggle 
                   variant="custom" 
                   className="border-0 shadow-sm"
-                  style={{ background: 'linear-gradient(20deg, #6f42c1, #00dfcc)', color: 'white', fontWeight: 'bold' }}>
+                  style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))', color: 'white', fontWeight: 'bold' }}>
                   {getFirstName()}
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {/* Navegación dinámica según el Rol */}
                   <Dropdown.Item as={Link} to={profilePath}>
                     Editar Perfil
                   </Dropdown.Item>

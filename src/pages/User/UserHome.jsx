@@ -7,12 +7,12 @@ import { useAuth } from "../context/AuthContext";
 const UserHome = () => {
     const { usuario } = useAuth();
     return (
-        <div style={{ background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#124c83', minHeight: '100vh' }}>
             <Navbar />
             <Container className="py-5 flex-grow-1 d-flex flex-column justify-content-center">
                 <div className="text-center mb-5 text-white">
-                    <h1 className="fw-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.2)' }}>¡Hola, {usuario?.nombre}! 👋</h1>
-                    <p className="lead">Tu viaje seguro comienza aquí.</p>
+                    <h1 className="fw-bold" style={{ backgroundColor: '#ffffff', padding: '50px', borderRadius: '10px', color: '#0c0c0c', textShadow: '2px 2px 4px rgba(40, 27, 117, 0.2)' }}>¡Bienvenido: {usuario?.nombre}! 👋</h1>
+                    
                 </div>
                 <Row className="justify-content-center g-4">
                     <Col xs={12} md={4} lg={3}>

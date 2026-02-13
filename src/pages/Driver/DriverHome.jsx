@@ -7,13 +7,13 @@ import { useAuth } from "../context/AuthContext";
 const DriverHome = () => {
     const { usuario } = useAuth();
     return (
-        <div style={{ background: 'linear-gradient(20deg, #EDE7FF 30%, #a385ff 100%)', minHeight: '100vh' }}>
+        <div style={{ background: '#124c83', minHeight: '100vh' }}>
             <Navbar />
             <Container className="py-5">
                 <Card className="shadow border-0 mb-4 bg-white text-dark" style={{ borderRadius: '15px' }}>
                     <Card.Body className="p-4 d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 className="fw-bold mb-0" style={{ color: '#6f42c1' }}>Panel de Conductor</h2>
+                            <h2 className="fw-bold mb-0" style={{ color: '#0d0a4c' }}>Panel de Conductor</h2>
                             <p className="text-muted mb-0">Gestiona tu actividad diaria</p>
                         </div>
                         <div className="text-end">
