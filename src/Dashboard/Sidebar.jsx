@@ -1,8 +1,9 @@
 import React from "react";
-import { BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill,BsListCheck, BsMenuButtonWideFill, BsPersonCircle, BsChevronRight,
+import { BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill,BsListCheck, BsMenuButtonWideFill, BsChevronRight,
   BsChevronLeft 
 } from "react-icons/bs";
 import { useNavigate, useLocation } from "react-router-dom";
+import Logo from "../pages/Imagenes/TODO_MOVI.png"
 
 function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const navigate = useNavigate();
@@ -70,19 +71,14 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
       >
         <div className="sidebar-header d-flex justify-content-between align-items-center p-4 border-bottom border-white border-opacity-25">
           <div className="d-flex align-items-center">
-            <div 
-              className="rounded-circle d-flex align-items-center justify-content-center me-3"
-              style={{
-                width: '50px',
-                height: '50px',
-                background: 'linear-gradient(20deg, #4acfbd, #59c2ffff)'
-              }}
-            >
-              <BsPersonCircle className="text-white fs-4" />
-            </div>
-            <div>
-              <h5 className="fw-bold mb-0 text-white">MOVIFLEX</h5>
-              <small className="text-white text-opacity-75">Admin Panel</small>
+            <div className="text-center mb-4">
+              <img src={Logo} alt="Logo Moviflexx" 
+                style={{
+                  width: '160px',
+                  height: 'auto',
+                  marginLeft: '40px'
+                }}
+              />
             </div>
           </div>
           <button 

@@ -1,5 +1,6 @@
 import React from "react";
-import { BsPersonCircle, BsJustify } from "react-icons/bs";
+import { BsJustify } from "react-icons/bs";
+import Logo from "../pages/Imagenes/TODO_MOVI.png"
 
 
 
@@ -12,20 +13,17 @@ function Header({ OpenSidebar }) {
       <div className="container-fluid px-4">
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
-            <button 
-              className="btn btn-link text-white me-3 d-md-none p-0"
-              onClick={OpenSidebar}
-            >
-              <BsJustify className="fs-3" />
-            </button>
-            <div>
-              <h4 className="fw-bold mb-0 text-white">
-                <BsPersonCircle className="me-2" />
-                MOVIFLEX
-              </h4>
-              <small className="text-white opacity-75">Panel Administrativo</small>
+            <div className="text-center mb-4">
+              <img src={Logo} alt="Logo Moviflexx" 
+                style={{
+                  width: '150px',
+                  height: 'auto',
+                  marginLeft: '20px'
+                }}
+              />
             </div>
           </div>
+
 
           <div className="d-flex align-items-center">
             <div className="text-end me-3 d-none d-md-block">

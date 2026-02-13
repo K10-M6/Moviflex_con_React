@@ -93,7 +93,7 @@ function AdminVehiculos() {
                     nuevoEstado = 'ACTIVO';
             }
             
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/${id}/estado`, {
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

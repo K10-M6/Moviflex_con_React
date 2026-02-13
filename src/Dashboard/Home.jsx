@@ -91,6 +91,43 @@ function Home() {
     }
   }
 
+  async function traerViajesPorDia() {
+    try{
+      const diasSemana = [
+        { nombre: 'Lun', dia: 0 },      
+        { nombre: 'Mar', dia: 1 }, 
+        { nombre: 'Mié', dia: 2 },
+        { nombre: 'Jue', dia: 3 },
+        { nombre: 'Vie', dia: 4 },
+        { nombre: 'Sáb', dia: 5 },
+        { nombre: 'Dom', dia: 6 }
+      ];
+
+      const promesasViajes = diasSemana.map(async ({ nombre, dia }) => {
+        const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/dia/${dia}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+
+          if (!response.ok) {
+            console.error(`Error ${response.status} para día ${dia}`);
+            return { nombre, cantidad: 0 };
+          }
+          const ViajesDelDia = await response.json();
+
+          return {
+            nombre,
+            cantidad: Array.isArray(ViajesDelDia) ? ViajesDelDia.length : 0,};
+        });
+      
+      const ViajesPorDia = await Promise.all(promesasViajes)
+      return ViajesPorDia;
+    } catch (error){
+      console.error("Error al traer viajes", error);
+      return[];
+    }
+    
+  }
+
   async function traerDatosGraficos() {
     try {
       setLoading(true);
@@ -105,14 +142,14 @@ function Home() {
         { nombre: 'Dom', dia: 6 }
       ];
 
-      const promesas = diasSemana.map(async ({ nombre, dia }) => {
+      const promesasUsuarios = diasSemana.map(async ({ nombre, dia }) => {
         const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/usuarios/dia/${dia}`, {
             headers: { "Authorization": "Bearer " + token }
           });
           
           if (!response.ok) {
             console.error(`Error ${response.status} para día ${dia}`);
-            return { name: nombre, usuarios: 0, viajes: 0, ingresos: 0 };
+            return { nombre, usuarios: 0, viajes: 0, ingresos: 0 };
           }
           
           const usuariosDelDia = await response.json();
@@ -125,8 +162,19 @@ function Home() {
           };
         });
 
-        const resultados = await Promise.all(promesas);
-        setChartData(resultados);
+        const ViajesPorDia = await traerViajesPorDia();
+
+        const UsuariosPorDia = await Promise.all(promesasUsuarios);
+        const datosCombinados = UsuariosPorDia.map((item, index) => {
+          const viajeData = ViajesPorDia.find(v => v.nombre === item.name);
+
+          return {
+            ...item,
+            viajes: viajeData?.cantidad || 0,
+          }
+        });
+
+        setChartData(datosCombinados);
         
       } catch (error) {
         console.error("Error:", error);
