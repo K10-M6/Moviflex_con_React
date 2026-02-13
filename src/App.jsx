@@ -18,65 +18,134 @@ import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
 import Home from "./Dashboard/Home";
 
-
 function App() {
-
-  const [openSidebarToggle, setOpenSidebarToggle] = useState(false);
-  const OpenSidebar =() => {
+  const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
+  
+  const OpenSidebar = () => {
     setOpenSidebarToggle(!openSidebarToggle);
   }
-  return (
-    <div className="grid-container">
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/dashboard/home" element={
-              <RequiredAuth>
-                <Header OpenSidebar={OpenSidebar}/>
-                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
-                <Home/>
-              </RequiredAuth>
-            } />
-            <Route path="/" element={<HomeBase />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
 
-            <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
-            <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
-            
-            <Route path="/driver-home" element={ <RequiredAuth>
-              
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/dashboard/home" element={
+            <RequiredAuth>
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+                <Header/>
+                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
+                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
+                  <div style={{ 
+                    flex: 1,
+                    marginLeft: openSidebarToggle ? '280px' : '0px',
+                    transition: 'margin-left 0.3s ease-in-out',
+                    backgroundColor: '#f5f5f5', // O el color que prefieras
+                    height: '100%',
+                    overflow: 'auto'
+                  }}>
+                    <Home />
+                  </div>
+                </div>
+              </div>
+            </RequiredAuth>
+          } />
+          <Route path="/" element={<HomeBase />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
+          <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
+          
+          <Route path="/driver-home" element={ 
+            <RequiredAuth>
               <DriverHome />
-              </RequiredAuth>} />
-            <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
-            <Route path="/admin/conductores" element={ 
-              <RequiredAuth>
-                <Header OpenSidebar={OpenSidebar}/>
-                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
-                <AdminConductores />
-              </RequiredAuth>} />
-            <Route path="/admin/usuarios" element={
-              <RequiredAuth> 
-                <Header OpenSidebar={OpenSidebar}/>
-                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
-                <AdminUsuarios />
-              </RequiredAuth>} />
-            <Route path="/admin/vehiculos" element={
-              <RequiredAuth> 
-                <Header OpenSidebar={OpenSidebar}/>
-                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/>
-                <AdminVehiculos />
-              </RequiredAuth>} />
-            <Route path="/admin/viajeros" element={
-              <RequiredAuth>
-                <Header OpenSidebar={OpenSidebar}/>
-                <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}/> 
-                <AdminViajeros/>
-              </RequiredAuth>} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </div>
+            </RequiredAuth>
+          } />
+          <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
+          
+          <Route path="/admin/conductores" element={ 
+            <RequiredAuth>
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+                <Header/>
+                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
+                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
+                  <div style={{ 
+                    flex: 1,
+                    marginLeft: openSidebarToggle ? '280px' : '0px',
+                    transition: 'margin-left 0.3s ease-in-out',
+                    backgroundColor: '#f5f5f5',
+                    height: '100%',
+                    overflow: 'auto'
+                  }}>
+                    <AdminConductores />
+                  </div>
+                </div>
+              </div>
+            </RequiredAuth>
+          } />
+          <Route path="/admin/usuarios" element={
+            <RequiredAuth> 
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+                <Header/>
+                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
+                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
+                  <div style={{ 
+                    flex: 1,
+                    marginLeft: openSidebarToggle ? '280px' : '0px',
+                    transition: 'margin-left 0.3s ease-in-out',
+                    backgroundColor: '#f5f5f5',
+                    height: '100%',
+                    overflow: 'auto'
+                  }}>
+                    <AdminUsuarios />
+                  </div>
+                </div>
+              </div>
+            </RequiredAuth>
+          } />
+          <Route path="/admin/vehiculos" element={
+            <RequiredAuth> 
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+                <Header/>
+                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
+                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
+                  <div style={{ 
+                    flex: 1,
+                    marginLeft: openSidebarToggle ? '280px' : '0px',
+                    transition: 'margin-left 0.3s ease-in-out',
+                    backgroundColor: '#f5f5f5',
+                    height: '100%',
+                    overflow: 'auto'
+                  }}>
+                    <AdminVehiculos />
+                  </div>
+                </div>
+              </div>
+            </RequiredAuth>
+          } />
+          <Route path="/admin/viajeros" element={
+            <RequiredAuth>
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+                <Header/>
+                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
+                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
+                  <div style={{ 
+                    flex: 1,
+                    marginLeft: openSidebarToggle ? '280px' : '0px',
+                    transition: 'margin-left 0.3s ease-in-out',
+                    backgroundColor: '#f5f5f5',
+                    height: '100%',
+                    overflow: 'auto'
+                  }}>
+                    <AdminViajeros />
+                  </div>
+                </div>
+              </div>
+            </RequiredAuth>
+          } />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

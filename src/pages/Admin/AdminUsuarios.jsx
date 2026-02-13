@@ -2,26 +2,26 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner } from "react-bootstrap";
 
-function AdminUsuarios(){
+function AdminUsuarios() {
     const { token } = useAuth();
     const [usuarios, setUsuarios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     
-    useEffect(()=> {
+    useEffect(() => {
         traerUsuarios();
     }, []);
     
-    async function traerUsuarios(){
+    async function traerUsuarios() {
         try {
             setLoading(true);
             setError("");
             
-            const response = await fetch("https://backendmovi-production.up.railway.app/api/auth/",{
-                method:"GET",
+            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
+                method: "GET",
                 headers: {
-                    "Content-Type":"application/json",
-                    "Authorization":"Bearer "+token
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
                 }
             });
             
@@ -49,25 +49,75 @@ function AdminUsuarios(){
         }
     }
 
-    async function cambiarEstadoUsuario(id) {
+    async function cambiarEstadoUsuario(id, estadoActual) {
         try {
-            await fetch(`https://backendmovi-production.up.railway.app/api/auth/${id}/estado`,{
+            let nuevoEstado;
+            
+            switch (estadoActual) {
+                case 'ACTIVO':
+                    nuevoEstado = 'INACTIVO';
+                    break;
+                case 'INACTIVO':
+                    nuevoEstado = 'ACTIVO';
+                    break;
+                case 'SUSPENDIDO':
+                    nuevoEstado = 'ACTIVO';
+                    break;
+                default:
+                    nuevoEstado = 'ACTIVO';
+            }
+            
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
                 method: "PATCH",
-                headers:{
-                    "Content-Type":"application/json",
-                    "Authorization":"Bearer "+token
-                }
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    estado: nuevoEstado
+                })
             });
-            traerUsuarios();
+
+            if (!response.ok) {
+                throw new Error(`Error al cambiar estado: ${response.status}`);
+            }
+            
+            await traerUsuarios();
+            
         } catch (error) {
             console.error("Error al cambiar estado:", error);
             setError("Error al cambiar estado del usuario");
         }
     }
-    
+
+    async function suspenderUsuario(id) {
+        try {
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    estado: 'SUSPENDIDO'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error al suspender usuario: ${response.status}`);
+            }
+            
+            await traerUsuarios();
+            
+        } catch (error) {
+            console.error("Error al suspender usuario:", error);
+            setError("Error al suspender el usuario");
+        }
+    }
+
     function getRolNombre(rolId, rolNombre) {
         if (rolNombre) {
-            switch(rolNombre.toUpperCase()) {
+            switch (rolNombre.toUpperCase()) {
                 case 'ADMINISTRADOR':
                 case 'ADMIN':
                     return "Administrador";
@@ -83,7 +133,7 @@ function AdminUsuarios(){
             }
         }
         
-        switch(parseInt(rolId)) {
+        switch (parseInt(rolId)) {
             case 1:
                 return "Administrador";
             case 2:
@@ -98,7 +148,7 @@ function AdminUsuarios(){
     function getRolBadge(rolId, rolNombre) {
         const nombre = getRolNombre(rolId, rolNombre);
         
-        switch(nombre) {
+        switch (nombre) {
             case "Administrador":
                 return <Badge bg="primary">Administrador</Badge>;
             case "Conductor":
@@ -119,10 +169,21 @@ function AdminUsuarios(){
         });
     }
 
-    function getEstadoNombre(estado) {
-        const estadoUpper = estado?.toUpperCase();
-        
-        switch(estadoUpper) {
+    function getEstadoBadge(estado) {
+        switch (estado) {
+            case 'ACTIVO':
+                return <Badge bg="success" className="px-3 py-1">Activo</Badge>;
+            case 'INACTIVO':
+                return <Badge bg="danger" className="px-3 py-1">Inactivo</Badge>;
+            case 'SUSPENDIDO':
+                return <Badge bg="warning" text="dark" className="px-3 py-1">Suspendido</Badge>;
+            default:
+                return <Badge bg="light" text="dark" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
+        }
+    }
+
+    function getEstadoTexto(estado) {
+        switch (estado) {
             case 'ACTIVO':
                 return "Activo";
             case 'INACTIVO':
@@ -134,28 +195,42 @@ function AdminUsuarios(){
         }
     }
 
-    function getEstadoBadge(estado) {
-        const estadoUpper = estado?.toUpperCase();
-        
-        switch(estadoUpper) {
+    function getBotonTexto(estado) {
+        switch (estado) {
             case 'ACTIVO':
-                return <Badge bg="success">Activo</Badge>;
+                return "Desactivar";
             case 'INACTIVO':
-                return <Badge bg="danger">Inactivo</Badge>;
+                return "Activar";
             case 'SUSPENDIDO':
-                return <Badge bg="warning" text="dark">Suspendido</Badge>;
+                return "Reactivar";
             default:
-                return <Badge bg="light" text="dark">{estado || "Sin estado"}</Badge>;
+                return "Cambiar Estado";
         }
     }
 
-    const usuariosFiltrados = usuarios;
+    function getBotonVariant(estado) {
+        switch (estado) {
+            case 'ACTIVO':
+                return "outline-danger";
+            case 'INACTIVO':
+                return "outline-success";
+            case 'SUSPENDIDO':
+                return "outline-success";
+            default:
+                return "outline-warning";
+        }
+    }
 
-    return(
+    function puedeSuspender(estado) {
+        return estado !== 'SUSPENDIDO';
+    }
+
+    return (
         <div style={{
-            background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-            minHeight: '100%',
-            minWidth: '95vw'
+            background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)',
+            width: '100%',
+            height: '100%',
+            padding: '24px'
         }}>
             <Container fluid className="py-4">
                 <Row className="mb-4">
@@ -163,18 +238,18 @@ function AdminUsuarios(){
                         <h1 className="display-5 fw-bold">Lista de Usuarios</h1>
                         <p className="text-muted">Administra los usuarios registrados en la plataforma</p>
                         
-                        <div className="d-flex gap-3 mb-3">
+                        <div className="d-flex gap-3 mb-3 flex-wrap">
                             <Badge bg="primary" className="px-3 py-2">
                                 Total: {usuarios.length}
                             </Badge>
                             <Badge bg="success" className="px-3 py-2">
-                                Activos: {usuarios.filter(u => u.estado?.toUpperCase() === 'ACTIVO').length}
+                                Activos: {usuarios.filter(u => u.estado === 'ACTIVO').length}
                             </Badge>
                             <Badge bg="danger" className="px-3 py-2">
-                                Inactivos: {usuarios.filter(u => u.estado?.toUpperCase() === 'INACTIVO').length}
+                                Inactivos: {usuarios.filter(u => u.estado === 'INACTIVO').length}
                             </Badge>
-                            <Badge bg="warning" className="px-3 py-2">
-                                Suspendidos: {usuarios.filter(u => u.estado?.toUpperCase() === 'SUSPENDIDO').length}
+                            <Badge bg="warning" text="dark" className="px-3 py-2">
+                                Suspendidos: {usuarios.filter(u => u.estado === 'SUSPENDIDO').length}
                             </Badge>
                         </div>
                     </Col>
@@ -216,14 +291,14 @@ function AdminUsuarios(){
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {usuariosFiltrados.length === 0 ? (
+                                            {usuarios.length === 0 ? (
                                                 <tr>
                                                     <td colSpan="8" className="text-center py-4">
                                                         No hay usuarios registrados
                                                     </td>
                                                 </tr>
                                             ) : (
-                                                usuariosFiltrados.map((usuario) => (
+                                                usuarios.map((usuario) => (
                                                     <tr key={usuario.idUsuarios}>
                                                         <td className="fw-semibold">{usuario.idUsuarios}</td>
                                                         <td>
@@ -236,7 +311,7 @@ function AdminUsuarios(){
                                                         <td>
                                                             <div>{getEstadoBadge(usuario.estado)}</div>
                                                             <small className="text-muted">
-                                                                {getEstadoNombre(usuario.estado)}
+                                                                {getEstadoTexto(usuario.estado)}
                                                             </small>
                                                         </td>
                                                         <td>
@@ -246,18 +321,26 @@ function AdminUsuarios(){
                                                             </small>
                                                         </td>
                                                         <td>
-                                                            <div className="d-flex flex-column gap-1">
-                                                                <Button 
-                                                                    variant="outline-warning" 
-                                                                    size="sm" 
-                                                                    onClick={() => cambiarEstadoUsuario(usuario.idUsuarios)}
+                                                            <div className="d-flex flex-column gap-2">
+                                                                <Button
+                                                                    variant={getBotonVariant(usuario.estado)}
+                                                                    size="sm"
+                                                                    onClick={() => cambiarEstadoUsuario(usuario.idUsuarios, usuario.estado)}
                                                                     className="w-100"
                                                                 >
-                                                                    {usuario.estado?.toUpperCase() === 'INACTIVO' ? 'Activar' : 
-                                                                     usuario.estado?.toUpperCase() === 'SUSPENDIDO' ? 'Reactivar' : 
-                                                                     usuario.estado?.toUpperCase() === 'ACTIVO' ? 'Desactivar' : 
-                                                                     'Cambiar Estado'}
+                                                                    {getBotonTexto(usuario.estado)}
                                                                 </Button>
+                                                                
+                                                                {puedeSuspender(usuario.estado) && (
+                                                                    <Button
+                                                                        variant="outline-warning"
+                                                                        size="sm"
+                                                                        onClick={() => suspenderUsuario(usuario.idUsuarios)}
+                                                                        className="w-100"
+                                                                    >
+                                                                        Suspender
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -272,7 +355,7 @@ function AdminUsuarios(){
                 </Row>
             </Container>
         </div>
-    )
+    );
 }
 
-export default AdminUsuarios;   
+export default AdminUsuarios;
