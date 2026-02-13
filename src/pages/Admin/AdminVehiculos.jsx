@@ -91,13 +91,6 @@ function AdminVehiculos() {
                     "Authorization": "Bearer " + token
                 }
             });
-
-            if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error("No tienes permisos para eliminar vehículos");
-                }
-                throw new Error(`Error al eliminar: ${response.status}`);
-            }
             
             await traerVehiculos();
             
