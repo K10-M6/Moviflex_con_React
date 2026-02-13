@@ -78,41 +78,32 @@ function AdminVehiculos() {
         }
     }
 
-    async function cambiarEstadoVehiculo(id, estadoActual) {
+    async function eliminarVehiculo(id) {
+        if (!window.confirm("¿Estás seguro de que deseas eliminar este vehículo? Esta acción no se puede deshacer.")) {
+            return;
+        }
+        
         try {
-            let nuevoEstado;
-            
-            switch (estadoActual) {
-                case 'ACTIVO':
-                    nuevoEstado = 'INACTIVO';
-                    break;
-                case 'INACTIVO':
-                    nuevoEstado = 'ACTIVO';
-                    break;
-                default:
-                    nuevoEstado = 'ACTIVO';
-            }
-            
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
-                method: "PATCH",
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${id}`, {
+                method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({
-                    estado: nuevoEstado
-                })
+                }
             });
 
             if (!response.ok) {
-                throw new Error(`Error al cambiar estado: ${response.status}`);
+                if (response.status === 403) {
+                    throw new Error("No tienes permisos para eliminar vehículos");
+                }
+                throw new Error(`Error al eliminar: ${response.status}`);
             }
             
             await traerVehiculos();
             
         } catch (error) {
-            console.error("Error al cambiar estado:", error);
-            setError("Error al cambiar estado del vehículo");
+            console.error("Error al eliminar vehículo:", error);
+            setError("Error al eliminar el vehículo: " + error.message);
         }
     }
     
@@ -127,62 +118,6 @@ function AdminVehiculos() {
             return `Usuario #${idUsuario} (No encontrado)`;
         } else {
             return `Usuario #${idUsuario}`;
-        }
-    }
-    
-    function getEstadoBadge(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return <Badge bg="success" className="px-3 py-1">Activo</Badge>;
-            case 'INACTIVO':
-                return <Badge bg="danger" className="px-3 py-1">Inactivo</Badge>;
-            case 'SUSPENDIDO':
-                return <Badge bg="warning" text="dark" className="px-3 py-1">Suspendido</Badge>;
-            case 'PENDIENTE':
-                return <Badge bg="info" className="px-3 py-1">Pendiente</Badge>;
-            default:
-                return <Badge bg="light" text="dark" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
-        }
-    }
-
-    function getEstadoTexto(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return "Activo";
-            case 'INACTIVO':
-                return "Inactivo";
-            case 'SUSPENDIDO':
-                return "Suspendido";
-            case 'PENDIENTE':
-                return "Pendiente";
-            default:
-                return estado || "Sin estado";
-        }
-    }
-
-    function getBotonTexto(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return "Desactivar";
-            case 'INACTIVO':
-                return "Activar";
-            case 'SUSPENDIDO':
-                return "Reactivar";
-            default:
-                return "Cambiar Estado";
-        }
-    }
-
-    function getBotonVariant(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return "outline-danger";
-            case 'INACTIVO':
-                return "outline-success";
-            case 'SUSPENDIDO':
-                return "outline-success";
-            default:
-                return "outline-warning";
         }
     }
 
@@ -248,19 +183,9 @@ function AdminVehiculos() {
                             <Badge bg="success" className="px-3 py-2">
                                 Activos: {vehiculos.filter(v => v.estado === 'ACTIVO').length}
                             </Badge>
-                            <Badge bg="danger" className="px-3 py-2">
-                                Inactivos: {vehiculos.filter(v => v.estado === 'INACTIVO').length}
+                            <Badge bg="secondary" className="px-3 py-2">
+                                Inactivos: {vehiculos.filter(v => v.estado !== 'ACTIVO').length}
                             </Badge>
-                            {vehiculos.filter(v => v.estado === 'SUSPENDIDO').length > 0 && (
-                                <Badge bg="warning" text="dark" className="px-3 py-2">
-                                    Suspendidos: {vehiculos.filter(v => v.estado === 'SUSPENDIDO').length}
-                                </Badge>
-                            )}
-                            {vehiculos.filter(v => v.estado === 'PENDIENTE').length > 0 && (
-                                <Badge bg="info" className="px-3 py-2">
-                                    Pendientes: {vehiculos.filter(v => v.estado === 'PENDIENTE').length}
-                                </Badge>
-                            )}
                         </div>
                     </Col>
                 </Row>
@@ -340,10 +265,9 @@ function AdminVehiculos() {
                                                         </td>
                                                         <td>{formatearCapacidad(vehiculo.capacidad)}</td>
                                                         <td>
-                                                            <div>{getEstadoBadge(vehiculo.estado)}</div>
-                                                            <small className="text-muted">
-                                                                {getEstadoTexto(vehiculo.estado)}
-                                                            </small>
+                                                            <Badge bg={vehiculo.estado === 'ACTIVO' ? 'success' : 'secondary'} className="px-3 py-1">
+                                                                {vehiculo.estado || 'Sin estado'}
+                                                            </Badge>
                                                         </td>
                                                         <td>
                                                             <div>{formatearFecha(vehiculo.creadoEn)}</div>
@@ -354,16 +278,14 @@ function AdminVehiculos() {
                                                             )}
                                                         </td>
                                                         <td>
-                                                            <div className="d-flex flex-column gap-2">
-                                                                <Button
-                                                                    variant={getBotonVariant(vehiculo.estado)}
-                                                                    size="sm"
-                                                                    onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos, vehiculo.estado)}
-                                                                    className="w-100"
-                                                                >
-                                                                    {getBotonTexto(vehiculo.estado)}
-                                                                </Button>
-                                                            </div>
+                                                            <Button
+                                                                variant="outline-danger"
+                                                                size="sm"
+                                                                onClick={() => eliminarVehiculo(vehiculo.idVehiculos)}
+                                                                className="w-100"
+                                                            >
+                                                                Eliminar
+                                                            </Button>
                                                         </td>
                                                     </tr>
                                                 ))
