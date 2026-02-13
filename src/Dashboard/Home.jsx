@@ -149,7 +149,7 @@ function Home() {
           
           if (!response.ok) {
             console.error(`Error ${response.status} para día ${dia}`);
-            return { nombre, usuarios: 0, viajes: 0, ingresos: 0 };
+            return { nombre, usuarios: 0 };
           }
           
           const usuariosDelDia = await response.json();
@@ -157,8 +157,6 @@ function Home() {
           return {
             name: nombre,
             usuarios: Array.isArray(usuariosDelDia) ? usuariosDelDia.length : 0,
-            viajes: 0,
-            ingresos: 0
           };
         });
 
@@ -169,7 +167,8 @@ function Home() {
           const viajeData = ViajesPorDia.find(v => v.nombre === item.name);
 
           return {
-            ...item,
+            name: item.name,
+            usuarios: item.usuarios,
             viajes: viajeData?.cantidad || 0,
           }
         });
