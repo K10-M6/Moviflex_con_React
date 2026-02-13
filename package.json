@@ -6,10 +6,8 @@
   "scripts": {
   "dev": "vite",
   "build": "vite build",
-  "preview": "vite preview",
-  "start": "vite preview --host 0.0.0.0 --port $PORT"
-}
-,
+  "start": "serve -s dist -l $PORT"
+},
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "boostrap": "^2.0.0",
