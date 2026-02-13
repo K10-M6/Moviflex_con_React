@@ -69,6 +69,13 @@ function Login() {
         }
     }
 
+    const imagenes = [
+        "https://periodicolafuente.com/wp-content/uploads/2018/09/%C2%BFPor-qu%C3%A9-viajar-en-carro-por-M%C3%A9xico-es-algo-que-debes-vivir_LA-FUENTE-QUERETARO-.jpg",
+        "https://www.elcarrocolombiano.com/wp-content/uploads/2021/11/Los-10-carros-mas-rapidos-del-mundo-2021.jpg",
+        "https://https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg",
+        
+    ];
+
     return (
         <div style={{
             backgroundColor: '#124c83',
@@ -206,15 +213,22 @@ function Login() {
                                 overflow: 'hidden',
                                 border: '2px solid white',
                             }}>
-                                <img 
-                                    src="https://resizer.glanacion.com/resizer/v2/los-autos-mas-caros-que-se-vendieron-este-2023-no-FQFIMWVMVZGXHIS7BH2SIXGGZQ.jpg?auth=f76b37a176625c85e2fb9ae828be3d4c686100df1081520c6661f90841a3d52b&width=1200&quality=70&smart=false&height=800"
-                                    alt="Conductores y Viajeros"
-                                    className="img-fluid rounded shadow"
-                                    style={{
-                                        height: 'auto',
-                                        display: 'block'
-                                    }}
-                                />
+                                <Carousel fade indicators={true} controls={false} interval={2500}>
+                                    {imagenes.map((img, index) => (
+                                        <Carousel.Item key={index}>
+                                            <img
+                                                src={img}
+                                                alt={`slide-${index}`}
+                                                className="d-block w-100"
+                                                style={{
+                                                    height: '400px',
+                                                    width: '100%',
+                                                    objectFit: 'cover',
+                                                }}
+                                            />
+                                        </Carousel.Item>
+                                    ))}
+                                </Carousel>
                             </div>
                         
                             <h3 className="mt-3" style={{ color: '#fdfdfd' }}>
