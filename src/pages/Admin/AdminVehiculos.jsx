@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner } from "react-bootstrap";
 
-function AdminVehiculos(){
+function AdminVehiculos() {
     const { token } = useAuth();
     const [vehiculos, setVehiculos] = useState([]);
-    const [usuarios, setUsuarios] = useState([]); 
+    const [usuarios, setUsuarios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     
-    useEffect(()=> {
+    useEffect(() => {
         traerUsuarios();
         traerVehiculos();
     }, []);
@@ -29,22 +29,28 @@ function AdminVehiculos(){
             }
             
             const data = await response.json();
+            
+            if (!Array.isArray(data)) {
+                throw new Error("La respuesta del servidor no es válida");
+            }
+            
             setUsuarios(data);
         } catch (error) {
             console.error("Error al traer usuarios:", error);
+            setError("Error al cargar la información de propietarios");
         }
     }
     
-    async function traerVehiculos(){
+    async function traerVehiculos() {
         try {
             setLoading(true);
             setError("");
             
-            const response = await fetch("https://backendmovi-production.up.railway.app/api/vehiculos/",{
-                method:"GET",
+            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/", {
+                method: "GET",
                 headers: {
-                    "Content-Type":"application/json",
-                    "Authorization":"Bearer "+token
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
                 }
             });
             
@@ -72,16 +78,38 @@ function AdminVehiculos(){
         }
     }
 
-    async function cambiarEstadoVehiculo(id) {
+    async function cambiarEstadoVehiculo(id, estadoActual) {
         try {
-            await fetch(`https://backendmovi-production.up.railway.app/api/vehiculos/${id}/estado`,{
+            let nuevoEstado;
+            
+            switch (estadoActual) {
+                case 'ACTIVO':
+                    nuevoEstado = 'INACTIVO';
+                    break;
+                case 'INACTIVO':
+                    nuevoEstado = 'ACTIVO';
+                    break;
+                default:
+                    nuevoEstado = 'ACTIVO';
+            }
+            
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/${id}/estado`, {
                 method: "PATCH",
-                headers:{
-                    "Content-Type":"application/json",
-                    "Authorization":"Bearer "+token
-                }
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    estado: nuevoEstado
+                })
             });
-            traerVehiculos();
+
+            if (!response.ok) {
+                throw new Error(`Error al cambiar estado: ${response.status}`);
+            }
+            
+            await traerVehiculos();
+            
         } catch (error) {
             console.error("Error al cambiar estado:", error);
             setError("Error al cambiar estado del vehículo");
@@ -92,50 +120,147 @@ function AdminVehiculos(){
         if (!idUsuario) return "Sin propietario";
         
         const usuario = usuarios.find(u => u.idUsuarios === idUsuario);
-        return usuario ? usuario.nombre : `Usuario #${idUsuario}`;
+        
+        if (usuario) {
+            return usuario.nombre;
+        } else if (usuarios.length > 0) {
+            return `Usuario #${idUsuario} (No encontrado)`;
+        } else {
+            return `Usuario #${idUsuario}`;
+        }
     }
     
-    
     function getEstadoBadge(estado) {
-        if (estado === 'ACTIVO') {
-            return <Badge bg="success">Activo</Badge>;
-        } else if (estado === 'INACTIVO') {
-            return <Badge bg="secondary">Inactivo</Badge>;
-        } else {
-            return <Badge bg="warning" text="dark">{estado}</Badge>;
+        switch (estado) {
+            case 'ACTIVO':
+                return <Badge bg="success" className="px-3 py-1">Activo</Badge>;
+            case 'INACTIVO':
+                return <Badge bg="danger" className="px-3 py-1">Inactivo</Badge>;
+            case 'SUSPENDIDO':
+                return <Badge bg="warning" text="dark" className="px-3 py-1">Suspendido</Badge>;
+            case 'PENDIENTE':
+                return <Badge bg="info" className="px-3 py-1">Pendiente</Badge>;
+            default:
+                return <Badge bg="light" text="dark" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
+        }
+    }
+
+    function getEstadoTexto(estado) {
+        switch (estado) {
+            case 'ACTIVO':
+                return "Activo";
+            case 'INACTIVO':
+                return "Inactivo";
+            case 'SUSPENDIDO':
+                return "Suspendido";
+            case 'PENDIENTE':
+                return "Pendiente";
+            default:
+                return estado || "Sin estado";
+        }
+    }
+
+    function getBotonTexto(estado) {
+        switch (estado) {
+            case 'ACTIVO':
+                return "Desactivar";
+            case 'INACTIVO':
+                return "Activar";
+            case 'SUSPENDIDO':
+                return "Reactivar";
+            default:
+                return "Cambiar Estado";
+        }
+    }
+
+    function getBotonVariant(estado) {
+        switch (estado) {
+            case 'ACTIVO':
+                return "outline-danger";
+            case 'INACTIVO':
+                return "outline-success";
+            case 'SUSPENDIDO':
+                return "outline-success";
+            default:
+                return "outline-warning";
         }
     }
 
     function formatearCapacidad(capacidad) {
-        if (capacidad) {
-            return `${capacidad} personas`;
+        if (!capacidad) return <span className="text-muted">No especificado</span>;
+        
+        if (typeof capacidad === 'number' || !isNaN(parseInt(capacidad))) {
+            const numCapacidad = parseInt(capacidad);
+            return `${numCapacidad} ${numCapacidad === 1 ? 'persona' : 'personas'}`;
         }
-        return "No especificado";
+        
+        return capacidad;
     }
 
-    const vehiculosFiltrados = vehiculos;
+    function formatearFecha(fecha) {
+        if (!fecha) return "-";
+        return new Date(fecha).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
 
-    return(
+    function getTipoVehiculoBadge(tipo) {
+        if (!tipo) return null;
+        
+        switch (tipo.toUpperCase()) {
+            case 'AUTOMOVIL':
+            case 'AUTO':
+            case 'CARRO':
+                return <Badge bg="info" className="px-2">Automóvil</Badge>;
+            case 'MOTOCICLETA':
+            case 'MOTO':
+                return <Badge bg="secondary" className="px-2">Motocicleta</Badge>;
+            case 'CAMIONETA':
+            case 'SUV':
+                return <Badge bg="primary" className="px-2">Camioneta</Badge>;
+            case 'VAN':
+            case 'FURGON':
+                return <Badge bg="dark" className="px-2">Van</Badge>;
+            default:
+                return <Badge bg="light" text="dark" className="px-2">{tipo}</Badge>;
+        }
+    }
+
+    return (
         <div style={{
-        background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)', 
-        minHeight: '100vh',
-        minWidth: '95vw'}}>
+            background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)',
+            width: '100%',
+            height: '100%',
+            padding: '24px'
+        }}>
             <Container fluid className="py-4">
                 <Row className="mb-4">
                     <Col>
                         <h1 className="display-5 fw-bold">Lista de Vehículos</h1>
                         <p className="text-muted">Administra los vehículos registrados en la plataforma</p>
                         
-                        <div className="d-flex gap-3 mb-3">
+                        <div className="d-flex gap-3 mb-3 flex-wrap">
                             <Badge bg="primary" className="px-3 py-2">
                                 Total: {vehiculos.length}
                             </Badge>
                             <Badge bg="success" className="px-3 py-2">
-                                Activos: {vehiculos.filter(v => v.estado?.toUpperCase() === 'ACTIVO').length}
+                                Activos: {vehiculos.filter(v => v.estado === 'ACTIVO').length}
                             </Badge>
-                            <Badge bg="secondary" className="px-3 py-2">
-                                Inactivos: {vehiculos.filter(v => v.estado?.toUpperCase() === 'INACTIVO').length}
+                            <Badge bg="danger" className="px-3 py-2">
+                                Inactivos: {vehiculos.filter(v => v.estado === 'INACTIVO').length}
                             </Badge>
+                            {vehiculos.filter(v => v.estado === 'SUSPENDIDO').length > 0 && (
+                                <Badge bg="warning" text="dark" className="px-3 py-2">
+                                    Suspendidos: {vehiculos.filter(v => v.estado === 'SUSPENDIDO').length}
+                                </Badge>
+                            )}
+                            {vehiculos.filter(v => v.estado === 'PENDIENTE').length > 0 && (
+                                <Badge bg="info" className="px-3 py-2">
+                                    Pendientes: {vehiculos.filter(v => v.estado === 'PENDIENTE').length}
+                                </Badge>
+                            )}
                         </div>
                     </Col>
                 </Row>
@@ -167,61 +292,81 @@ function AdminVehiculos(){
                                             <tr>
                                                 <th>ID</th>
                                                 <th>Propietario</th>
-                                                <th>Marca</th>
-                                                <th>Modelo</th>
+                                                <th>Vehículo</th>
                                                 <th>Placa</th>
                                                 <th>Capacidad</th>
                                                 <th>Estado</th>
+                                                <th>Registro</th>
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {vehiculosFiltrados.length === 0 ? (
+                                            {vehiculos.length === 0 ? (
                                                 <tr>
                                                     <td colSpan="8" className="text-center py-4">
                                                         No hay vehículos registrados
                                                     </td>
                                                 </tr>
                                             ) : (
-                                                vehiculosFiltrados.map((vehiculo) => {
-                                                    const nombreUsuario = obtenerNombreUsuario(vehiculo.idUsuario);
-                                                    
-                                                    return (
-                                                        <tr key={vehiculo.idVehiculos}>
-                                                            <td className="fw-semibold">{vehiculo.idVehiculos}</td>
-                                                            <td>
-                                                                <div className="fw-medium">{nombreUsuario}</div>
-                                                                <small className="text-muted">
-                                                                    ID: {vehiculo.idUsuario}
-                                                                </small>
-                                                            </td>
-                                                            <td>{vehiculo.marca }</td>
-                                                            <td>{vehiculo.modelo}</td>
-                                                            <td>{vehiculo.placa }</td>
-                                                            <td>{formatearCapacidad(vehiculo.capacidad)}</td>
-                                                            <td>
-                                                                <div>{getEstadoBadge(vehiculo.estado)}</div>
-                                                                <small className="text-muted">
-                                                                    {vehiculo.estado === 'ACTIVO' ? 'Activo' : 
-                                                                     vehiculo.estado === 'INACTIVO' ? 'Inactivo' : 
-                                                                     vehiculo.estado || "Sin estado"}
-                                                                </small>
-                                                            </td>
-                                                            <td>
-                                                                <div className="d-flex flex-column gap-1">
-                                                                    <Button 
-                                                                        variant="outline-warning" 
-                                                                        size="sm" 
-                                                                        onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos)}
-                                                                        className="w-100"
-                                                                    >
-                                                                        {vehiculo.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'}
-                                                                    </Button>
+                                                vehiculos.map((vehiculo) => (
+                                                    <tr key={vehiculo.idVehiculos}>
+                                                        <td className="fw-semibold">{vehiculo.idVehiculos}</td>
+                                                        <td>
+                                                            <div className="fw-medium">
+                                                                {obtenerNombreUsuario(vehiculo.idUsuario)}
+                                                            </div>
+                                                            <small className="text-muted">
+                                                                ID: {vehiculo.idUsuario}
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <div className="fw-medium">
+                                                                {vehiculo.marca} {vehiculo.modelo}
+                                                            </div>
+                                                            <div className="d-flex gap-1 mt-1">
+                                                                {getTipoVehiculoBadge(vehiculo.tipo)}
+                                                                {vehiculo.anio && (
+                                                                    <small className="text-muted">{vehiculo.anio}</small>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span className="fw-semibold">{vehiculo.placa}</span>
+                                                            {vehiculo.color && (
+                                                                <div>
+                                                                    <small className="text-muted">{vehiculo.color}</small>
                                                                 </div>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })
+                                                            )}
+                                                        </td>
+                                                        <td>{formatearCapacidad(vehiculo.capacidad)}</td>
+                                                        <td>
+                                                            <div>{getEstadoBadge(vehiculo.estado)}</div>
+                                                            <small className="text-muted">
+                                                                {getEstadoTexto(vehiculo.estado)}
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <div>{formatearFecha(vehiculo.creadoEn)}</div>
+                                                            {vehiculo.actualizadoEn && vehiculo.actualizadoEn !== vehiculo.creadoEn && (
+                                                                <small className="text-muted">
+                                                                    Actualizado: {formatearFecha(vehiculo.actualizadoEn)}
+                                                                </small>
+                                                            )}
+                                                        </td>
+                                                        <td>
+                                                            <div className="d-flex flex-column gap-2">
+                                                                <Button
+                                                                    variant={getBotonVariant(vehiculo.estado)}
+                                                                    size="sm"
+                                                                    onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos, vehiculo.estado)}
+                                                                    className="w-100"
+                                                                >
+                                                                    {getBotonTexto(vehiculo.estado)}
+                                                                </Button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))
                                             )}
                                         </tbody>
                                     </Table>
@@ -232,7 +377,7 @@ function AdminVehiculos(){
                 </Row>
             </Container>
         </div>
-    )
+    );
 }
 
 export default AdminVehiculos;

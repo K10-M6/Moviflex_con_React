@@ -111,7 +111,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
                   background: isActive(item.path) 
                     ? 'linear-gradient(20deg, #4acfbd, #59c2ffff)' 
                     : 'transparent',
-                  color: isActive(item.path) ? 'white' : 'white', // AMBOS BLANCOS
+                  color: isActive(item.path) ? 'white' : 'white', 
                   transition: 'all 0.3s ease'
                 }}
                 onMouseOver={(e) => {
@@ -138,7 +138,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
                   }}
                 >
                   {React.cloneElement(item.icon, { 
-                    className: isActive(item.path) ? 'text-white' : 'text-white' // AMBOS BLANCOS
+                    className: isActive(item.path) ? 'text-white' : 'text-white'
                   })}
                 </span>
                 <span className="fw-medium text-white">{item.label}</span>

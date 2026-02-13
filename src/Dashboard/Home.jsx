@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";  
 import { useAuth } from "../pages/context/AuthContext";
 import { Container, Row, Col, Card, Alert, Spinner, Badge } from "react-bootstrap";
-import { BsPeopleFill, BsPersonCircle,BsTruck,BsCarFrontFill} from "react-icons/bs";
+import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill} from "react-icons/bs";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,ResponsiveContainer} from 'recharts';
 
 function Home() {
+  const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
@@ -16,17 +17,16 @@ function Home() {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-    traerEstadisticas();
-    traerDatosGraficos();
+    traerUsuarios();
     traerVehiculos();
+    traerDatosGraficos();
   }, []);
 
-  async function traerEstadisticas() {
+  async function traerUsuarios() {
     try {
       setLoading(true);
       setError("");
-      
-      const response = await fetch("backendmovi-production-c657.up.railway.app/api/auth/", {
+      const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -49,12 +49,12 @@ function Home() {
           u.idRol === 3 || u.rol?.nombre?.toUpperCase() === 'VIAJERO' || u.rol?.nombre?.toUpperCase() === 'PASAJERO'
         ).length;
         
-        setStats({
+        setStats(prev => ({
+          ...prev,
           totalUsuarios: usuarios.length,
           totalConductores: conductores,
-          totalViajeros: viajeros,
-          totalVehiculos: stats.totalVehiculos
-        });
+          totalViajeros: viajeros
+        }));
       }
     } catch (error) {
       console.error("Error al traer estadísticas:", error);
@@ -66,7 +66,7 @@ function Home() {
 
   async function traerVehiculos() {
     try {
-      const response = await fetch("https://backendmovi-production.up.railway.app/api/vehiculos/", {
+      const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -93,46 +93,77 @@ function Home() {
 
   async function traerDatosGraficos() {
     try {
-      const datosEjemplo = [
-        { name: 'Lun', usuarios: 15, viajes: 8, ingresos: 1200 },
-        { name: 'Mar', usuarios: 22, viajes: 12, ingresos: 1800 },
-        { name: 'Mié', usuarios: 18, viajes: 10, ingresos: 1500 },
-        { name: 'Jue', usuarios: 25, viajes: 15, ingresos: 2200 },
-        { name: 'Vie', usuarios: 30, viajes: 20, ingresos: 2800 },
-        { name: 'Sáb', usuarios: 28, viajes: 18, ingresos: 2500 },
-        { name: 'Dom', usuarios: 20, viajes: 14, ingresos: 1900 },
-      ];
+      setLoading(true);
       
-      setChartData(datosEjemplo);
-    } catch (error) {
-      console.error("Error al traer datos de gráficos:", error);
-    }
+      const diasSemana = [
+        { nombre: 'Lun', dia: 0 },      
+        { nombre: 'Mar', dia: 1 }, 
+        { nombre: 'Mié', dia: 2 },
+        { nombre: 'Jue', dia: 3 },
+        { nombre: 'Vie', dia: 4 },
+        { nombre: 'Sáb', dia: 5 },
+        { nombre: 'Dom', dia: 6 }
+      ];
+
+      const promesas = diasSemana.map(async ({ nombre, dia }) => {
+        const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/usuarios/dia/${dia}`, {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          
+          if (!response.ok) {
+            console.error(`Error ${response.status} para día ${dia}`);
+            return { name: nombre, usuarios: 0, viajes: 0, ingresos: 0 };
+          }
+          
+          const usuariosDelDia = await response.json();
+          
+          return {
+            name: nombre,
+            usuarios: Array.isArray(usuariosDelDia) ? usuariosDelDia.length : 0,
+            viajes: 0,
+            ingresos: 0
+          };
+        });
+
+        const resultados = await Promise.all(promesas);
+        setChartData(resultados);
+        
+      } catch (error) {
+        console.error("Error:", error);
+        setChartData([]);
+      } finally {
+        setLoading(false);
+      }
   }
 
   const statCards = [
     {
       title: "Total Usuarios",
       value: stats.totalUsuarios,
-      icon: <BsPeopleFill className="text-black fs-4" />,
-      backgroundcolor: "#EDE7FF)",
+      icon: <BsPeopleFill className="text-white fs-4" />,
+      cardColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      iconBg: "rgba(255, 255, 255, 0.2)"
     },
     {
       title: "Viajeros",
       value: stats.totalViajeros,
-      icon: <BsPersonCircle className="text-black fs-4" />,
-      backgroundcolor: "#EDE7FF)",
+      icon: <BsPersonCircle className="text-white fs-4" />,
+      cardColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      iconBg: "rgba(255, 255, 255, 0.2)"
     },
     {
       title: "Conductores",
       value: stats.totalConductores,
-      icon: <BsTruck className="text-black fs-4" />,
-      backgroundcolor: "#EDE7FF)",
+      icon: <BsTruck className="text-white fs-4" />,
+      cardColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      iconBg: "rgba(255, 255, 255, 0.2)"
     },
     {
       title: "Vehículos",
       value: stats.totalVehiculos,
-      icon: <BsCarFrontFill className="text-black fs-4" />,
-    backgroundcolor: "#EDE7FF)",
+      icon: <BsCarFrontFill className="text-white fs-4" />,
+      cardColor: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+      iconBg: "rgba(255, 255, 255, 0.2)"
     }
   ];
 
@@ -144,37 +175,37 @@ function Home() {
     }}>
       <Container fluid>
         <Row className="mb-4">
-  <Col>
-    <Card 
-      className="border-0 shadow"
-      style={{
-        backgroundcolor: '#EDE7FF',
-        borderRadius: '15px'
-      }}
-    >
-      <Card.Body className="p-4">
-            <Row className="align-items-center">
-                <Col xs={9}>
-                    <h1 className="fw-bold mb-2">Bienvenido al panel de Administración</h1>
-                    <p className="text-muted mb-0">Aquí podrás tener el control de la página y observar las estadísticas de Moviflex</p>
-                </Col>
-            </Row>
-        </Card.Body>
-    </Card>
-                
-        {error && (
-        <Alert variant="danger" className="mt-3 border-0 shadow" style={{ borderRadius: '10px' }}>
-            {error}
-        </Alert>
-                )}
-    </Col>
-</Row>
+          <Col>
+            <Card 
+              className="border-0 shadow"
+              style={{
+                background: 'linear-gradient(20deg, #4acfbd, #59c2ffff)',
+                borderRadius: '15px'
+              }}
+            >
+              <Card.Body className="p-4">
+                <Row className="align-items-center">
+                  <Col xs={9}>
+                    <h1 className="fw-bold mb-2 text-white">Bienvenido al panel de Administración</h1>
+                    <p className="text-white text-opacity-75 mb-0">Aquí podrás tener el control de la página y observar las estadísticas de Moviflex</p>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+                    
+            {error && (
+              <Alert variant="danger" className="mt-3 border-0 shadow" style={{ borderRadius: '10px' }}>
+                {error}
+              </Alert>
+            )}
+          </Col>
+        </Row>
 
         {loading ? (
           <Row className="justify-content-center py-5">
             <Col xs="auto" className="text-center">
-              <Spinner animation="border" variant="primary" />
-              <p className="mt-3 text-muted">Cargando estadísticas...</p>
+              <Spinner animation="border" variant="light" />
+              <p className="mt-3 text-white">Cargando estadísticas...</p>
             </Col>
           </Row>
         ) : (
@@ -185,16 +216,19 @@ function Home() {
                   <Card 
                     className="shadow border-0 h-100" 
                     style={{
-                      background: stat.color,
+                      background: stat.cardColor,
                       borderRadius: '15px',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      transition: 'transform 0.3s ease'
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                   >
                     <Card.Body className="p-4">
                       <Row className="align-items-center">
                         <Col xs={8}>
-                          <h6 className="text-muted mb-2">{stat.title}</h6>
-                          <h2 className="fw-bold mb-0">{stat.value}</h2>
+                          <h6 className="text-white text-opacity-75 mb-2">{stat.title}</h6>
+                          <h2 className="fw-bold mb-0 text-white">{stat.value}</h2>
                         </Col>
                         <Col xs={4} className="text-end">
                           <div 
@@ -202,7 +236,7 @@ function Home() {
                             style={{
                               width: '60px',
                               height: '60px',
-                              background: stat.iconBg
+                              background: stat.iconBg 
                             }}
                           >
                             {stat.icon}
@@ -217,9 +251,9 @@ function Home() {
 
             <Row className="g-4">
               <Col lg={6}>
-                <Card className="shadow border-0 h-100" style={{ borderRadius: '15px' }}>
+                <Card className="shadow border-0 h-100" style={{ borderRadius: '15px', background: 'white' }}>
                   <Card.Body>
-                    <Card.Title className="mb-4" style={{ color: '#6C3BFF' }}>
+                    <Card.Title className="mb-4" style={{ color: '#333', fontWeight: 'bold' }}>
                       Actividad Semanal
                     </Card.Title>
                     <div style={{ height: '300px' }}>
@@ -231,7 +265,8 @@ function Home() {
                           <Tooltip 
                             contentStyle={{ 
                               borderRadius: '10px',
-                              border: '1px solid #dee2e6'
+                              border: 'none',
+                              boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
                             }}
                           />
                           <Legend />
@@ -255,9 +290,9 @@ function Home() {
               </Col>
 
               <Col lg={6}>
-                <Card className="shadow border-0 h-100" style={{ borderRadius: '15px' }}>
+                <Card className="shadow border-0 h-100" style={{ borderRadius: '15px', background: 'white' }}>
                   <Card.Body>
-                    <Card.Title className="mb-4" style={{ color: '#6C3BFF' }}>
+                    <Card.Title className="mb-4" style={{ color: '#333', fontWeight: 'bold' }}>
                       Ingresos Semanales
                     </Card.Title>
                     <div style={{ height: '300px' }}>
@@ -269,7 +304,8 @@ function Home() {
                           <Tooltip 
                             contentStyle={{ 
                               borderRadius: '10px',
-                              border: '1px solid #dee2e6'
+                              border: 'none',
+                              boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
                             }}
                             formatter={(value) => [`$${value}`, 'Ingresos']}
                           />
@@ -291,14 +327,13 @@ function Home() {
                         <small>Total Semanal: ${chartData.reduce((sum, item) => sum + item.ingresos, 0).toLocaleString()}</small>
                       </Badge>
                       <Badge bg="info" className="px-3 py-2">
-                        <small>Promedio Diario: ${Math.round(chartData.reduce((sum, item) => sum + item.ingresos, 0) / chartData.length).toLocaleString()}</small>
+                        <small>Promedio Diario: ${Math.round(chartData.reduce((sum, item) => sum + item.ingresos, 0) / (chartData.length || 1)).toLocaleString()}</small>
                       </Badge>
                     </div>
                   </Card.Body>
                 </Card>
               </Col>
             </Row>
-
           </>
         )}
       </Container>
