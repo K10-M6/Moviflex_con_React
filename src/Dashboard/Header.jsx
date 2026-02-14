@@ -14,7 +14,7 @@ function Header({ OpenSidebar }) {
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
             <div className="text-center mb-4">
-              <img src={Logo} alt="Logo Moviflexx" 
+              <img src={Logo} alt="Logo Moviflexx"
                 style={{
                   width: '150px',
                   height: 'auto',
@@ -30,7 +30,7 @@ function Header({ OpenSidebar }) {
               <p className="mb-0 text-white fw-medium">Administrador</p>
               <small className="text-white opacity-75">admin@moviflex.com</small>
             </div>
-            <div 
+            <div
               className="rounded-circle d-flex align-items-center justify-content-center"
               style={{
                 width: '45px',

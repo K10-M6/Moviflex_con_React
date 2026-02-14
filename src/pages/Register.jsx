@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner, Carousel } from "react-bootstrap";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUserTag } from "react-icons/fa";
@@ -65,7 +65,7 @@ function Register() {
 
             const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/registro", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datosEnviar)
             });
 
@@ -76,9 +76,9 @@ function Register() {
                     login(data.token, data.usuario);
                     const rolAsignado = data.usuario.idRol || data.usuario.rol?.id;
                     const tipoUsuario = rol === "CONDUCTOR" ? "Conductor" : "Viajero";
-                    
+
                     setSuccess(`¡Registro exitoso como ${tipoUsuario}! Redirigiendo...`);
-                    
+
                     setTimeout(() => {
                         if (rolAsignado === 1) navigate("/dashboard/home");
                         else if (rolAsignado === 2 || rol === "CONDUCTOR") navigate("/driver-home");
@@ -113,17 +113,17 @@ function Register() {
                         <Card className="shadow border-2" style={{ fontSize: '0.9rem' }}>
                             <Card.Body className="p-3">
                                 <div className="text-center mb-4">
-                                    <img src={Logo} alt="Logo Moviflexx" 
+                                    <img src={Logo} alt="Logo Moviflexx"
                                         style={{
                                             width: '200px',
                                             height: 'auto',
                                         }}
                                     />
                                 </div>
-                                
+
                                 {error && <Alert variant="danger">{error}</Alert>}
                                 {success && <Alert variant="success">{success}</Alert>}
-                                
+
                                 <Form onSubmit={guardar}>
                                     <Form.Group className="mb-1" controlId="nombre">
                                         <Form.Label>Nombre <span className="text-danger">*</span></Form.Label>
@@ -231,7 +231,7 @@ function Register() {
                                             <FaUserTag className="me-1" />
                                             Tipo de Usuario <span className="text-danger">*</span>
                                         </Form.Label>
-                                        
+
                                         <div className="d-flex gap-4 mt-2">
                                             <Form.Check
                                                 type="radio"
@@ -256,39 +256,40 @@ function Register() {
                                         </div>
                                     </Form.Group>
 
-                                    <Button 
-                                        type="submit" 
-                                        size="lg" 
-                                        className="w-70 mb-1 d-block mx-auto py-1" 
-                                        style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))' }}
+                                    <button
+                                        type="submit"
+                                        className="btn btn-primary w-70 mb-1 d-block mx-auto py-1"
+                                        style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))', border: 'none' }}
                                         disabled={loading || passwordError}
                                     >
                                         {loading ? (
-                                            <>
+                                            <span key="loading-state" className="d-flex align-items-center justify-content-center">
                                                 <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                Registrando...
-                                            </>
-                                        ) : 'Registrarse'}
-                                    </Button>
+                                                <span>Registrando...</span>
+                                            </span>
+                                        ) : (
+                                            <span key="idle-state">Registrarse</span>
+                                        )}
+                                    </button>
                                 </Form>
 
                                 <p className="text-center text-muted mt-3">
                                     ¿Ya tienes cuenta?{" "}
-                                    <a href="/login" className="text-decoration-none">
+                                    <Link to="/login" className="text-decoration-none">
                                         Inicia sesión aquí
-                                    </a>
+                                    </Link>
                                 </p>
                             </Card.Body>
                         </Card>
                     </Col>
-                    
+
                     <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
-                         style={{
+                        style={{
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center'
-                         }}>
+                        }}>
                         <div className="text-center w-100">
                             <div style={{
                                 width: '100%',
@@ -315,7 +316,7 @@ function Register() {
                                     ))}
                                 </Carousel>
                             </div>
-                        
+
                             <h3 className="mt-3" style={{ color: '#fdfdfd' }}>
                                 Únete a nuestra comunidad
                             </h3>
