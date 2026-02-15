@@ -1,13 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Navbar, Container, Nav, Button, Dropdown } from "react-bootstrap";
 import Logo from '../pages/Imagenes/TODO_MOVI.png';
 import { useAuth } from '../pages/context/AuthContext';
 
+
 export default function NavbarCustom() {
   const { token, usuario, logout } = useAuth();
+  const navigate = useNavigate();
   const getFirstName = () => usuario?.nombre?.split(' ')[0] || 'Perfil';
 
+
+  const handleLogout =() => {
+    logout();
+    navigate("/")
+  }
   const idRol = usuario?.idRol || usuario?.rol?.id;
   const isDriver = idRol === 2 || idRol === "2";
   const homePath = isDriver ? "/driver-home" : "/user-home";
@@ -49,7 +56,7 @@ export default function NavbarCustom() {
                   <Dropdown.Item as={Link} to="/profile/stats">Estadísticas</Dropdown.Item>
                   <Dropdown.Item as={Link} to="/tus-viajes">Mis Viajes</Dropdown.Item>
                   <Dropdown.Divider />
-                  <Dropdown.Item onClick={logout} className="text-danger">Cerrar Sesión</Dropdown.Item>
+                  <Dropdown.Item onClick={handleLogout} className="text-danger">Cerrar Sesión</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             )}

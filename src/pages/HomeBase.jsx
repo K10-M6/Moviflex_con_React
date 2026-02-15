@@ -3,9 +3,8 @@ import { Container, Row, Col, Card, Button, Image } from 'react-bootstrap';
 import Mapa from '../Map';
 import Navbar from '../components/Navbar';
 import imagen from '../pages/Imagenes/Viajes.jpeg';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
-// Slider de fondo con fade y links
 const BackgroundSlider = ({ images = [], interval = 3500, overlayColor = 'rgba(18,76,131,0.35)' }) => {
   const [index, setIndex] = useState(0);
 
@@ -50,7 +49,6 @@ const BackgroundSlider = ({ images = [], interval = 3500, overlayColor = 'rgba(1
 };
 
 function HomeBase() {
-  // Links de imágenes para el slider de fondo
   const backgroundImages = [
     'https://turismo.encolombia.com/wp-content/uploads/2018/11/Consejos-Para-Viajar-Carro.png',
     'https://www.maquimas.pe/wp-content/uploads/2024/01/1.jpg',
@@ -81,7 +79,7 @@ function HomeBase() {
       </Button>
       </div>
       </Col>
-      {/* Mapa removido, solo texto centrado */}
+
       </Row>
       </Container>
       </section>
@@ -126,7 +124,7 @@ function HomeBase() {
       </Row>
       <Row className="mt-5">
       <Col className="text-center">
-      <Image src={imagen} fluid rounded className="shadow" style={{ maxHeight: '800px', maxWidth: '1200px' }}/>
+      <Image src={imagen} fluid rounded className="shadow" style={{ maxHeight: '100hv', maxWidth: '100wv' }}/>
       <p className="display-6 fw-bold text-white">Únete a nuestra comunidad de viajeros confiables</p>
       </Col>
       </Row>

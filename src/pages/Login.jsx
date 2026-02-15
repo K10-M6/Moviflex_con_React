@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Container, Row, Col, Card, Form, Button, Alert, Carousel } from "react-bootstrap";
@@ -13,7 +13,7 @@ function Login() {
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, token, usuario } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
 
     const ROLES = {
@@ -21,6 +21,18 @@ function Login() {
         CONDUCTOR: 2,
         VIAJERO: 3
     };
+
+    useEffect(()=> {
+        const rolId = usuario?.idRol || usuario?.rol?.id;
+
+        if (rolId === ROLES.ADMIN) {
+            navigate("/dashboard/home");
+        } else if (rolId === ROLES.CONDUCTOR) {
+            navigate("/driver-home");
+        } else if (rolId === ROLES.VIAJERO) {
+            navigate("/user-home");
+        } 
+    }, [token, usuario, navigate]);
 
     async function guardar(e) {
         e.preventDefault();
@@ -48,15 +60,17 @@ function Login() {
                 }
                 
                 login(data.token, data.usuario);
+
                 setSuccess("¡Login exitoso!");
 
-                const usuario = data.usuario;
+                const user = data.usuario;
+                const rolId = user.idRol || user.rol?.id;
                 
-                if (data.usuario.idRol === ROLES.ADMIN || data.usuario.rol?.id === ROLES.ADMIN) {
+                if (rolId === ROLES.ADMIN) {
                     navigate("/dashboard/home");
-                } else if (data.usuario.idRol === ROLES.CONDUCTOR || data.usuario.rol?.id === ROLES.CONDUCTOR) {
+                } else if ( rolId === ROLES.CONDUCTOR) {
                     navigate("/driver-home");
-                } else if (data.usuario.idRol === ROLES.VIAJERO || data.usuario.rol?.id === ROLES.VIAJERO) {
+                } else if (rolId === ROLES.VIAJERO) {
                     navigate("/user-home");
                 }
             } else {

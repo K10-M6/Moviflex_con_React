@@ -17,6 +17,7 @@ import DriverProfile from "./pages/Driver/DriverProfile";
 import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
 import Home from "./Dashboard/Home";
+import QRActivation from "./pages/QRActivation";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
@@ -39,7 +40,7 @@ function App() {
                     flex: 1,
                     marginLeft: openSidebarToggle ? '280px' : '0px',
                     transition: 'margin-left 0.3s ease-in-out',
-                    backgroundColor: '#f5f5f5', // O el color que prefieras
+                    backgroundColor: '#f5f5f5', 
                     height: '100%',
                     overflow: 'auto'
                   }}>
@@ -52,6 +53,7 @@ function App() {
           <Route path="/" element={<HomeBase />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/qr-activation" element={<QRActivation />} />
 
           <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
           <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />

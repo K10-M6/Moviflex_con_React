@@ -72,22 +72,15 @@ function Register() {
             const data = await respuesta.json();
 
             if (respuesta.ok) {
-                if (data.token && data.usuario) {
-                    login(data.token, data.usuario);
-                    const rolAsignado = data.usuario.idRol || data.usuario.rol?.id;
-                    const tipoUsuario = rol === "CONDUCTOR" ? "Conductor" : "Viajero";
-                    
-                    setSuccess(`¡Registro exitoso como ${tipoUsuario}! Redirigiendo...`);
-                    
-                    setTimeout(() => {
-                        if (rolAsignado === 1) navigate("/dashboard/home");
-                        else if (rolAsignado === 2 || rol === "CONDUCTOR") navigate("/driver-home");
-                        else navigate("/user-home");
-                    }, 1500);
-                } else {
-                    setSuccess("¡Registro exitoso! Ahora puedes iniciar sesión.");
-                    setTimeout(() => navigate("/login"), 1500);
-                }
+                setSuccess("✅ ¡Registro exitoso! Se envió un código QR a tu correo. Revísalo para finalizar tu activación.");
+                
+                setTimeout(() => {
+                    if (rol === "CONDUCTOR") {
+                        navigate("/qr-activation");
+                    } else {
+                        navigate("/login");
+                    }
+                }, 2500);
             } else {
                 setError(data.message || 'Error al registrarse');
             }
