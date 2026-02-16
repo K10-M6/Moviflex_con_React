@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Container, Row, Col, Card, Form, Button, Alert, Carousel } from "react-bootstrap";
 import Logo  from './Imagenes/TODO_MOVI.png';
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode } from "react-icons/fa";
 import Navbar from '../components/Navbar';
+import QRScanner from '../components/QRScanner'; 
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -12,9 +13,11 @@ function Login() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showQRScanner, setShowQRScanner] = useState(false); 
+    
     const navigate = useNavigate();
     const { login, token, usuario } = useAuth();
-    const [showPassword, setShowPassword] = useState(false);
 
     const ROLES = {
         ADMIN: 1,
@@ -60,7 +63,6 @@ function Login() {
                 }
                 
                 login(data.token, data.usuario);
-
                 setSuccess("¡Login exitoso!");
 
                 const user = data.usuario;
@@ -83,11 +85,49 @@ function Login() {
         }
     }
 
+    const handleQRSuccess = async (qrData) => {
+        try {
+            setLoading(true);
+            setError("");
+            
+
+            console.log("QR escaneado:", qrData);
+            
+
+            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/qr-login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ qrToken: qrData })
+            });
+
+            const data = await respuesta.json();
+            
+            if (respuesta.ok && data.token && data.usuario) {
+                login(data.token, data.usuario);
+                setSuccess("¡Login con QR exitoso!");
+                
+                const rolId = data.usuario.idRol || data.usuario.rol?.id;
+                if (rolId === ROLES.ADMIN) {
+                    navigate("/dashboard/home");
+                } else if (rolId === ROLES.CONDUCTOR) {
+                    navigate("/driver-home");
+                } else if (rolId === ROLES.VIAJERO) {
+                    navigate("/user-home");
+                }
+            } else {
+                setError(data.message || 'Error al procesar el código QR');
+            }
+        } catch (error) {
+            setError('Error en la conexión: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const imagenes = [
         "https://periodicolafuente.com/wp-content/uploads/2018/09/%C2%BFPor-qu%C3%A9-viajar-en-carro-por-M%C3%A9xico-es-algo-que-debes-vivir_LA-FUENTE-QUERETARO-.jpg",
         "https://www.elcarrocolombiano.com/wp-content/uploads/2021/11/Los-10-carros-mas-rapidos-del-mundo-2021.jpg",
-        "https://https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg",
-        
+        "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg", // ← CORREGIDA LA URL
     ];
 
     return (
@@ -120,6 +160,27 @@ function Login() {
                                         }}
                                     />
                                 </div>
+                                
+                                <div className="text-center mb-3">
+                                    <Button
+                                        variant="outline-primary"
+                                        onClick={() => setShowQRScanner(true)}
+                                        style={{
+                                            borderRadius: '30px',
+                                            borderColor: '#124c83',
+                                            color: '#124c83',
+                                            width: '100%'
+                                        }}
+                                    >
+                                        <FaQrcode className="me-2" />
+                                        Iniciar sesión con QR
+                                    </Button>
+                                </div>
+
+                                <div className="text-center mb-2">
+                                    <small className="text-muted">o</small>
+                                </div>
+
                                 {error && <Alert variant="danger">{error}</Alert>}
                                 {success && <Alert variant="success">{success}</Alert>}
                                 
@@ -211,6 +272,7 @@ function Login() {
                             </Card.Body>
                         </Card>
                     </Col> 
+                    
                     <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
                     style={{
                         display: 'flex',
@@ -218,7 +280,7 @@ function Login() {
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}>
-                        <div className=" text-center w-100">
+                        <div className="text-center w-100">
                             <div style={{
                                 width: '100%',
                                 maxWidth: '900px',
@@ -227,7 +289,7 @@ function Login() {
                                 overflow: 'hidden',
                                 border: '2px solid white',
                             }}>
-                                <Carousel fade indicators={true} controls={false} interval={2500}>
+                                <Carousel fade indicators controls={false} interval={2500}>
                                     {imagenes.map((img, index) => (
                                         <Carousel.Item key={index}>
                                             <img
@@ -255,6 +317,12 @@ function Login() {
                     </Col>
                 </Row>
             </Container>
+
+            <QRScanner 
+                show={showQRScanner}
+                onHide={() => setShowQRScanner(false)}
+                onScanSuccess={handleQRSuccess}
+            />
         </div>
     );
 }

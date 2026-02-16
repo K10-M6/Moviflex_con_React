@@ -1,5 +1,4 @@
   import React from "react";
-  import { BsJustify } from "react-icons/bs";
   import { useAuth } from "../pages/context/AuthContext";
   import {Dropdown} from "react-bootstrap";
   import { useNavigate } from "react-router-dom";
@@ -7,7 +6,7 @@
 
 
 
-  function Header({ OpenSidebar }) {
+  function Header() {
 
     const navigate = useNavigate();
     const { usuario, logout } = useAuth();
@@ -38,16 +37,9 @@
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
       }}>
         <div className="container-fluid px-4">
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex 
+          justify-content-between align-items-center">
             <div className="d-flex align-items-center">
-              <button
-              onClick={OpenSidebar}
-              className="btn btn-link text-white me-3"
-              style={{ fontSize: "24px"}}
-              >
-                <BsJustify/>
-              </button>
-
               <div className="text-center mb-4">
                 <img src={Logo} alt="Logo Moviflexx" 
                   style={{
@@ -76,11 +68,13 @@
                 </div>
 
                 <div
-                className="rounded-circle d-flex align-items-center justify-content-center"
+                className="rounded-circle 
+                d-flex align-items-center 
+                bg-white
+                justify-content-center"
                 style={{
                   width:'45px',
                   height: '45px',
-                  bacgroundcolor: '#000000',
                   border: '1px solid black',
                   boxShadow:'0 2px 5px rgba(0,0,0,0.2)'
                 }}>
