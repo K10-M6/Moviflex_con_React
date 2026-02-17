@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Container, Row, Col, Card, Form, Button, Alert, Carousel } from "react-bootstrap";
-import Logo  from './Imagenes/TODO_MOVI.png';
+import Logo from './Imagenes/TODO_MOVI.png';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode } from "react-icons/fa";
 import Navbar from '../components/Navbar';
-import QRScanner from '../components/QRScanner'; 
+import QRScanner from '../components/QRScanner';
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ function Login() {
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [showQRScanner, setShowQRScanner] = useState(false); 
+    const [showQRScanner, setShowQRScanner] = useState(false);
     
     const navigate = useNavigate();
     const { login, token, usuario } = useAuth();
@@ -25,7 +25,7 @@ function Login() {
         VIAJERO: 3
     };
 
-    useEffect(()=> {
+    useEffect(() => {
         const rolId = usuario?.idRol || usuario?.rol?.id;
 
         if (rolId === ROLES.ADMIN) {
@@ -34,7 +34,7 @@ function Login() {
             navigate("/driver-home");
         } else if (rolId === ROLES.VIAJERO) {
             navigate("/user-home");
-        } 
+        }
     }, [token, usuario, navigate]);
 
     async function guardar(e) {
@@ -46,8 +46,8 @@ function Login() {
         try {
             const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/login", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({email, password})
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
             });
 
             const data = await respuesta.json();
@@ -56,21 +56,21 @@ function Login() {
                     setError('Credenciales inválidas. El servidor no devolvió token/usuario.');
                     return;
                 }
-                
+
                 if (data.message && (data.message.includes('error') || data.message.includes('inválido') || data.message.includes('incorrecto'))) {
                     setError(data.message || 'Credenciales incorrectas');
                     return;
                 }
-                
+
                 login(data.token, data.usuario);
                 setSuccess("¡Login exitoso!");
 
                 const user = data.usuario;
                 const rolId = user.idRol || user.rol?.id;
-                
+
                 if (rolId === ROLES.ADMIN) {
                     navigate("/dashboard/home");
-                } else if ( rolId === ROLES.CONDUCTOR) {
+                } else if (rolId === ROLES.CONDUCTOR) {
                     navigate("/driver-home");
                 } else if (rolId === ROLES.VIAJERO) {
                     navigate("/user-home");
@@ -85,40 +85,40 @@ function Login() {
         }
     }
 
-    const handleQRSuccess = async (qrData) => {
+ 
+    const handleQRScan = async (qrData) => {
+        setLoading(true);
+        setError("");
+        
         try {
-            setLoading(true);
-            setError("");
+            console.log("📱 Datos del QR:", qrData);
+            const datos = JSON.parse(qrData);
             
-
-            console.log("QR escaneado:", qrData);
-            
-
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/qr-login", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ qrToken: qrData })
-            });
-
-            const data = await respuesta.json();
-            
-            if (respuesta.ok && data.token && data.usuario) {
-                login(data.token, data.usuario);
-                setSuccess("¡Login con QR exitoso!");
-                
-                const rolId = data.usuario.idRol || data.usuario.rol?.id;
-                if (rolId === ROLES.ADMIN) {
-                    navigate("/dashboard/home");
-                } else if (rolId === ROLES.CONDUCTOR) {
-                    navigate("/driver-home");
-                } else if (rolId === ROLES.VIAJERO) {
-                    navigate("/user-home");
+            if (datos.tipo === 'login_token') {
+                if (datos.expira && datos.expira < Date.now()) {
+                    setError("El código QR ha expirado. Genera uno nuevo.");
+                    setLoading(false);
+                    return;
                 }
+
+                if (datos.token) {
+
+                    const usuarioQR = {
+                        email: datos.email,
+                        idRol: datos.idRol
+                    };
+                    
+                    login(datos.token, usuarioQR);
+                    setSuccess("¡Login automático con QR exitoso!");
+                    
+                }
+                
             } else {
-                setError(data.message || 'Error al procesar el código QR');
+                setError("El código QR no es válido para iniciar sesión");
             }
         } catch (error) {
-            setError('Error en la conexión: ' + error.message);
+            console.error("Error parseando QR:", error);
+            setError("El código QR no tiene el formato correcto");
         } finally {
             setLoading(false);
         }
@@ -127,7 +127,7 @@ function Login() {
     const imagenes = [
         "https://periodicolafuente.com/wp-content/uploads/2018/09/%C2%BFPor-qu%C3%A9-viajar-en-carro-por-M%C3%A9xico-es-algo-que-debes-vivir_LA-FUENTE-QUERETARO-.jpg",
         "https://www.elcarrocolombiano.com/wp-content/uploads/2021/11/Los-10-carros-mas-rapidos-del-mundo-2021.jpg",
-        "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg", // ← CORREGIDA LA URL
+        "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg",
     ];
 
     return (
@@ -142,40 +142,39 @@ function Login() {
             <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
                 <Row className="justify-content-center">
                     <Col xs={12} md={4} lg={4} xl={3}
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
                         <Card className="shadow border-2" style={{
                             fontSize: '0.9rem'
                         }}>
                             <Card.Body className="p-3">
                                 <div className="text-center mb-4">
-                                   <img src={Logo} alt="Logo Moviflexx" 
+                                    <img src={Logo} alt="Logo Moviflexx"
                                         style={{
                                             width: '200px',
                                             height: 'auto',
                                         }}
                                     />
                                 </div>
-                                
-                                <div className="text-center mb-3">
-                                    <Button
-                                        variant="outline-primary"
-                                        onClick={() => setShowQRScanner(true)}
-                                        style={{
-                                            borderRadius: '30px',
-                                            borderColor: '#124c83',
-                                            color: '#124c83',
-                                            width: '100%'
-                                        }}
-                                    >
-                                        <FaQrcode className="me-2" />
-                                        Iniciar sesión con QR
-                                    </Button>
-                                </div>
+
+                                <Button
+                                    onClick={() => setShowQRScanner(true)}
+                                    variant="outline-primary"
+                                    className="w-100 mb-3"
+                                    style={{
+                                        borderRadius: '30px',
+                                        borderColor: '#124c83',
+                                        color: '#124c83'
+                                    }}
+                                    disabled={loading}
+                                >
+                                    <FaQrcode className="me-2" />
+                                    {loading ? 'Procesando...' : 'Iniciar sesión con QR'}
+                                </Button>
 
                                 <div className="text-center mb-2">
                                     <small className="text-muted">o</small>
@@ -183,7 +182,7 @@ function Login() {
 
                                 {error && <Alert variant="danger">{error}</Alert>}
                                 {success && <Alert variant="success">{success}</Alert>}
-                                
+
                                 <Form onSubmit={guardar}>
                                     <Form.Group className="mb-1" controlId="email">
                                         <Form.Label>Correo Electrónico <span className="text-danger">*</span></Form.Label>
@@ -203,7 +202,7 @@ function Login() {
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
                                                 disabled={loading}
-                                                style={{paddingLeft: '40px'}}
+                                                style={{ paddingLeft: '40px' }}
                                             />
                                         </div>
                                     </Form.Group>
@@ -226,7 +225,7 @@ function Login() {
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 disabled={loading}
-                                                style={{paddingLeft: '40px', paddingRight: '40px'}}
+                                                style={{ paddingLeft: '40px', paddingRight: '40px' }}
                                             />
                                             <Button
                                                 variant="link"
@@ -247,11 +246,11 @@ function Login() {
                                         </div>
                                     </Form.Group>
 
-                                    <Button 
-                                        type="submit" 
-                                        size="lg" 
-                                        className="w-70 mb-1 d-block mx-auto py-1" 
-                                        style={{background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))'}}
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        className="w-70 mb-1 d-block mx-auto py-1"
+                                        style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))' }}
                                         disabled={loading}
                                     >
                                         {loading ? (
@@ -271,15 +270,15 @@ function Login() {
                                 </p>
                             </Card.Body>
                         </Card>
-                    </Col> 
-                    
+                    </Col>
+
                     <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
                         <div className="text-center w-100">
                             <div style={{
                                 width: '100%',
@@ -306,7 +305,7 @@ function Login() {
                                     ))}
                                 </Carousel>
                             </div>
-                        
+
                             <h3 className="mt-3" style={{ color: '#fdfdfd' }}>
                                 Bienvenido de Nuevo
                             </h3>
@@ -318,10 +317,10 @@ function Login() {
                 </Row>
             </Container>
 
-            <QRScanner 
+            <QRScanner
                 show={showQRScanner}
                 onHide={() => setShowQRScanner(false)}
-                onScanSuccess={handleQRSuccess}
+                onScanSuccess={handleQRScan}
             />
         </div>
     );
