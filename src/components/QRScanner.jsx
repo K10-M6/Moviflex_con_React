@@ -37,32 +37,37 @@ function QRScanner({ show, onHide }) {
             console.log("📱 Token escaneado:", decodedText.substring(0, 50) + "...");
             
             try {
+        
                 const payload = JSON.parse(atob(decodedText.split('.')[1]));
-                console.log("📦 Token decodificado:", payload);
+                console.log("📦 Token decodificado COMPLETO:", payload);
                 
+    
                 const usuarioQR = {
                     id: payload.id,
                     email: payload.email,
                     idRol: payload.idRol,
-                    nombre: payload.nombre
+                    nombre: payload.nombre || payload.name || 'Usuario',
+                    ...payload
                 };
                 
+                console.log("✅ Usuario a guardar:", usuarioQR);
+                console.log("✅ Nombre extraído:", usuarioQR.nombre);
+          
                 login(decodedText, usuarioQR);
-                
-                const rolId = Number(usuarioQR.idRol);
-                if (rolId === ROLES.ADMIN) {
-                    console.log("🚀 Redirigiendo a ADMIN");
-                    navigate('/dashboard/home');
-                } else if (rolId === ROLES.CONDUCTOR) {
-                    console.log("🚀 Redirigiendo a CONDUCTOR");
-                    navigate('/driver-home');
-                } else if (rolId === ROLES.VIAJERO) {
-                    console.log("🚀 Redirigiendo a VIAJERO");
-                    navigate('/user-home');
-                } else {
-                    console.log("🚀 Rol desconocido");
-                    navigate('/');
-                }
+              
+                setTimeout(() => {
+                    const rolId = Number(usuarioQR.idRol);
+                    if (rolId === ROLES.ADMIN) {
+                        console.log("🚀 Redirigiendo a ADMIN");
+                        navigate('/dashboard/home');
+                    } else if (rolId === ROLES.CONDUCTOR) {
+                        console.log("🚀 Redirigiendo a CONDUCTOR");
+                        navigate('/driver-home');
+                    } else if (rolId === ROLES.VIAJERO) {
+                        console.log("🚀 Redirigiendo a VIAJERO");
+                        navigate('/user-home');
+                    }
+                }, 500);
                 
                 onHide();
                 
