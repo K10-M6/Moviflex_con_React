@@ -21,7 +21,7 @@ export default function NavbarCustom() {
   const profilePath = isDriver ? "/driver-profile" : "/profile";
 
   return (
-    <Navbar variant="light" expand="lg" className="shadow-sm sticky-top" >
+    <Navbar variant="light" expand="lg" className="sticky-top" style={{ borderBottom: '1px solid white' }} >
       <Container>
         <Navbar.Brand as={Link} to={token ? homePath : "/"}>
           <img src={Logo} height="50px" className="me-1" alt="Logo MoviFlexx" /> 
