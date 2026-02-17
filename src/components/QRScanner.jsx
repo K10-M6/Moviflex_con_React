@@ -33,15 +33,15 @@ function QRScanner({ show, onHide }) {
         try {
             setLoading(true);
             setError('');
-            
+
             console.log("📱 Token escaneado:", decodedText.substring(0, 50) + "...");
-            
+
             try {
-        
+
                 const payload = JSON.parse(atob(decodedText.split('.')[1]));
                 console.log("📦 Token decodificado COMPLETO:", payload);
-                
-    
+
+
                 const usuarioQR = {
                     id: payload.id,
                     email: payload.email,
@@ -49,12 +49,12 @@ function QRScanner({ show, onHide }) {
                     nombre: payload.nombre || payload.name || 'Usuario',
                     ...payload
                 };
-                
+
                 console.log("✅ Usuario a guardar:", usuarioQR);
                 console.log("✅ Nombre extraído:", usuarioQR.nombre);
-          
+
                 login(decodedText, usuarioQR);
-              
+
                 setTimeout(() => {
                     const rolId = Number(usuarioQR.idRol);
                     if (rolId === ROLES.ADMIN) {
@@ -68,14 +68,14 @@ function QRScanner({ show, onHide }) {
                         navigate('/user-home');
                     }
                 }, 500);
-                
+
                 onHide();
-                
+
             } catch (e) {
                 console.error("❌ Error decodificando token:", e);
                 setError('Token inválido');
             }
-            
+
         } catch (error) {
             console.error('❌ Error procesando QR:', error);
             setError('Error al procesar el QR');
@@ -104,13 +104,23 @@ function QRScanner({ show, onHide }) {
                 },
                 false
             );
-            
+
             scanner.render(
                 (decodedText) => {
                     console.log("✅ QR escaneado con cámara");
-                    scanner.clear();
-                    setScanning(false);
-                    procesarQR(decodedText);
+                    // Guardamos la promesa de limpieza
+                    const clearPromise = (scanner && scanner.getState() === 2)
+                        ? scanner.clear()
+                        : Promise.resolve();
+
+                    clearPromise.then(() => {
+                        setScanning(false);
+                        procesarQR(decodedText);
+                    }).catch(err => {
+                        console.error("Error al limpiar scanner:", err);
+                        setScanning(false);
+                        procesarQR(decodedText);
+                    });
                 },
                 (errorMessage) => {
                     if (!errorMessage?.includes('NotFoundException')) {
@@ -151,9 +161,9 @@ function QRScanner({ show, onHide }) {
                         setError('Error interno del escáner');
                         return;
                     }
-                    
+
                     const html5QrCode = new Html5Qrcode('qr-reader-file');
-                    
+
                     html5QrCode.scanFile(file, true)
                         .then(decodedText => {
                             console.log("✅ QR leído de archivo");
@@ -191,7 +201,7 @@ function QRScanner({ show, onHide }) {
                     Escanear Código QR
                 </Modal.Title>
             </Modal.Header>
-            
+
             <Modal.Body>
                 <div className="d-flex justify-content-center mb-4">
                     <Button
@@ -241,7 +251,7 @@ function QRScanner({ show, onHide }) {
                         {!scanning ? (
                             <div className="text-center">
                                 <p className="mb-3">Haz clic en "Iniciar Cámara" para comenzar a escanear</p>
-                                <Button 
+                                <Button
                                     onClick={startCameraScan}
                                     variant="success"
                                     size="lg"
@@ -255,7 +265,7 @@ function QRScanner({ show, onHide }) {
                             <div>
                                 <div id="qr-reader" style={{ width: '100%' }}></div>
                                 <div className="text-center mt-3">
-                                    <Button 
+                                    <Button
                                         onClick={stopScanning}
                                         variant="danger"
                                     >
@@ -269,9 +279,9 @@ function QRScanner({ show, onHide }) {
 
                 {scanMethod === 'upload' && !loading && (
                     <div className="text-center">
-                        <div 
+                        <div
                             className="border rounded p-5 mb-3"
-                            style={{ 
+                            style={{
                                 border: '2px dashed #124c83',
                                 cursor: 'pointer',
                                 backgroundColor: '#f8f9fa'
@@ -282,7 +292,7 @@ function QRScanner({ show, onHide }) {
                             <p>Haz clic para seleccionar una imagen con código QR</p>
                             <p className="text-muted small">Formatos soportados: PNG, JPG, JPEG</p>
                         </div>
-                        
+
                         <input
                             type="file"
                             ref={fileInputRef}

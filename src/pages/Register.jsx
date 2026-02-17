@@ -65,7 +65,7 @@ function Register() {
 
             const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/registro", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datosEnviar)
             });
 
@@ -73,7 +73,7 @@ function Register() {
 
             if (respuesta.ok) {
                 setSuccess("✅ ¡Registro exitoso! Se envió un código QR a tu correo. Revísalo para finalizar tu activación.");
-                
+
                 setTimeout(() => {
                     if (rol === "CONDUCTOR") {
                         navigate("/qr-activation");
@@ -106,17 +106,17 @@ function Register() {
                         <Card className="shadow border-2" style={{ fontSize: '0.9rem' }}>
                             <Card.Body className="p-3">
                                 <div className="text-center mb-4">
-                                    <img src={Logo} alt="Logo Moviflexx" 
+                                    <img src={Logo} alt="Logo Moviflexx"
                                         style={{
                                             width: '200px',
                                             height: 'auto',
                                         }}
                                     />
                                 </div>
-                                
+
                                 {error && <Alert variant="danger">{error}</Alert>}
                                 {success && <Alert variant="success">{success}</Alert>}
-                                
+
                                 <Form onSubmit={guardar}>
                                     <Form.Group className="mb-1" controlId="nombre">
                                         <Form.Label>Nombre <span className="text-danger">*</span></Form.Label>
@@ -224,7 +224,7 @@ function Register() {
                                             <FaUserTag className="me-1" />
                                             Tipo de Usuario <span className="text-danger">*</span>
                                         </Form.Label>
-                                        
+
                                         <div className="d-flex gap-4 mt-2">
                                             <Form.Check
                                                 type="radio"
@@ -249,10 +249,10 @@ function Register() {
                                         </div>
                                     </Form.Group>
 
-                                    <Button 
-                                        type="submit" 
-                                        size="lg" 
-                                        className="w-70 mb-1 d-block mx-auto py-1" 
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        className="w-70 mb-1 d-block mx-auto py-1"
                                         style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))' }}
                                         disabled={loading || passwordError}
                                     >
@@ -274,14 +274,14 @@ function Register() {
                             </Card.Body>
                         </Card>
                     </Col>
-                    
-                    <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
-                         style={{
+
+                    <Col xs={12} md={8} lg={9} xl={9} className="mt-4"
+                        style={{
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center'
-                         }}>
+                        }}>
                         <div className="text-center w-100">
                             <div style={{
                                 width: '100%',
@@ -308,7 +308,7 @@ function Register() {
                                     ))}
                                 </Carousel>
                             </div>
-                        
+
                             <h3 className="mt-3" style={{ color: '#fdfdfd' }}>
                                 Únete a nuestra comunidad
                             </h3>

@@ -15,7 +15,7 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showQRScanner, setShowQRScanner] = useState(false);
-    
+
     const navigate = useNavigate();
     const { login, token, usuario } = useAuth();
 
@@ -85,15 +85,15 @@ function Login() {
         }
     }
 
- 
+
     const handleQRScan = async (qrData) => {
         setLoading(true);
         setError("");
-        
+
         try {
             console.log("📱 Datos del QR:", qrData);
             const datos = JSON.parse(qrData);
-            
+
             if (datos.tipo === 'login_token') {
                 if (datos.expira && datos.expira < Date.now()) {
                     setError("El código QR ha expirado. Genera uno nuevo.");
@@ -107,12 +107,12 @@ function Login() {
                         email: datos.email,
                         idRol: datos.idRol
                     };
-                    
+
                     login(datos.token, usuarioQR);
                     setSuccess("¡Login automático con QR exitoso!");
-                    
+
                 }
-                
+
             } else {
                 setError("El código QR no es válido para iniciar sesión");
             }
@@ -272,7 +272,7 @@ function Login() {
                         </Card>
                     </Col>
 
-                    <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
+                    <Col xs={12} md={8} lg={9} xl={9} className="mt-4"
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
