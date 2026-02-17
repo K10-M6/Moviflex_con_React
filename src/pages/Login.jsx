@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Container, Row, Col, Card, Form, Button, Alert, Carousel } from "react-bootstrap";
 import Logo from './Imagenes/TODO_MOVI.png';
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode } from "react-icons/fa";
 import Navbar from '../components/Navbar';
+import QRScanner from '../components/QRScanner';
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -12,15 +13,38 @@ function Login() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
+    const [showQRScanner, setShowQRScanner] = useState(false);
+    const [redirecting, setRedirecting] = useState(false);
+    
+    const navigate = useNavigate();
+    const { login, token, usuario } = useAuth();
 
     const ROLES = {
         ADMIN: 1,
         CONDUCTOR: 2,
         VIAJERO: 3
     };
+
+    // Efecto separado para manejar la redirección inicial si ya está autenticado
+    useEffect(() => {
+        // Solo redirigir si hay token y no estamos ya en proceso de redirección
+        if (token && usuario && !redirecting) {
+            const rolId = usuario?.idRol || usuario?.rol?.id;
+            
+            setRedirecting(true);
+            
+            if (rolId === ROLES.ADMIN) {
+                navigate("/dashboard/home", { replace: true });
+            } else if (rolId === ROLES.CONDUCTOR) {
+                navigate("/driver-home", { replace: true });
+            } else if (rolId === ROLES.VIAJERO) {
+                navigate("/user-home", { replace: true });
+            } else {
+                setRedirecting(false);
+            }
+        }
+    }, [token, usuario, navigate, ROLES.ADMIN, ROLES.CONDUCTOR, ROLES.VIAJERO, redirecting]);
 
     async function guardar(e) {
         e.preventDefault();
@@ -39,26 +63,25 @@ function Login() {
             if (respuesta.ok) {
                 if (!data.token || !data.usuario) {
                     setError('Credenciales inválidas. El servidor no devolvió token/usuario.');
+                    setLoading(false);
                     return;
                 }
 
                 if (data.message && (data.message.includes('error') || data.message.includes('inválido') || data.message.includes('incorrecto'))) {
                     setError(data.message || 'Credenciales incorrectas');
+                    setLoading(false);
                     return;
                 }
 
-                login(data.token, data.usuario);
+                // Primero establecer el éxito
                 setSuccess("¡Login exitoso!");
-
-                const usuario = data.usuario;
-
-                if (data.usuario.idRol === ROLES.ADMIN || data.usuario.rol?.id === ROLES.ADMIN) {
-                    navigate("/dashboard/home");
-                } else if (data.usuario.idRol === ROLES.CONDUCTOR || data.usuario.rol?.id === ROLES.CONDUCTOR) {
-                    navigate("/driver-home");
-                } else if (data.usuario.idRol === ROLES.VIAJERO || data.usuario.rol?.id === ROLES.VIAJERO) {
-                    navigate("/user-home");
-                }
+                
+                // Luego hacer login (esto actualizará token y usuario en el contexto)
+                login(data.token, data.usuario);
+                
+                // La redirección se manejará en el useEffect
+                // No navegamos directamente aquí para evitar conflictos
+                
             } else {
                 setError(data.message || 'Error al iniciar sesión');
             }
@@ -69,11 +92,47 @@ function Login() {
         }
     }
 
+    const handleQRScan = async (qrData) => {
+        setLoading(true);
+        setError("");
+        
+        try {
+            console.log("📱 Datos del QR:", qrData);
+            const datos = JSON.parse(qrData);
+            
+            if (datos.tipo === 'login_token') {
+                if (datos.expira && datos.expira < Date.now()) {
+                    setError("El código QR ha expirado. Genera uno nuevo.");
+                    setLoading(false);
+                    return;
+                }
+
+                if (datos.token) {
+                    const usuarioQR = {
+                        email: datos.email,
+                        idRol: datos.idRol
+                    };
+                    
+                    setSuccess("¡Login automático con QR exitoso!");
+                    login(datos.token, usuarioQR);
+                    setShowQRScanner(false);
+                    // La redirección se manejará en el useEffect
+                }
+            } else {
+                setError("El código QR no es válido para iniciar sesión");
+            }
+        } catch (error) {
+            console.error("Error parseando QR:", error);
+            setError("El código QR no tiene el formato correcto");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const imagenes = [
         "https://periodicolafuente.com/wp-content/uploads/2018/09/%C2%BFPor-qu%C3%A9-viajar-en-carro-por-M%C3%A9xico-es-algo-que-debes-vivir_LA-FUENTE-QUERETARO-.jpg",
         "https://www.elcarrocolombiano.com/wp-content/uploads/2021/11/Los-10-carros-mas-rapidos-del-mundo-2021.jpg",
         "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg",
-
     ];
 
     return (
@@ -106,6 +165,26 @@ function Login() {
                                         }}
                                     />
                                 </div>
+
+                                <Button
+                                    onClick={() => setShowQRScanner(true)}
+                                    variant="outline-primary"
+                                    className="w-100 mb-3"
+                                    style={{
+                                        borderRadius: '30px',
+                                        borderColor: '#124c83',
+                                        color: '#124c83'
+                                    }}
+                                    disabled={loading || redirecting}
+                                >
+                                    <FaQrcode className="me-2" />
+                                    {loading ? 'Procesando...' : 'Iniciar sesión con QR'}
+                                </Button>
+
+                                <div className="text-center mb-2">
+                                    <small className="text-muted">o</small>
+                                </div>
+
                                 {error && <Alert variant="danger">{error}</Alert>}
                                 {success && <Alert variant="success">{success}</Alert>}
 
@@ -127,7 +206,7 @@ function Login() {
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 required
-                                                disabled={loading}
+                                                disabled={loading || redirecting}
                                                 style={{ paddingLeft: '40px' }}
                                             />
                                         </div>
@@ -150,7 +229,7 @@ function Login() {
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
-                                                disabled={loading}
+                                                disabled={loading || redirecting}
                                                 style={{ paddingLeft: '40px', paddingRight: '40px' }}
                                             />
                                             <Button
@@ -166,27 +245,32 @@ function Login() {
                                                     padding: 0,
                                                     border: 'none'
                                                 }}
+                                                disabled={loading || redirecting}
                                             >
                                                 {showPassword ? <FaEyeSlash /> : <FaEye />}
                                             </Button>
                                         </div>
                                     </Form.Group>
 
-                                    <button
+                                    <Button
                                         type="submit"
-                                        className="btn btn-primary w-70 mb-1 d-block mx-auto py-1"
+                                        size="lg"
+                                        className="w-70 mb-1 d-block mx-auto py-1"
                                         style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))', border: 'none' }}
-                                        disabled={loading}
+                                        disabled={loading || redirecting}
                                     >
                                         {loading ? (
-                                            <span key="loading-state" className="d-flex align-items-center justify-content-center">
+                                            <>
                                                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                                <span>Iniciando sesión...</span>
-                                            </span>
-                                        ) : (
-                                            <span key="idle-state">Iniciar Sesión</span>
-                                        )}
-                                    </button>
+                                                Iniciando sesión...
+                                            </>
+                                        ) : redirecting ? (
+                                            <>
+                                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                Redirigiendo...
+                                            </>
+                                        ) : 'Iniciar Sesión'}
+                                    </Button>
                                 </Form>
 
                                 <p className="text-center text-muted mt-3">
@@ -198,6 +282,7 @@ function Login() {
                             </Card.Body>
                         </Card>
                     </Col>
+
                     <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
                         style={{
                             display: 'flex',
@@ -205,7 +290,7 @@ function Login() {
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}>
-                        <div className=" text-center w-100">
+                        <div className="text-center w-100">
                             <div style={{
                                 width: '100%',
                                 maxWidth: '900px',
@@ -214,7 +299,7 @@ function Login() {
                                 overflow: 'hidden',
                                 border: '2px solid white',
                             }}>
-                                <Carousel fade indicators={true} controls={false} interval={2500}>
+                                <Carousel fade indicators controls={false} interval={2500}>
                                     {imagenes.map((img, index) => (
                                         <Carousel.Item key={index}>
                                             <img
@@ -242,6 +327,12 @@ function Login() {
                     </Col>
                 </Row>
             </Container>
+
+            <QRScanner
+                show={showQRScanner}
+                onHide={() => setShowQRScanner(false)}
+                onScanSuccess={handleQRScan}
+            />
         </div>
     );
 }
