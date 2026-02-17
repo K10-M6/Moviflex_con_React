@@ -8,7 +8,6 @@ import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap"
 import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
 
-// Slider de fondo con fade
 const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
@@ -73,26 +72,11 @@ function DriverProfile() {
       return;
     }
 
-    console.log("🔍 ===== DEPURACIÓN QR CONDUCTOR =====");
-    console.log("👤 Usuario actual:", usuario);
-    console.log("🔑 Token existe?:", !!token);
-    console.log("🆔 idRol desde usuario:", usuario?.idRol);
-    console.log("🆔 idRol desde usuario.rol:", usuario?.rol?.id);
+    console.log("🔍 ===== GENERANDO QR CONDUCTOR =====");
+    console.log("🔑 Token de", token.length, "caracteres");
+    console.log("🔑 Token (primeros 50):", token.substring(0, 50) + "...");
 
-    const qrData = {
-      tipo: 'login_token',
-      token: token,
-      email: usuario?.email,
-      idRol: usuario?.idRol || usuario?.rol?.id || 2,
-      expira: Date.now() + 10800000
-    };
-
-    console.log("🎯 QR generado (objeto):", qrData);
-    console.log("🎯 QR string:", JSON.stringify(qrData));
-    console.log("🎯 ¿Tiene idRol?", qrData.idRol ? `SÍ (${qrData.idRol})` : "NO");
-    console.log("🔍 ===== FIN DEPURACIÓN CONDUCTOR =====\n");
-
-    setQrValue(JSON.stringify(qrData));
+    setQrValue(token);
     setShowQRModal(true);
   };
 
@@ -108,7 +92,7 @@ function DriverProfile() {
             <Col lg={10}>
               <Card className="shadow border-0 rounded-4 overflow-hidden">
                 <Row className="g-0">
-                  {/* Columna Izquierda: Foto y Resumen */}
+  
                   <Col md={4} className="bg-light text-center p-4 border-end">
                     <div className="mb-3 mt-3">
                       <img src="https://via.placeholder.com/150" className="rounded-circle shadow p-1 bg-white" alt="Perfil" style={{width: '150px', height: '150px'}} />
@@ -119,7 +103,6 @@ function DriverProfile() {
                     </Badge>
                     <Button variant="outline-primary" size="sm" className="w-100 mb-3 rounded-pill">Cambiar Foto</Button>
                     
-                    {/* BOTÓN QR AGREGADO AQUÍ */}
                     <Button 
                       onClick={generarQr}
                       variant="outline-primary" 
@@ -140,7 +123,6 @@ function DriverProfile() {
                     </div>
                   </Col>
 
-                  {/* Columna Derecha: Formulario y Datos Técnicos */}
                   <Col md={8} className="p-4">
                     <h4 className="fw-bold mb-4">Información de Cuenta</h4>
                     <Form>
@@ -202,7 +184,6 @@ function DriverProfile() {
         </Container>
       </div>
 
-      {/* MODAL QR AGREGADO AQUÍ */}
       <QRModal
         show={showQRModal}
         onHide={() => setShowQRModal(false)}

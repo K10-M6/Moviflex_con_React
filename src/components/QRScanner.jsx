@@ -9,6 +9,7 @@ function QRScanner({ show, onHide }) {
     const [error, setError] = useState('');
     const [scanMethod, setScanMethod] = useState('camera');
     const [scanning, setScanning] = useState(false);
+    const [loading, setLoading] = useState(false);
     const fileInputRef = useRef(null);
     const scannerRef = useRef(null);
     const navigate = useNavigate();
@@ -28,33 +29,27 @@ function QRScanner({ show, onHide }) {
         onHide();
     };
 
-    const procesarQR = (decodedText) => {
+    const procesarQR = async (decodedText) => {
         try {
-            console.log("📱 QR escaneado:", decodedText);
-            const datos = JSON.parse(decodedText);
+            setLoading(true);
+            setError('');
             
-            if (datos.tipo === 'login_token') {
-                if (datos.expira && datos.expira < Date.now()) {
-                    setError('El código QR ha expirado');
-                    return;
-                }
-                
-                if (!datos.idRol) {
-                    console.error("❌ El QR no contiene idRol");
-                    setError('El QR no contiene información de rol válida');
-                    return;
-                }
+            console.log("📱 Token escaneado:", decodedText.substring(0, 50) + "...");
+            
+            try {
+                const payload = JSON.parse(atob(decodedText.split('.')[1]));
+                console.log("📦 Token decodificado:", payload);
                 
                 const usuarioQR = {
-                    email: datos.email,
+                    id: payload.id,
+                    email: payload.email,
+                    idRol: payload.idRol,
+                    nombre: payload.nombre
                 };
                 
-                console.log("✅ Usuario QR:", usuarioQR);
-                console.log("✅ Rol detectado:", datos.idRol);
+                login(decodedText, usuarioQR);
                 
-                login(datos.token, usuarioQR);
-                
-                const rolId = Number(datos.idRol);
+                const rolId = Number(usuarioQR.idRol);
                 if (rolId === ROLES.ADMIN) {
                     console.log("🚀 Redirigiendo a ADMIN");
                     navigate('/dashboard/home');
@@ -70,12 +65,17 @@ function QRScanner({ show, onHide }) {
                 }
                 
                 onHide();
-            } else {
-                setError('QR no válido para login');
+                
+            } catch (e) {
+                console.error("❌ Error decodificando token:", e);
+                setError('Token inválido');
             }
+            
         } catch (error) {
-            console.error('Error procesando QR:', error);
+            console.error('❌ Error procesando QR:', error);
             setError('Error al procesar el QR');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -141,18 +141,22 @@ function QRScanner({ show, onHide }) {
             const img = new Image();
             img.onload = () => {
                 import('html5-qrcode').then(({ Html5Qrcode }) => {
+                    const element = document.getElementById('qr-reader-file');
+                    if (!element) {
+                        setError('Error interno del escáner');
+                        return;
+                    }
+                    
                     const html5QrCode = new Html5Qrcode('qr-reader-file');
                     
                     html5QrCode.scanFile(file, true)
                         .then(decodedText => {
-                            console.log("✅ QR leído de archivo EXITOSAMENTE");
-                            console.log("📦 Contenido:", decodedText);
+                            console.log("✅ QR leído de archivo");
                             html5QrCode.clear();
                             procesarQR(decodedText);
                         })
                         .catch(err => {
-                            console.error('❌ Error leyendo QR:', err);
-                            
+                            console.error('❌ Error:', err);
                             if (err.toString().includes('NotFoundException')) {
                                 setError('No se encontró ningún código QR en la imagen. Asegúrate de que la imagen sea clara y el QR esté bien visible.');
                             } else {
@@ -193,6 +197,7 @@ function QRScanner({ show, onHide }) {
                         }}
                         className="me-2"
                         style={{ borderRadius: '30px' }}
+                        disabled={loading}
                     >
                         <FaCamera className="me-2" />
                         Usar Cámara
@@ -204,11 +209,21 @@ function QRScanner({ show, onHide }) {
                             stopScanning();
                         }}
                         style={{ borderRadius: '30px' }}
+                        disabled={loading}
                     >
                         <FaUpload className="me-2" />
                         Subir Imagen
                     </Button>
                 </div>
+
+                {loading && (
+                    <div className="text-center mb-3">
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Procesando...</span>
+                        </div>
+                        <p className="mt-2">Procesando QR...</p>
+                    </div>
+                )}
 
                 {error && (
                     <Alert variant="danger" className="text-center">
@@ -216,7 +231,7 @@ function QRScanner({ show, onHide }) {
                     </Alert>
                 )}
 
-                {scanMethod === 'camera' && (
+                {scanMethod === 'camera' && !loading && (
                     <div>
                         {!scanning ? (
                             <div className="text-center">
@@ -247,7 +262,7 @@ function QRScanner({ show, onHide }) {
                     </div>
                 )}
 
-                {scanMethod === 'upload' && (
+                {scanMethod === 'upload' && !loading && (
                     <div className="text-center">
                         <div 
                             className="border rounded p-5 mb-3"
@@ -277,7 +292,7 @@ function QRScanner({ show, onHide }) {
             </Modal.Body>
 
             <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
+                <Button variant="secondary" onClick={handleClose} disabled={loading}>
                     Cancelar
                 </Button>
             </Modal.Footer>

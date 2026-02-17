@@ -22,25 +22,14 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
   };
   
   const generarQr = () => {
-    console.log("🔍 ===== DEPURACIÓN QR =====");
-    console.log("👤 Usuario actual:", usuario);
-    console.log("🔑 Token existe?:", !!token);
-    console.log("🆔 idRol desde usuario:", usuario?.idRol);
-    console.log("🆔 idRol desde usuario.rol:", usuario?.rol?.id);
+    if (!token) {
+      alert("No hay Token disponible. Inicia sesión nuevamente.");
+      return;
+    }
     
-    const qrData = {
-        t: 'login_token',
-        token: token,
-        email: usuario?.email,  
-        expira: Date.now() + 10800000
-    };
-    
-    console.log("🎯 QR generado (objeto):", qrData);
-    console.log("🎯 QR string:", JSON.stringify(qrData));
-    console.log("🎯 ¿Tiene idRol?", qrData.idRol ? `SÍ (${qrData.idRol})` : "NO");
-    console.log("🎯 Tipo de idRol:", typeof qrData.idRol);
-    
-    setQrValue(JSON.stringify(qrData));
+    const qrValue = `${token}|${usuario?.nombre || ''}`;
+    console.log("🔍 Generando QR con token de", token.length, "caracteres");
+    setQrValue(token);
     setShowQRModal(true);
   };
   
