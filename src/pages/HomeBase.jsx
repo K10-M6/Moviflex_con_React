@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Image } from 'react-bootstrap';
-import Mapa from '../Map';
 import Navbar from '../components/Navbar';
 import imagen from '../pages/Imagenes/Viajes.jpeg';
 import React, { useState, useEffect } from 'react';
