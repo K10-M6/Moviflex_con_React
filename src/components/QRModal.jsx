@@ -47,8 +47,8 @@ const QRModal = ({
       try {
 
         const canvas = document.createElement('canvas');
-        canvas.width = 300;
-        canvas.height = 300;
+        canvas.width = 500;
+        canvas.height = 500;
 
         const svgData = new XMLSerializer().serializeToString(svgElement);
         

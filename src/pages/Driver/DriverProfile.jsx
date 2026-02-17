@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import img1 from "../Imagenes/DNNYPYGT65C3JHMUEEZKEUM7AY.jpg";
 import img2 from "../Imagenes/salir-a-carretera-gonhergo.jpg";
 import img3 from "../Imagenes/viaje-en-carro1.jpg";
+import { useAuth } from "../context/AuthContext";
+import Navbar from "../../components/Navbar";
+import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap";
+import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode } from "react-icons/fa";
+import QRModal from "../../components/QRModal";
+
 // Slider de fondo con fade
 const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
   const [index, setIndex] = useState(0);
@@ -51,16 +57,44 @@ const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(1
     </div>
   );
 };
-import { useAuth } from "../context/AuthContext";
-import Navbar from "../../components/Navbar";
-import { Container, Row, Col, Card, Button, Form, Badge, ListGroup } from "react-bootstrap";
-import { FaCar, FaIdCard, FaStar, FaSave } from "react-icons/fa";
 
 function DriverProfile() {
-  const { usuario, logout } = useAuth();
+  const { usuario, token, logout } = useAuth();
   const [nombre, setNombre] = useState(usuario?.nombre || 'Julian');
   const [telefono, setTelefono] = useState(usuario?.telefono || '3107002178');
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrValue, setQrValue] = useState('');
+  
   const backgroundImages = [img1, img2, img3];
+
+  const generarQr = () => {
+    if (!token) {
+      alert("No hay Token disponible. Inicia sesión nuevamente.");
+      return;
+    }
+
+    console.log("🔍 ===== DEPURACIÓN QR CONDUCTOR =====");
+    console.log("👤 Usuario actual:", usuario);
+    console.log("🔑 Token existe?:", !!token);
+    console.log("🆔 idRol desde usuario:", usuario?.idRol);
+    console.log("🆔 idRol desde usuario.rol:", usuario?.rol?.id);
+
+    const qrData = {
+      tipo: 'login_token',
+      token: token,
+      email: usuario?.email,
+      idRol: usuario?.idRol || usuario?.rol?.id || 2,
+      expira: Date.now() + 10800000
+    };
+
+    console.log("🎯 QR generado (objeto):", qrData);
+    console.log("🎯 QR string:", JSON.stringify(qrData));
+    console.log("🎯 ¿Tiene idRol?", qrData.idRol ? `SÍ (${qrData.idRol})` : "NO");
+    console.log("🔍 ===== FIN DEPURACIÓN CONDUCTOR =====\n");
+
+    setQrValue(JSON.stringify(qrData));
+    setShowQRModal(true);
+  };
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
@@ -77,13 +111,26 @@ function DriverProfile() {
                   {/* Columna Izquierda: Foto y Resumen */}
                   <Col md={4} className="bg-light text-center p-4 border-end">
                     <div className="mb-3 mt-3">
-                      <img src="https://via.placeholder.com" className="rounded-circle shadow p-1 bg-white" alt="Perfil" style={{width: '150px', height: '150px'}} />
+                      <img src="https://via.placeholder.com/150" className="rounded-circle shadow p-1 bg-white" alt="Perfil" style={{width: '150px', height: '150px'}} />
                     </div>
                     <h3 className="fw-bold mb-1">{nombre}</h3>
                     <Badge bg="warning" text="dark" className="px-3 rounded-pill mb-3">
                       <FaStar className="me-1" /> 4.9 Conductor
                     </Badge>
                     <Button variant="outline-primary" size="sm" className="w-100 mb-3 rounded-pill">Cambiar Foto</Button>
+                    
+                    {/* BOTÓN QR AGREGADO AQUÍ */}
+                    <Button 
+                      onClick={generarQr}
+                      variant="outline-primary" 
+                      size="sm" 
+                      className="w-100 mb-3 rounded-pill"
+                      style={{ borderColor: '#a385ff', color: '#a385ff' }}
+                    >
+                      <FaQrcode className="me-2" />
+                      Generar QR de acceso
+                    </Button>
+                    
                     <hr />
                     <div className="text-start px-3">
                       <p className="small text-muted mb-1">MIEMBRO DESDE</p>
@@ -154,6 +201,16 @@ function DriverProfile() {
           </Row>
         </Container>
       </div>
+
+      {/* MODAL QR AGREGADO AQUÍ */}
+      <QRModal
+        show={showQRModal}
+        onHide={() => setShowQRModal(false)}
+        qrValue={qrValue}
+        usuario={usuario}
+        titulo="Tu QR de Acceso Rápido - Conductor"
+        mensajeExpiracion="Válido por 3 horas"
+      />
     </div>
   );
 }

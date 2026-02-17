@@ -47,7 +47,6 @@ function QRScanner({ show, onHide }) {
                 
                 const usuarioQR = {
                     email: datos.email,
-                    idRol: datos.idRol
                 };
                 
                 console.log("✅ Usuario QR:", usuarioQR);
