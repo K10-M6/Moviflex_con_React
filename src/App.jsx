@@ -17,7 +17,7 @@ import DriverProfile from "./pages/Driver/DriverProfile";
 import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
 import Home from "./Dashboard/Home";
-import Documentos from "./pages/Documents";
+import Documents from "./pages/Documents";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
@@ -57,9 +57,7 @@ function App() {
           
       
           <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
-
-          {/* AQUI AGREGUE LA RUTA DE DOCUMENTOS */}
-          <Route path="/documents" element={<RequiredAuth><Documentos /></RequiredAuth>} />
+          
 
           <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
           <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
