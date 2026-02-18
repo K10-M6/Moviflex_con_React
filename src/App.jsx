@@ -50,9 +50,13 @@ function App() {
               </div>
             </RequiredAuth>
           } />
+          
           <Route path="/" element={<HomeBase />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+      
+          <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
 
           {/* AQUI AGREGUE LA RUTA DE DOCUMENTOS */}
           <Route path="/documents" element={<RequiredAuth><Documentos /></RequiredAuth>} />

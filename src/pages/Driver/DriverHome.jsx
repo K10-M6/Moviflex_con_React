@@ -1,11 +1,18 @@
 import React from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup } from "react-bootstrap";
 import { FaCar, FaIdCard, FaHistory } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 
 const DriverHome = () => {
     const { usuario } = useAuth();
+    const navigate = useNavigate();
+
+    const irADocumentacion = () => {
+        navigate("/documentacion");
+    };
+
     return (
         <div style={{ background: '#124c83', minHeight: '100vh' }}>
             <Navbar />
@@ -59,7 +66,14 @@ const DriverHome = () => {
                                         SOAT <Badge bg="success" className="rounded-pill">Válido</Badge>
                                     </ListGroup.Item>
                                 </ListGroup>
-                                <Button variant="dark" className="w-100 mt-3 rounded-pill fw-bold" style={{ background: '#2D3436', border: 'none' }}>Subir Documentos</Button>
+                                <Button 
+                                    variant="dark" 
+                                    className="w-100 mt-3 rounded-pill fw-bold" 
+                                    style={{ background: '#2D3436', border: 'none' }}
+                                    onClick={irADocumentacion}
+                                >
+                                    Subir Documentos
+                                </Button>
                             </Card.Body>
                         </Card>
                     </Col>
