@@ -85,7 +85,6 @@ function Login() {
         }
     }
 
- 
     const handleQRScan = async (qrData) => {
         setLoading(true);
         setError("");
@@ -102,7 +101,6 @@ function Login() {
                 }
 
                 if (datos.token) {
-
                     const usuarioQR = {
                         email: datos.email,
                         idRol: datos.idRol
@@ -110,7 +108,6 @@ function Login() {
                     
                     login(datos.token, usuarioQR);
                     setSuccess("¡Login automático con QR exitoso!");
-                    
                 }
                 
             } else {
@@ -141,38 +138,44 @@ function Login() {
             <Navbar />
             <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
                 <Row className="justify-content-center">
-                    <Col xs={12} md={4} lg={4} xl={3}
+                    
+                    {/* COLUMNA IZQUIERDA: CASILLA DE LOGIN REDISEÑADA */}
+                    <Col xs={12} md={4} lg={4} xl={5}
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}>
-                        <Card className="shadow border-2" style={{
-                            fontSize: '0.9rem'
+                        <Card className="shadow-lg border-0" style={{ 
+                            borderRadius: '25px', 
+                            overflow: 'hidden',
+                            width: '100%'
                         }}>
-                            <Card.Body className="p-3">
+                            <Card.Body className="p-4">
                                 <div className="text-center mb-4">
                                     <img src={Logo} alt="Logo Moviflexx"
                                         style={{
-                                            width: '200px',
+                                            width: '140px',
                                             height: 'auto',
                                         }}
                                     />
+                                    <h5 className="fw-bold text-dark mt-3">¡Bienvenido de nuevo!</h5>
                                 </div>
 
                                 <Button
                                     onClick={() => setShowQRScanner(true)}
                                     variant="outline-primary"
-                                    className="w-100 mb-3"
-                                    style={{
-                                        borderRadius: '30px',
-                                        borderColor: '#124c83',
-                                        color: '#124c83'
+                                    className="w-100 py-2 mb-3 d-flex justify-content-center align-items-center gap-2"
+                                    style={{ 
+                                        borderRadius: '12px', 
+                                        borderColor: '#4acfbd',
+                                        color: '#4acfbd',
+                                        fontWeight: 'bold'
                                     }}
                                     disabled={loading}
                                 >
-                                    <FaQrcode className="me-2" />
+                                    <FaQrcode />
                                     {loading ? 'Procesando...' : 'Iniciar sesión con QR'}
                                 </Button>
 
@@ -180,44 +183,33 @@ function Login() {
                                     <small className="text-muted">o</small>
                                 </div>
 
-                                {error && <Alert variant="danger">{error}</Alert>}
-                                {success && <Alert variant="success">{success}</Alert>}
+                                {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
+                                {success && <Alert variant="success" className="py-2 small">{success}</Alert>}
 
                                 <Form onSubmit={guardar}>
-                                    <Form.Group className="mb-1" controlId="email">
-                                        <Form.Label>Correo Electrónico <span className="text-danger">*</span></Form.Label>
-                                        <div style={{ position: 'relative' }}>
-                                            <FaEnvelope style={{
-                                                position: 'absolute',
-                                                left: '15px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                color: '#6c757d',
-                                                zIndex: 10
-                                            }} />
-                                            <Form.Control
-                                                type="email"
-                                                placeholder="Ingrese su correo electrónico"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                required
-                                                disabled={loading}
-                                                style={{ paddingLeft: '40px' }}
-                                            />
-                                        </div>
+                                    <Form.Group className="mb-3" controlId="email">
+                                        <Form.Label className="small fw-bold">
+                                            <FaEnvelope className="me-2" />Correo Electrónico
+                                        </Form.Label>
+                                        <Form.Control
+                                            type="email"
+                                            placeholder="Ingrese su correo electrónico"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            disabled={loading}
+                                            style={{ 
+                                                borderRadius: '12px',
+                                                padding: '10px 15px'
+                                            }}
+                                        />
                                     </Form.Group>
 
                                     <Form.Group className="mb-4" controlId="password">
-                                        <Form.Label>Contraseña <span className="text-danger">*</span></Form.Label>
-                                        <div style={{ position: 'relative' }}>
-                                            <FaLock style={{
-                                                position: 'absolute',
-                                                left: '15px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                color: '#6c757d',
-                                                zIndex: 10
-                                            }} />
+                                        <Form.Label className="small fw-bold">
+                                            <FaLock className="me-2" />Contraseña
+                                        </Form.Label>
+                                        <div className="position-relative">
                                             <Form.Control
                                                 type={showPassword ? "text" : "password"}
                                                 placeholder="Ingrese su contraseña"
@@ -225,32 +217,30 @@ function Login() {
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 disabled={loading}
-                                                style={{ paddingLeft: '40px', paddingRight: '40px' }}
-                                            />
-                                            <Button
-                                                variant="link"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                style={{
-                                                    position: 'absolute',
-                                                    right: '10px',
-                                                    top: '50%',
-                                                    transform: 'translateY(-50%)',
-                                                    color: '#6c757d',
-                                                    zIndex: 10,
-                                                    padding: 0,
-                                                    border: 'none'
+                                                style={{ 
+                                                    borderRadius: '12px',
+                                                    padding: '10px 40px 10px 15px'
                                                 }}
+                                            />
+                                            <span 
+                                                className="position-absolute end-0 top-50 translate-middle-y me-3" 
+                                                style={{ cursor: 'pointer', zIndex: 10 }} 
+                                                onClick={() => setShowPassword(!showPassword)}
                                             >
-                                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                            </Button>
+                                                {showPassword ? <FaEyeSlash color="#666"/> : <FaEye color="#666"/>}
+                                            </span>
                                         </div>
                                     </Form.Group>
 
                                     <Button
                                         type="submit"
-                                        size="lg"
-                                        className="w-70 mb-1 d-block mx-auto py-1"
-                                        style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))' }}
+                                        className="w-100 py-2 mb-3"
+                                        style={{ 
+                                            background: '#4acfbd', 
+                                            border: 'none', 
+                                            borderRadius: '12px', 
+                                            fontWeight: 'bold' 
+                                        }}
                                         disabled={loading}
                                     >
                                         {loading ? (
@@ -264,7 +254,7 @@ function Login() {
 
                                 <p className="text-center text-muted mt-3">
                                     ¿No tienes cuenta?{" "}
-                                    <a href="/register" className="text-decoration-none">
+                                    <a href="/register" className="text-decoration-none fw-bold" style={{ color: '#124c83' }}>
                                         Regístrate aquí
                                     </a>
                                 </p>
@@ -272,7 +262,8 @@ function Login() {
                         </Card>
                     </Col>
 
-                    <Col xs={13} md={8} lg={9} xl={9} className="mt-4"
+                    {/* COLUMNA DERECHA: MANTENIDA IGUAL (carrusel y mensaje originales) */}
+                    <Col xs={13} md={8} lg={4} xl={6} className="mt-4"
                         style={{
                             display: 'flex',
                             flexDirection: 'column',

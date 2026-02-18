@@ -8,6 +8,7 @@ import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap"
 import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaEnvelope, FaPhone } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
 
+
 const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
@@ -262,4 +263,4 @@ function DriverProfile() {
   );
 }
 
-export default DriverProfile; 
+export default DriverProfile;

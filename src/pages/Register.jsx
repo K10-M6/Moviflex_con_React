@@ -84,7 +84,7 @@ function Register() {
 
             if (respuesta.ok) {
                 // ÉXITO: Redirección al componente de Documentos
-                navigate("/documents"); 
+                navigate("/driver-profile"); 
             } else {
                 setError(data.message || "Error en el registro. Intenta con otro correo.");
                 setStep(1); // Regresar al inicio para corregir
