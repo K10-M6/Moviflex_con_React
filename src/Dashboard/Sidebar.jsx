@@ -23,13 +23,18 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
   
   const generarQr = () => {
     if (!token) {
-      alert("No hay Token disponible. Inicia sesión nuevamente.");
-      return;
+        alert("No hay Token disponible. Inicia sesión nuevamente.");
+        return;
     }
     
-    const qrValue = `${token}|${usuario?.nombre || ''}`;
-    console.log("🔍 Generando QR con token de", token.length, "caracteres");
-    setQrValue(token);
+
+    const qrData = `${token}|${usuario?.nombre || ''}`;
+    console.log("🔍 Generando QR con formato token|nombre");
+    console.log("🔍 Longitud total:", qrData.length, "caracteres");
+    console.log("🔍 Token:", token.substring(0, 30) + "...");
+    console.log("🔍 Nombre incluido:", usuario?.nombre || 'sin nombre');
+    
+    setQrValue(qrData);
     setShowQRModal(true);
   };
   

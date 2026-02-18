@@ -5,7 +5,7 @@ import img3 from "../Imagenes/viaje-en-carro1.jpg";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap";
-import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode } from "react-icons/fa";
+import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaEnvelope, FaPhone } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
 
 const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
@@ -59,12 +59,20 @@ const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(1
 
 function DriverProfile() {
   const { usuario, token, logout } = useAuth();
-  const [nombre, setNombre] = useState(usuario?.nombre || 'Julian');
-  const [telefono, setTelefono] = useState(usuario?.telefono || '3107002178');
+  const [nombre, setNombre] = useState(usuario?.nombre || '');
+  const [telefono, setTelefono] = useState(usuario?.telefono || '');
+  const [imagenUrl, setImagenUrl] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
   
   const backgroundImages = [img1, img2, img3];
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagenUrl(URL.createObjectURL(file));
+    }
+  };
 
   const generarQr = () => {
     if (!token) {
@@ -72,11 +80,14 @@ function DriverProfile() {
       return;
     }
 
+    const qrData = `${token}|${usuario?.nombre || ''}`;
     console.log("🔍 ===== GENERANDO QR CONDUCTOR =====");
-    console.log("🔑 Token de", token.length, "caracteres");
-    console.log("🔑 Token (primeros 50):", token.substring(0, 50) + "...");
-
-    setQrValue(token);
+    console.log("🔍 Longitud total:", qrData.length, "caracteres");
+    console.log("🔑 Token:", token.substring(0, 30) + "...");
+    console.log("👤 Nombre incluido:", usuario?.nombre || 'sin nombre');
+    console.log("🔍 ===== FIN GENERACIÓN =====\n");
+    
+    setQrValue(qrData);
     setShowQRModal(true);
   };
 
@@ -87,26 +98,45 @@ function DriverProfile() {
         <div style={{ background: '#a385ff', width: '100%', position: 'relative', zIndex: 10 }}>
           <Navbar />
         </div>
+        
         <Container className="py-5">
           <Row className="justify-content-center">
             <Col lg={10}>
               <Card className="shadow border-0 rounded-4 overflow-hidden">
+                <Card.Header className="bg-white border-0 p-4">
+                  <h2 className="fw-bold mb-0" style={{ color: '#a385ff' }}>Mi Perfil de Conductor</h2>
+                </Card.Header>
+                
                 <Row className="g-0">
-  
                   <Col md={4} className="bg-light text-center p-4 border-end">
-                    <div className="mb-3 mt-3">
-                      <img src="https://via.placeholder.com/150" className="rounded-circle shadow p-1 bg-white" alt="Perfil" style={{width: '150px', height: '150px'}} />
+                    <div className="mb-3">
+                      {imagenUrl || usuario?.foto ? (
+                        <img 
+                          src={imagenUrl || usuario?.foto} 
+                          alt="Perfil" 
+                          className="rounded-circle shadow"
+                          style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <FaUserCircle size={150} color="#a385ff" className="shadow-sm rounded-circle bg-white p-2" />
+                      )}
                     </div>
-                    <h3 className="fw-bold mb-1">{nombre}</h3>
+                    
+                    <h3 className="fw-bold mb-1">{nombre || usuario?.nombre}</h3>
                     <Badge bg="warning" text="dark" className="px-3 rounded-pill mb-3">
                       <FaStar className="me-1" /> 4.9 Conductor
                     </Badge>
-                    <Button variant="outline-primary" size="sm" className="w-100 mb-3 rounded-pill">Cambiar Foto</Button>
+                    
+                    <Form.Group controlId="formFile" className="mb-3">
+                      <Form.Label className="btn btn-outline-primary w-100 rounded-pill">
+                        Cambiar Foto
+                      </Form.Label>
+                      <Form.Control type="file" onChange={handleImageChange} style={{ display: 'none' }} />
+                    </Form.Group>
                     
                     <Button 
                       onClick={generarQr}
                       variant="outline-primary" 
-                      size="sm" 
                       className="w-100 mb-3 rounded-pill"
                       style={{ borderColor: '#a385ff', color: '#a385ff' }}
                     >
@@ -130,19 +160,29 @@ function DriverProfile() {
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold">NOMBRE COMPLETO</Form.Label>
-                            <Form.Control type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+                            <Form.Control 
+                              type="text" 
+                              value={nombre} 
+                              onChange={(e) => setNombre(e.target.value)} 
+                              placeholder="Ingresa tu nombre"
+                            />
                           </Form.Group>
                         </Col>
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold">TELÉFONO</Form.Label>
-                            <Form.Control type="text" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+                            <Form.Control 
+                              type="text" 
+                              value={telefono} 
+                              onChange={(e) => setTelefono(e.target.value)} 
+                              placeholder="Ingresa tu teléfono"
+                            />
                           </Form.Group>
                         </Col>
                       </Row>
                       <Form.Group className="mb-4">
                         <Form.Label className="small fw-bold">CORREO ELECTRÓNICO</Form.Label>
-                        <Form.Control type="email" value={usuario?.email || 'cauceron2002@gmail.com'} disabled />
+                        <Form.Control type="email" value={usuario?.email} disabled />
                       </Form.Group>
 
                       <h4 className="fw-bold mb-3">Credenciales de Conducción</h4>
@@ -169,8 +209,34 @@ function DriverProfile() {
                         </Col>
                       </Row>
 
+                      <Row className="g-3 mb-4">
+                        <Col sm={6}>
+                          <Card className="p-3 border-0 bg-light rounded-3">
+                            <div className="d-flex align-items-center mb-2">
+                              <FaEnvelope className="text-primary me-2" />
+                              <span className="fw-bold small">ESTADÍSTICAS</span>
+                            </div>
+                            <p className="mb-0 small">Calificación promedio: 4.9</p>
+                            <p className="mb-0 small">Viajes este mes: 45</p>
+                          </Card>
+                        </Col>
+                        <Col sm={6}>
+                          <Card className="p-3 border-0 bg-light rounded-3">
+                            <div className="d-flex align-items-center mb-2">
+                              <FaPhone className="text-primary me-2" />
+                              <span className="fw-bold small">VERIFICACIÓN</span>
+                            </div>
+                            <p className="mb-0 small">Teléfono: <span className="text-success">✓</span></p>
+                            <p className="mb-0 small">Documentos: <span className="text-success">✓</span></p>
+                          </Card>
+                        </Col>
+                      </Row>
+
                       <div className="d-flex gap-2">
-                        <Button className="flex-grow-1 border-0 fw-bold" style={{ background: 'linear-gradient(135deg, #a385ff, #8a65ff)' }}>
+                        <Button 
+                          className="flex-grow-1 border-0 fw-bold" 
+                          style={{ background: 'linear-gradient(135deg, #a385ff, #8a65ff)' }}
+                        >
                           <FaSave className="me-2" /> Guardar Cambios
                         </Button>
                         <Button variant="outline-danger" onClick={logout}>Salir</Button>
@@ -196,4 +262,4 @@ function DriverProfile() {
   );
 }
 
-export default DriverProfile;
+export default DriverProfile; 

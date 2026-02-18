@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Image } from "react-bootstrap";
-import { FaUserCircle } from "react-icons/fa"; // Icono de respaldo
+import { FaUserCircle } from "react-icons/fa";
 import Logo from '../pages/Imagenes/TODO_MOVI.png';
 import { useAuth } from '../pages/context/AuthContext';
 
@@ -9,7 +9,6 @@ export default function NavbarCustom() {
   const { token, usuario, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Obtenemos el primer nombre para mostrarlo al lado de la imagen
   const getFirstName = () => usuario?.nombre?.split(' ')[0] || 'Usuario';
 
   const handleLogout = () => {
@@ -54,7 +53,6 @@ export default function NavbarCustom() {
                     Hola, {getFirstName()}
                   </span>
                   
-                  {/* Lógica de la Imagen / Avatar */}
                   <div style={{ 
                     width: '40px', 
                     height: '40px', 

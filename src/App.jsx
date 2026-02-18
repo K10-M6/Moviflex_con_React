@@ -17,6 +17,7 @@ import DriverProfile from "./pages/Driver/DriverProfile";
 import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
 import Home from "./Dashboard/Home";
+import Documents from "./pages/Documents";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
@@ -49,9 +50,13 @@ function App() {
               </div>
             </RequiredAuth>
           } />
+          
           <Route path="/" element={<HomeBase />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+      
+          <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
 
           <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
           <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />

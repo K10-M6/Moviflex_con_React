@@ -72,15 +72,19 @@ function Register() {
             const data = await respuesta.json();
 
             if (respuesta.ok) {
-                setSuccess("✅ ¡Registro exitoso! Se envió un código QR a tu correo. Revísalo para finalizar tu activación.");
+                if (data.token && data.usuario) {
+                    login(data.token, data.usuario);
+                }
+                
+                setSuccess("✅ ¡Registro exitoso! Redirigiendo...");
                 
                 setTimeout(() => {
                     if (rol === "CONDUCTOR") {
-                        navigate("/qr-activation");
+                        navigate("/documentacion");
                     } else {
                         navigate("/login");
                     }
-                }, 2500);
+                }, 1500);
             } else {
                 setError(data.message || 'Error al registrarse');
             }
