@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
-import { FaIdCard, FaFileImage, FaArrowLeft } from "react-icons/fa";
-import { useAuth } from "./context/AuthContext"; // ← AGREGAR
+import { FaIdCard, FaFileImage, FaArrowLeft, FaCloudUploadAlt } from "react-icons/fa";
+import { useAuth } from "./context/AuthContext";
 import Navbar from '../components/Navbar';
 import Logo from './Imagenes/TODO_MOVI.png';
 
 function Documents() {
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, usuario } = useAuth();
   
   const [tipoDocumento, setTipoDocumento] = useState("");
   const [numeroDocumento, setNumeroDocumento] = useState("");
@@ -17,15 +17,25 @@ function Documents() {
   const [imagenFrontalPreview, setImagenFrontalPreview] = useState("");
   const [imagenDorsalPreview, setImagenDorsalPreview] = useState("");
   
+  // Estados para subida a Cloudinary
+  const [subiendoFrontal, setSubiendoFrontal] = useState(false);
+  const [subiendoDorsal, setSubiendoDorsal] = useState(false);
+  const [frontalUrl, setFrontalUrl] = useState("");
+  const [dorsalUrl, setDorsalUrl] = useState("");
+  
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/tu-cloud-name/image/upload";
+  const CLOUDINARY_UPLOAD_PRESET = "tu-upload-preset";
 
   const handleImageFrontalChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImagenFrontal(file);
       setImagenFrontalPreview(URL.createObjectURL(file));
+      setFrontalUrl("");
     }
   };
 
@@ -34,6 +44,41 @@ function Documents() {
     if (file) {
       setImagenDorsal(file);
       setImagenDorsalPreview(URL.createObjectURL(file));
+      setDorsalUrl("");
+    }
+  };
+
+  const subirImagenACloudinary = async (file, tipo) => {
+    const setSubiendo = tipo === 'frontal' ? setSubiendoFrontal : setSubiendoDorsal;
+    setSubiendo(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const respuesta = await fetch(CLOUDINARY_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await respuesta.json();
+      
+      if (respuesta.ok) {
+        if (tipo === 'frontal') {
+          setFrontalUrl(data.secure_url);
+        } else {
+          setDorsalUrl(data.secure_url);
+        }
+        return data.secure_url;
+      } else {
+        throw new Error(data.error?.message || 'Error al subir imagen');
+      }
+    } catch (error) {
+      setError(`Error al subir imagen ${tipo}: ${error.message}`);
+      return null;
+    } finally {
+      setSubiendo(false);
     }
   };
 
@@ -44,9 +89,12 @@ function Documents() {
     setLoading(true);
 
     if (!token) {
-      setError("No hay sesión activa. Inicia sesión nuevamente.");
-      setLoading(false);
-      return;
+      const usuarioLocal = JSON.parse(localStorage.getItem("app_usuario") || "{}");
+      if (!usuarioLocal || !usuarioLocal.registroTemporal) {
+        setError("No hay sesión activa. Inicia sesión nuevamente.");
+        setLoading(false);
+        return;
+      }
     }
 
     if (!tipoDocumento || !numeroDocumento || !imagenFrontal || !imagenDorsal) {
@@ -55,26 +103,58 @@ function Documents() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('tipoDocumento', tipoDocumento);
-    formData.append('numeroDocumento', numeroDocumento);
-    formData.append('imagenFrontal', imagenFrontal);
-    formData.append('imagenDorsal', imagenDorsal);
-
     try {
-      const respuesta = await fetch("https://backendmovi-production.up.railway.app/api/documentacion/documentacion_subir", {
+      let frontalImageUrl = frontalUrl;
+      let dorsalImageUrl = dorsalUrl;
+
+      if (!frontalUrl && imagenFrontal) {
+        frontalImageUrl = await subirImagenACloudinary(imagenFrontal, 'frontal');
+      }
+      if (!dorsalUrl && imagenDorsal) {
+        dorsalImageUrl = await subirImagenACloudinary(imagenDorsal, 'dorsal');
+      }
+
+      if (!frontalImageUrl || !dorsalImageUrl) {
+        setError("No se pudieron subir las imágenes");
+        setLoading(false);
+        return;
+      }
+
+      const datosEnviar = {
+        tipoDocumento: tipoDocumento,
+        numeroDocumento: numeroDocumento,
+        imagenFrontalUrl: frontalImageUrl,
+        imagenDorsalUrl: dorsalImageUrl
+      };
+
+      console.log("Enviando datos:", datosEnviar);
+
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion_subir", {
         method: "POST",
-        headers: {
-          'Authorization': `Bearer ${token}` // ← TOKEN AQUÍ
-        },
-        body: formData
+        headers: headers,
+        body: JSON.stringify(datosEnviar)
       });
 
       const data = await respuesta.json();
-      console.log(data);
+      console.log("Respuesta del servidor:", data);
 
       if (respuesta.ok) {
         setSuccess("✅ ¡Documentación enviada exitosamente para revisión!");
+        
+        const usuarioLocal = JSON.parse(localStorage.getItem("app_usuario") || "{}");
+        if (usuarioLocal.registroTemporal) {
+          delete usuarioLocal.registroTemporal;
+          localStorage.setItem("app_usuario", JSON.stringify(usuarioLocal));
+        }
+        
         setTimeout(() => {
           navigate("/perfil");
         }, 2000);
@@ -82,12 +162,14 @@ function Documents() {
         setError(data.message || 'Error al enviar la Documentación');
       }
     } catch (error) {
-      setError("Error de conexión con el servidor");
-      console.error(error);
+      console.error("Error completo:", error);
+      setError("Error de conexión con el servidor: " + error.message);
     } finally {
       setLoading(false);
     }
   }
+
+  const imagenesListas = frontalUrl && dorsalUrl;
 
   return (
     <div style={{
@@ -101,7 +183,7 @@ function Documents() {
       
       <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1, padding: '20px' }}>
         <Row className="justify-content-center">
-          <Col xs={12} md={6} lg={5}>
+          <Col xs={12} md={8} lg={6}>
             <Card className="shadow border-2" style={{ fontSize: '0.95rem' }}>
               <Card.Body className="p-4">
                 
@@ -122,7 +204,7 @@ function Documents() {
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
 
-                <Form onSubmit={guardarDocumentacion} encType="multipart/form-data">
+                <Form onSubmit={guardarDocumentacion}>
                   
                   <Form.Group className="mb-3" controlId="tipoDocumento">
                     <Form.Label>Tipo de Documento <span className="text-danger">*</span></Form.Label>
@@ -150,16 +232,24 @@ function Documents() {
                       disabled={loading}
                     />
                   </Form.Group>
-
                   <Form.Group className="mb-3" controlId="imagenFrontal">
-                    <Form.Label>Imagen Frontal del Documento <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>
+                      Imagen Frontal del Documento <span className="text-danger">*</span>
+                      {frontalUrl && <span className="text-success ms-2">✓ Subida</span>}
+                    </Form.Label>
                     <Form.Control
                       type="file"
                       accept="image/*"
                       onChange={handleImageFrontalChange}
-                      required
-                      disabled={loading}
+                      required={!frontalUrl}
+                      disabled={loading || subiendoFrontal}
                     />
+                    {subiendoFrontal && (
+                      <div className="mt-2 text-info">
+                        <FaCloudUploadAlt className="me-2" />
+                        Subiendo imagen...
+                      </div>
+                    )}
                     {imagenFrontalPreview && (
                       <div className="mt-2 text-center">
                         <img 
@@ -167,19 +257,41 @@ function Documents() {
                           alt="Vista previa frontal" 
                           style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '5px' }} 
                         />
+                        {frontalUrl && (
+                          <div className="mt-1">
+                            <Button 
+                              size="sm" 
+                              variant="outline-primary"
+                              onClick={() => subirImagenACloudinary(imagenFrontal, 'frontal')}
+                              disabled={subiendoFrontal}
+                            >
+                              {frontalUrl ? 'Re-subir' : 'Subir a Cloudinary'}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </Form.Group>
 
+                  {/* IMAGEN DORSAL */}
                   <Form.Group className="mb-4" controlId="imagenDorsal">
-                    <Form.Label>Imagen Dorsal del Documento <span className="text-danger">*</span></Form.Label>
+                    <Form.Label>
+                      Imagen Dorsal del Documento <span className="text-danger">*</span>
+                      {dorsalUrl && <span className="text-success ms-2">✓ Subida</span>}
+                    </Form.Label>
                     <Form.Control
                       type="file"
                       accept="image/*"
                       onChange={handleImageDorsalChange}
-                      required
-                      disabled={loading}
+                      required={!dorsalUrl}
+                      disabled={loading || subiendoDorsal}
                     />
+                    {subiendoDorsal && (
+                      <div className="mt-2 text-info">
+                        <FaCloudUploadAlt className="me-2" />
+                        Subiendo imagen...
+                      </div>
+                    )}
                     {imagenDorsalPreview && (
                       <div className="mt-2 text-center">
                         <img 
@@ -187,16 +299,29 @@ function Documents() {
                           alt="Vista previa dorsal" 
                           style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '5px' }} 
                         />
+                        {dorsalUrl && (
+                          <div className="mt-1">
+                            <Button 
+                              size="sm" 
+                              variant="outline-primary"
+                              onClick={() => subirImagenACloudinary(imagenDorsal, 'dorsal')}
+                              disabled={subiendoDorsal}
+                            >
+                              {dorsalUrl ? 'Re-subir' : 'Subir a Cloudinary'}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </Form.Group>
 
+                  {/* BOTONES */}
                   <div className="d-flex gap-2 mb-3">
                     <Button 
                       type="submit" 
                       className="flex-fill"
                       style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))' }}
-                      disabled={loading}
+                      disabled={loading || subiendoFrontal || subiendoDorsal || !imagenesListas}
                     >
                       {loading ? (
                         <>
@@ -206,7 +331,7 @@ function Documents() {
                       ) : (
                         <>
                           <FaFileImage className="me-2" />
-                          Enviar Documentación
+                          {imagenesListas ? 'Enviar Documentación' : 'Primero sube las imágenes'}
                         </>
                       )}
                     </Button>
@@ -218,6 +343,14 @@ function Documents() {
                       <FaArrowLeft />
                     </Button>
                   </div>
+
+                  {/* Mensaje de ayuda */}
+                  {!imagenesListas && imagenFrontal && imagenDorsal && (
+                    <Alert variant="info" className="small">
+                      <FaCloudUploadAlt className="me-2" />
+                      Haz clic en "Subir a Cloudinary" debajo de cada imagen antes de enviar.
+                    </Alert>
+                  )}
                 </Form>
 
               </Card.Body>

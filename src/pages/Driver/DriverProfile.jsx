@@ -5,8 +5,9 @@ import img3 from "../Imagenes/viaje-en-carro1.jpg";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap";
-import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaEnvelope, FaPhone, FaFileAlt } from "react-icons/fa"; // ← AÑADÍ FaFileAlt
 import QRModal from "../../components/QRModal";
+import { useNavigate } from "react-router-dom"; // ← AÑADIR ESTA LÍNEA
 
 
 const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
@@ -60,6 +61,8 @@ const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(1
 
 function DriverProfile() {
   const { usuario, token, logout } = useAuth();
+  const navigate = useNavigate(); // ← AÑADIR ESTA LÍNEA
+  
   const [nombre, setNombre] = useState(usuario?.nombre || '');
   const [telefono, setTelefono] = useState(usuario?.telefono || '');
   const [imagenUrl, setImagenUrl] = useState(null);
@@ -90,6 +93,11 @@ function DriverProfile() {
     
     setQrValue(qrData);
     setShowQRModal(true);
+  };
+
+  // ← NUEVA FUNCIÓN PARA IR A DOCUMENTACIÓN
+  const irADocumentacion = () => {
+    navigate("/documentacion");
   };
 
   return (
@@ -134,6 +142,17 @@ function DriverProfile() {
                       </Form.Label>
                       <Form.Control type="file" onChange={handleImageChange} style={{ display: 'none' }} />
                     </Form.Group>
+                    
+                    {/* ← NUEVO BOTÓN PARA DOCUMENTACIÓN (arriba del QR) */}
+                    <Button 
+                      onClick={irADocumentacion}
+                      variant="outline-success" 
+                      className="w-100 mb-3 rounded-pill"
+                      style={{ borderColor: '#28a745', color: '#28a745' }}
+                    >
+                      <FaFileAlt className="me-2" />
+                      Subir Documentación
+                    </Button>
                     
                     <Button 
                       onClick={generarQr}
