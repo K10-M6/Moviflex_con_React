@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
         guardarUsuario,
         login,
         logout,
+        setUsuario
       }}
     >
       {children}

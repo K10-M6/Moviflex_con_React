@@ -33,38 +33,39 @@ function QRScanner({ show, onHide }) {
         try {
             setLoading(true);
             setError('');
-
-            console.log("📱 Token escaneado:", decodedText.substring(0, 50) + "...");
-
+            
+            console.log("📱 QR escaneado (completo):", decodedText);
+            
+            const partes = decodedText.split('|');
+            const token = partes[0];
+            const nombre = partes[1] || 'Usuario';
+            
+            console.log("🔑 Token extraído:", token.substring(0, 30) + "...");
+            console.log("👤 Nombre extraído:", nombre);
+            
             try {
-
-                const payload = JSON.parse(atob(decodedText.split('.')[1]));
-                console.log("📦 Token decodificado COMPLETO:", payload);
-
-
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log("📦 Token decodificado:", payload);
+                
                 const usuarioQR = {
                     id: payload.id,
                     email: payload.email,
                     idRol: payload.idRol,
-                    nombre: payload.nombre || payload.name || 'Usuario',
+                    nombre: nombre, 
                     ...payload
                 };
 
                 console.log("✅ Usuario a guardar:", usuarioQR);
-                console.log("✅ Nombre extraído:", usuarioQR.nombre);
-
-                login(decodedText, usuarioQR);
-
+                
+                login(token, usuarioQR);
+                
                 setTimeout(() => {
                     const rolId = Number(usuarioQR.idRol);
-                    if (rolId === ROLES.ADMIN) {
-                        console.log("🚀 Redirigiendo a ADMIN");
+                    if (rolId === 1) {
                         navigate('/dashboard/home');
-                    } else if (rolId === ROLES.CONDUCTOR) {
-                        console.log("🚀 Redirigiendo a CONDUCTOR");
+                    } else if (rolId === 2) {
                         navigate('/driver-home');
-                    } else if (rolId === ROLES.VIAJERO) {
-                        console.log("🚀 Redirigiendo a VIAJERO");
+                    } else if (rolId === 3) {
                         navigate('/user-home');
                     }
                 }, 500);
@@ -77,7 +78,7 @@ function QRScanner({ show, onHide }) {
             }
 
         } catch (error) {
-            console.error('❌ Error procesando QR:', error);
+            console.error('❌ Error:', error);
             setError('Error al procesar el QR');
         } finally {
             setLoading(false);
