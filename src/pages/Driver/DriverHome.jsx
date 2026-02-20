@@ -6,15 +6,16 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const DriverHome = () => {
-    useAuth();
+    const { usuario, token } = useAuth();
     const navigate = useNavigate();
 
-    // Color Principal Solicitado
     const primaryBlue = "#124c83";
 
-    // --- ESTADOS PARA EL TUTORIAL ---
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
+    
+    const [vehiculo, setVehiculo] = useState(null);
+    const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
 
     useEffect(() => {
         const hasSeenTutorial = localStorage.getItem("tutorial_conductor_visto");
@@ -22,6 +23,34 @@ const DriverHome = () => {
             setShowTutorial(true);
         }
     }, []);
+
+    useEffect(() => {
+        const obtenerVehiculo = async () => {
+            if (!usuario?.idUsuarios || !token) return;
+            
+            try {
+                setCargandoVehiculo(true);
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${usuario.idUsuarios}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    setVehiculo(data);
+                } else {
+                    console.error("Error al obtener vehículo:", respuesta.status);
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+            } finally {
+                setCargandoVehiculo(false);
+            }
+        };
+
+        obtenerVehiculo();
+    }, [usuario, token]);
 
     const manejarSiguiente = () => {
         if (currentStep < 3) {
@@ -49,7 +78,6 @@ const DriverHome = () => {
         setShowTutorial(true);
     };
 
-    // --- ESTILOS PERSONALIZADOS PARA EL STEPPER ---
     const stepCircleStyle = (stepNumber) => ({
         width: "45px",
         height: "45px",
@@ -61,7 +89,6 @@ const DriverHome = () => {
         fontSize: "1.2rem",
         zIndex: 2,
         transition: "all 0.3s ease",
-        // Color sólido en lugar de degradado
         background: currentStep >= stepNumber ? primaryBlue : "#f8f9fa",
         color: currentStep >= stepNumber ? "#fff" : "#adb5bd",
         border: currentStep >= stepNumber ? "none" : "2px solid #dee2e6",
@@ -78,12 +105,10 @@ const DriverHome = () => {
     });
 
     return (
-        // Fondo con color sólido #124c83
         <div style={{ backgroundColor: primaryBlue, minHeight: '100vh' }}>
             <Navbar />
             <Container className="py-5">
                 
-                {/* CABECERA PRINCIPAL */}
                 <Card className="shadow border-0 mb-4 bg-white text-dark" style={{ borderRadius: '15px' }}>
                     <Card.Body className="p-4 d-flex justify-content-between align-items-center">
                         <div>
@@ -108,7 +133,6 @@ const DriverHome = () => {
                     </Card.Body>
                 </Card>
 
-                {/* FILA DE CONTENIDO: VEHÍCULO Y DOCUMENTACIÓN */}
                 <Row className="g-4">
                     <Col lg={7}>
                         <Card className="shadow border-0 h-100" style={{ borderRadius: '15px' }}>
@@ -117,16 +141,34 @@ const DriverHome = () => {
                                     <FaCar size={24} className="me-2" />
                                     <h5 className="mb-0 fw-bold">Vehículo Activo</h5>
                                 </div>
-                                <Row className="align-items-center">
-                                    <Col xs={4} className="text-center">
-                                        <div className="p-3 bg-light rounded-circle d-inline-block" style={{ fontSize: '2.5rem' }}>🚘</div>
-                                    </Col>
-                                    <Col xs={8}>
-                                        <p className="mb-1"><strong>Modelo:</strong> Toyota Corolla 2022</p>
-                                        <p className="mb-1"><strong>Placa:</strong> ABC-1234</p>
-                                        <Badge bg="success" className="px-3 rounded-pill">Verificado</Badge>
-                                    </Col>
-                                </Row>
+                                
+                                {cargandoVehiculo ? (
+                                    <div className="text-center py-4">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Cargando...</span>
+                                        </div>
+                                        <p className="mt-2 text-muted">Cargando datos del vehículo...</p>
+                                    </div>
+                                ) : vehiculo ? (
+                                    <Row className="align-items-center">
+                                        <Col xs={4} className="text-center">
+                                            <div className="p-3 bg-light rounded-circle d-inline-block" style={{ fontSize: '2.5rem' }}>🚘</div>
+                                        </Col>
+                                        <Col xs={8}>
+                                            <p className="mb-1"><strong>Modelo:</strong> {vehiculo.marca} {vehiculo.modelo} {vehiculo.año || ''}</p>
+                                            <p className="mb-1"><strong>Placa:</strong> {vehiculo.placa}</p>
+                                            <Badge bg={vehiculo.estado === 'ACTIVO' ? 'success' : 'warning'} className="px-3 rounded-pill">
+                                                {vehiculo.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente'}
+                                            </Badge>
+                                        </Col>
+                                    </Row>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <p className="text-muted">No tienes un vehículo registrado</p>
+                                        <Button variant="outline-primary" size="sm">Registrar vehículo</Button>
+                                    </div>
+                                )}
+                                
                                 <Button variant="link" className="mt-4 p-0 text-decoration-none fw-bold" style={{ color: primaryBlue }}>Actualizar datos</Button>
                             </Card.Body>
                         </Card>
@@ -161,7 +203,6 @@ const DriverHome = () => {
                 </Row>
             </Container>
 
-            {/* --- MODAL DE TUTORIAL GRANDE CON STEPPER --- */}
             <Modal 
                 show={showTutorial} 
                 onHide={saltarTutorial} 
@@ -173,7 +214,6 @@ const DriverHome = () => {
             >
                 <Modal.Body className="p-5">
                     
-                    {/* INDICADOR DE PASOS (STEPPER) */}
                     <div className="d-flex align-items-center justify-content-center mb-5">
                         <div style={stepCircleStyle(1)}>1</div>
                         <div style={stepLineStyle(1)}></div>
@@ -182,7 +222,6 @@ const DriverHome = () => {
                         <div style={stepCircleStyle(3)}>3</div>
                     </div>
 
-                    {/* CONTENIDO SEGÚN EL PASO */}
                     <div className="text-center" style={{ minHeight: '300px' }}>
                         {currentStep === 1 && (
                             <div className="animate__animated animate__fadeIn">
@@ -224,7 +263,6 @@ const DriverHome = () => {
                         )}
                     </div>
 
-                    {/* BOTONES DE ACCIÓN */}
                     <div className="mt-5 text-center">
                         <div className="d-flex gap-3 justify-content-center">
                             {currentStep > 1 && (
@@ -239,7 +277,7 @@ const DriverHome = () => {
                             <Button 
                                 className="px-5 py-2 fw-bold border-0 rounded-pill shadow"
                                 style={{ 
-                                    backgroundColor: primaryBlue, // Color sólido
+                                    backgroundColor: primaryBlue,
                                     color: '#fff',
                                     fontSize: '1.1rem',
                                     minWidth: '200px'
