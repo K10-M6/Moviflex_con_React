@@ -14,14 +14,15 @@ import Profile from "./pages/User/Profile";
 import UserHome from "./pages/User/UserHome";
 import DriverHome from "./pages/Driver/DriverHome";
 import DriverProfile from "./pages/Driver/DriverProfile";
+import Home from "./Dashboard/Home";
 import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
-import Home from "./Dashboard/Home";
+import DashboardLayout from "./Dashboard/DashboardLayout"
 import Documents from "./pages/Documents";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
-  
+
   const OpenSidebar = () => {
     setOpenSidebarToggle(!openSidebarToggle);
   }
@@ -59,96 +60,47 @@ function App() {
           <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
           
 
+          {/* User/Driver Routes */}
           <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
           <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
-          
-          <Route path="/driver-home" element={ 
-            <RequiredAuth>
-              <DriverHome />
-            </RequiredAuth>
-          } />
+          <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
           <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
-          
-          <Route path="/admin/conductores" element={ 
-            <RequiredAuth>
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-                <Header/>
-                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
-                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
-                  <div style={{ 
-                    flex: 1,
-                    marginLeft: openSidebarToggle ? '280px' : '0px',
-                    transition: 'margin-left 0.3s ease-in-out',
-                    backgroundColor: '#f5f5f5',
-                    height: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <AdminConductores />
-                  </div>
-                </div>
-              </div>
-            </RequiredAuth>
+          <Route path="/documents" element={<RequiredAuth><Documents /></RequiredAuth>} />
+
+          {/* Dashboard/Admin Routes wrapped in Layout */}
+          <Route path="/dashboard/home" element={
+            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+              <Home />
+            </DashboardLayout>
           } />
+
+          <Route path="/admin/conductores" element={
+            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+              <AdminConductores />
+            </DashboardLayout>
+          } />
+
           <Route path="/admin/usuarios" element={
-            <RequiredAuth> 
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-                <Header/>
-                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
-                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
-                  <div style={{ 
-                    flex: 1,
-                    marginLeft: openSidebarToggle ? '280px' : '0px',
-                    transition: 'margin-left 0.3s ease-in-out',
-                    backgroundColor: '#f5f5f5',
-                    height: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <AdminUsuarios />
-                  </div>
-                </div>
-              </div>
-            </RequiredAuth>
+            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+              <AdminUsuarios />
+            </DashboardLayout>
           } />
+
           <Route path="/admin/vehiculos" element={
-            <RequiredAuth> 
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-                <Header/>
-                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
-                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
-                  <div style={{ 
-                    flex: 1,
-                    marginLeft: openSidebarToggle ? '280px' : '0px',
-                    transition: 'margin-left 0.3s ease-in-out',
-                    backgroundColor: '#f5f5f5',
-                    height: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <AdminVehiculos />
-                  </div>
-                </div>
-              </div>
-            </RequiredAuth>
+            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+              <AdminVehiculos />
+            </DashboardLayout>
           } />
+
           <Route path="/admin/viajeros" element={
-            <RequiredAuth>
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-                <Header/>
-                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
-                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
-                  <div style={{ 
-                    flex: 1,
-                    marginLeft: openSidebarToggle ? '280px' : '0px',
-                    transition: 'margin-left 0.3s ease-in-out',
-                    backgroundColor: '#f5f5f5',
-                    height: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <AdminViajeros />
-                  </div>
-                </div>
-              </div>
-            </RequiredAuth>
+            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+              <AdminViajeros />
+            </DashboardLayout>
           } />
+
+          {/* Catch-all/Redirects */}
+          <Route path="/perfil" element={<Navigate to="/profile" replace />} />
+          <Route path="/qr-activation" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
@@ -160,7 +112,7 @@ export default App;
 function RequiredAuth({ children }) {
   const { token } = useAuth();
   if (!token) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }

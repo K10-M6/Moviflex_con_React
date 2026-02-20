@@ -252,11 +252,11 @@ function Login() {
     const handleQRScan = async (qrData) => {
         setLoading(true);
         setError("");
-        
+
         try {
             console.log("📱 Datos del QR:", qrData);
             const datos = JSON.parse(qrData);
-            
+
             if (datos.tipo === 'login_token') {
                 if (datos.expira && datos.expira < Date.now()) {
                     setError("El código QR ha expirado. Genera uno nuevo.");
@@ -269,11 +269,11 @@ function Login() {
                         email: datos.email,
                         idRol: datos.idRol
                     };
-                    
+
                     login(datos.token, usuarioQR);
                     setSuccess("¡Login automático con QR exitoso!");
                 }
-                
+
             } else {
                 setError("El código QR no es válido para iniciar sesión");
             }
