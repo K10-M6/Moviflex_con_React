@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
-import { FaIdCard, FaFileImage, FaArrowLeft, FaCloudUploadAlt } from "react-icons/fa";
+import { FaIdCard, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera } from "react-icons/fa";
 import { useAuth } from "./context/AuthContext";
 import Navbar from '../components/Navbar';
 import Logo from './Imagenes/TODO_MOVI.png';
+import toast, { Toaster } from 'react-hot-toast';
 
 function Documents() {
   const navigate = useNavigate();
@@ -12,73 +13,104 @@ function Documents() {
   
   const [tipoDocumento, setTipoDocumento] = useState("");
   const [numeroDocumento, setNumeroDocumento] = useState("");
+
   const [imagenFrontal, setImagenFrontal] = useState(null);
   const [imagenDorsal, setImagenDorsal] = useState(null);
   const [imagenFrontalPreview, setImagenFrontalPreview] = useState("");
   const [imagenDorsalPreview, setImagenDorsalPreview] = useState("");
   
-  // Estados para subida a Cloudinary
-  const [subiendoFrontal, setSubiendoFrontal] = useState(false);
-  const [subiendoDorsal, setSubiendoDorsal] = useState(false);
-  const [frontalUrl, setFrontalUrl] = useState("");
-  const [dorsalUrl, setDorsalUrl] = useState("");
+  const [frontalBase64, setFrontalBase64] = useState("");
+  const [dorsalBase64, setDorsalBase64] = useState("");
+  const [convirtiendoFrontal, setConvirtiendoFrontal] = useState(false);
+  const [convirtiendoDorsal, setConvirtiendoDorsal] = useState(false);
   
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/tu-cloud-name/image/upload";
-  const CLOUDINARY_UPLOAD_PRESET = "tu-upload-preset";
+  const frontalInputRef = useRef(null);
+  const dorsalInputRef = useRef(null);
 
-  const handleImageFrontalChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagenFrontal(file);
-      setImagenFrontalPreview(URL.createObjectURL(file));
-      setFrontalUrl("");
+  const validarImagen = (file) => {
+    const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const tamañoMaximo = 5 * 1024 * 1024; // 5MB
+    
+    if (!tiposPermitidos.includes(file.type)) {
+      return "Formato no permitido. Usa JPG, PNG o WEBP";
     }
+    if (file.size > tamañoMaximo) {
+      return "La imagen no debe superar los 5MB";
+    }
+    return null;
   };
 
-  const handleImageDorsalChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagenDorsal(file);
-      setImagenDorsalPreview(URL.createObjectURL(file));
-      setDorsalUrl("");
-    }
+  // Convertir archivo a base64 (igual que en Register)
+  const convertirABase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
-  const subirImagenACloudinary = async (file, tipo) => {
-    const setSubiendo = tipo === 'frontal' ? setSubiendoFrontal : setSubiendoDorsal;
-    setSubiendo(true);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-    try {
-      const respuesta = await fetch(CLOUDINARY_URL, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await respuesta.json();
-      
-      if (respuesta.ok) {
-        if (tipo === 'frontal') {
-          setFrontalUrl(data.secure_url);
-        } else {
-          setDorsalUrl(data.secure_url);
-        }
-        return data.secure_url;
-      } else {
-        throw new Error(data.error?.message || 'Error al subir imagen');
+  const handleImageFrontalChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const error = validarImagen(file);
+      if (error) {
+        toast.error(error);
+        setError(error);
+        e.target.value = '';
+        return;
       }
-    } catch (error) {
-      setError(`Error al subir imagen ${tipo}: ${error.message}`);
-      return null;
-    } finally {
-      setSubiendo(false);
+
+      try {
+        setConvirtiendoFrontal(true);
+        
+        const previewUrl = URL.createObjectURL(file);
+        setImagenFrontalPreview(previewUrl);
+        setImagenFrontal(file);
+        
+        const base64 = await convertirABase64(file);
+        setFrontalBase64(base64);
+        
+        toast.success('Imagen frontal seleccionada correctamente');
+      } catch (error) {
+        toast.error('Error al procesar la imagen frontal');
+      } finally {
+        setConvirtiendoFrontal(false);
+      }
+    }
+  };
+
+  const handleImageDorsalChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const error = validarImagen(file);
+      if (error) {
+        toast.error(error);
+        setError(error);
+        e.target.value = '';
+        return;
+      }
+
+      try {
+        setConvirtiendoDorsal(true);
+        
+        const previewUrl = URL.createObjectURL(file);
+        setImagenDorsalPreview(previewUrl);
+        setImagenDorsal(file);
+        
+        const base64 = await convertirABase64(file);
+        setDorsalBase64(base64);
+        
+        toast.success('Imagen dorsal seleccionada correctamente');
+      } catch (error) {
+        toast.error('Error al procesar la imagen dorsal');
+      } finally {
+        setConvirtiendoDorsal(false);
+      }
     }
   };
 
@@ -88,88 +120,80 @@ function Documents() {
     setSuccess("");
     setLoading(true);
 
-    if (!token) {
-      const usuarioLocal = JSON.parse(localStorage.getItem("app_usuario") || "{}");
-      if (!usuarioLocal || !usuarioLocal.registroTemporal) {
-        setError("No hay sesión activa. Inicia sesión nuevamente.");
-        setLoading(false);
-        return;
-      }
-    }
-
-    if (!tipoDocumento || !numeroDocumento || !imagenFrontal || !imagenDorsal) {
-      setError("Todos los campos son obligatorios");
+    // Validaciones
+    if (!frontalBase64 || !dorsalBase64) {
+      const errorMsg = "Debes seleccionar ambas imágenes";
+      setError(errorMsg);
+      toast.error(errorMsg);
       setLoading(false);
       return;
     }
 
+    if (!tipoDocumento || !numeroDocumento) {
+      const errorMsg = "Todos los campos son obligatorios";
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setLoading(false);
+      return;
+    }
+
+    const toastId = toast.loading('Enviando documentación...');
+
     try {
-      let frontalImageUrl = frontalUrl;
-      let dorsalImageUrl = dorsalUrl;
-
-      if (!frontalUrl && imagenFrontal) {
-        frontalImageUrl = await subirImagenACloudinary(imagenFrontal, 'frontal');
-      }
-      if (!dorsalUrl && imagenDorsal) {
-        dorsalImageUrl = await subirImagenACloudinary(imagenDorsal, 'dorsal');
-      }
-
-      if (!frontalImageUrl || !dorsalImageUrl) {
-        setError("No se pudieron subir las imágenes");
-        setLoading(false);
-        return;
-      }
-
+      // IMPORTANTE: Enviar como JSON con imágenes en base64
       const datosEnviar = {
         tipoDocumento: tipoDocumento,
         numeroDocumento: numeroDocumento,
-        imagenFrontalUrl: frontalImageUrl,
-        imagenDorsalUrl: dorsalImageUrl
+        imagenFrontal: frontalBase64,
+        imagenDorsal: dorsalBase64
       };
 
-      console.log("Enviando datos:", datosEnviar);
+      console.log("Enviando datos como JSON con imágenes en base64");
 
       const headers = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json' // ← IMPORTANTE: JSON, no FormData
       };
       
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion_subir", {
+      const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_subir", {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(datosEnviar)
+        body: JSON.stringify(datosEnviar) // ← Enviar como JSON
       });
 
+      console.log('Status:', respuesta.status);
+      
       const data = await respuesta.json();
       console.log("Respuesta del servidor:", data);
 
+      toast.dismiss(toastId);
+
       if (respuesta.ok) {
         setSuccess("✅ ¡Documentación enviada exitosamente para revisión!");
-        
-        const usuarioLocal = JSON.parse(localStorage.getItem("app_usuario") || "{}");
-        if (usuarioLocal.registroTemporal) {
-          delete usuarioLocal.registroTemporal;
-          localStorage.setItem("app_usuario", JSON.stringify(usuarioLocal));
-        }
+        toast.success('Documentación enviada correctamente');
         
         setTimeout(() => {
-          navigate("/perfil");
+          navigate("/driver-profile");
         }, 2000);
       } else {
-        setError(data.message || 'Error al enviar la Documentación');
+        const errorMsg = data.error || data.message || 'Error al enviar la documentación';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
       console.error("Error completo:", error);
+      toast.dismiss(toastId);
+      toast.error('Error de conexión con el servidor');
       setError("Error de conexión con el servidor: " + error.message);
     } finally {
       setLoading(false);
     }
   }
 
-  const imagenesListas = frontalUrl && dorsalUrl;
+  const ambasImagenesListas = frontalBase64 && dorsalBase64;
 
   return (
     <div style={{
@@ -179,21 +203,18 @@ function Documents() {
       display: 'flex',
       flexDirection: 'column'
     }}>
+      <Toaster />
+      
       <Navbar />
       
       <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1, padding: '20px' }}>
         <Row className="justify-content-center">
           <Col xs={12} md={8} lg={6}>
-            <Card className="shadow border-2" style={{ fontSize: '0.95rem' }}>
+            <Card className="shadow border-2">
               <Card.Body className="p-4">
                 
                 <div className="text-center mb-4">
-                  <img src={Logo} alt="Logo Moviflexx" 
-                    style={{
-                      width: '180px',
-                      height: 'auto',
-                    }}
-                  />
+                  <img src={Logo} alt="Logo" style={{ width: '180px' }} />
                 </div>
 
                 <h3 className="text-center mb-4" style={{ color: '#124c83' }}>
@@ -205,8 +226,7 @@ function Documents() {
                 {success && <Alert variant="success">{success}</Alert>}
 
                 <Form onSubmit={guardarDocumentacion}>
-                  
-                  <Form.Group className="mb-3" controlId="tipoDocumento">
+                  <Form.Group className="mb-3">
                     <Form.Label>Tipo de Documento <span className="text-danger">*</span></Form.Label>
                     <Form.Select
                       value={tipoDocumento}
@@ -214,143 +234,112 @@ function Documents() {
                       required
                       disabled={loading}
                     >
-                      <option value="">Seleccione tipo de documento</option>
+                      <option value="">Seleccione tipo</option>
                       <option value="LICENCIA">Licencia de conducir</option>
                       <option value="CEDULA">Cédula de ciudadanía</option>
                       <option value="PASAPORTE">Pasaporte</option>
                     </Form.Select>
                   </Form.Group>
 
-                  <Form.Group className="mb-3" controlId="numeroDocumento">
+                  <Form.Group className="mb-3">
                     <Form.Label>Número de Documento <span className="text-danger">*</span></Form.Label>
                     <Form.Control
                       type="text"
-                      placeholder="Ingrese el número de documento"
+                      placeholder="Ingrese el número"
                       value={numeroDocumento}
                       onChange={(e) => setNumeroDocumento(e.target.value)}
                       required
                       disabled={loading}
                     />
                   </Form.Group>
-                  <Form.Group className="mb-3" controlId="imagenFrontal">
-                    <Form.Label>
-                      Imagen Frontal del Documento <span className="text-danger">*</span>
-                      {frontalUrl && <span className="text-success ms-2">✓ Subida</span>}
+
+                  {/* IMAGEN FRONTAL */}
+                  <Form.Group className="mb-4">
+                    <Form.Label className="d-flex align-items-center">
+                      <FaFileImage className="me-2" />
+                      Imagen Frontal <span className="text-danger">*</span>
+                      {frontalBase64 && <FaCheckCircle className="text-success ms-2" />}
                     </Form.Label>
+
                     <Form.Control
+                      ref={frontalInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleImageFrontalChange}
-                      required={!frontalUrl}
-                      disabled={loading || subiendoFrontal}
+                      style={{ display: 'none' }}
                     />
-                    {subiendoFrontal && (
-                      <div className="mt-2 text-info">
-                        <FaCloudUploadAlt className="me-2" />
-                        Subiendo imagen...
-                      </div>
-                    )}
+                  
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => frontalInputRef.current.click()}
+                      className="w-100 mb-2"
+                      disabled={loading || convirtiendoFrontal}
+                    >
+                      <FaCamera className="me-2" />
+                      {imagenFrontal ? 'Cambiar imagen' : 'Seleccionar imagen frontal'}
+                    </Button>
+                    
+                    {convirtiendoFrontal && <Alert variant="info">Procesando imagen...</Alert>}
+                    
                     {imagenFrontalPreview && (
-                      <div className="mt-2 text-center">
-                        <img 
-                          src={imagenFrontalPreview} 
-                          alt="Vista previa frontal" 
-                          style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '5px' }} 
-                        />
-                        {frontalUrl && (
-                          <div className="mt-1">
-                            <Button 
-                              size="sm" 
-                              variant="outline-primary"
-                              onClick={() => subirImagenACloudinary(imagenFrontal, 'frontal')}
-                              disabled={subiendoFrontal}
-                            >
-                              {frontalUrl ? 'Re-subir' : 'Subir a Cloudinary'}
-                            </Button>
-                          </div>
-                        )}
+                      <div className="text-center">
+                        <img src={imagenFrontalPreview} alt="Preview" style={{ maxHeight: '150px' }} />
                       </div>
                     )}
                   </Form.Group>
 
                   {/* IMAGEN DORSAL */}
-                  <Form.Group className="mb-4" controlId="imagenDorsal">
-                    <Form.Label>
-                      Imagen Dorsal del Documento <span className="text-danger">*</span>
-                      {dorsalUrl && <span className="text-success ms-2">✓ Subida</span>}
+                  <Form.Group className="mb-4">
+                    <Form.Label className="d-flex align-items-center">
+                      <FaFileImage className="me-2" />
+                      Imagen Dorsal <span className="text-danger">*</span>
+                      {dorsalBase64 && <FaCheckCircle className="text-success ms-2" />}
                     </Form.Label>
+
                     <Form.Control
+                      ref={dorsalInputRef}
                       type="file"
                       accept="image/*"
                       onChange={handleImageDorsalChange}
-                      required={!dorsalUrl}
-                      disabled={loading || subiendoDorsal}
+                      style={{ display: 'none' }}
                     />
-                    {subiendoDorsal && (
-                      <div className="mt-2 text-info">
-                        <FaCloudUploadAlt className="me-2" />
-                        Subiendo imagen...
-                      </div>
-                    )}
+                    
+                    <Button
+                      variant="outline-primary"
+                      onClick={() => dorsalInputRef.current.click()}
+                      className="w-100 mb-2"
+                      disabled={loading || convirtiendoDorsal}
+                    >
+                      <FaCamera className="me-2" />
+                      {imagenDorsal ? 'Cambiar imagen' : 'Seleccionar imagen dorsal'}
+                    </Button>
+                    
+                    {convirtiendoDorsal && <Alert variant="info">Procesando imagen...</Alert>}
+                    
                     {imagenDorsalPreview && (
-                      <div className="mt-2 text-center">
-                        <img 
-                          src={imagenDorsalPreview} 
-                          alt="Vista previa dorsal" 
-                          style={{ maxWidth: '100%', maxHeight: '150px', borderRadius: '5px' }} 
-                        />
-                        {dorsalUrl && (
-                          <div className="mt-1">
-                            <Button 
-                              size="sm" 
-                              variant="outline-primary"
-                              onClick={() => subirImagenACloudinary(imagenDorsal, 'dorsal')}
-                              disabled={subiendoDorsal}
-                            >
-                              {dorsalUrl ? 'Re-subir' : 'Subir a Cloudinary'}
-                            </Button>
-                          </div>
-                        )}
+                      <div className="text-center">
+                        <img src={imagenDorsalPreview} alt="Preview" style={{ maxHeight: '150px' }} />
                       </div>
                     )}
                   </Form.Group>
 
-                  {/* BOTONES */}
-                  <div className="d-flex gap-2 mb-3">
+                  <div className="d-flex gap-2">
                     <Button 
                       type="submit" 
                       className="flex-fill"
-                      style={{ background: 'linear-gradient(20deg, #4acfbd, rgba(89, 194, 255, 0.66))' }}
-                      disabled={loading || subiendoFrontal || subiendoDorsal || !imagenesListas}
+                      style={{ 
+                        background: ambasImagenesListas ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
+                        border: 'none'
+                      }}
+                      disabled={loading || !ambasImagenesListas || !tipoDocumento || !numeroDocumento}
                     >
-                      {loading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                          Enviando...
-                        </>
-                      ) : (
-                        <>
-                          <FaFileImage className="me-2" />
-                          {imagenesListas ? 'Enviar Documentación' : 'Primero sube las imágenes'}
-                        </>
-                      )}
+                      {loading ? 'Enviando...' : 'Enviar Documentación'}
                     </Button>
 
-                    <Button 
-                      variant="outline-secondary"
-                      onClick={() => navigate("/perfil")}
-                    >
+                    <Button variant="outline-secondary" onClick={() => navigate("/driver-profile")}>
                       <FaArrowLeft />
                     </Button>
                   </div>
-
-                  {/* Mensaje de ayuda */}
-                  {!imagenesListas && imagenFrontal && imagenDorsal && (
-                    <Alert variant="info" className="small">
-                      <FaCloudUploadAlt className="me-2" />
-                      Haz clic en "Subir a Cloudinary" debajo de cada imagen antes de enviar.
-                    </Alert>
-                  )}
                 </Form>
 
               </Card.Body>

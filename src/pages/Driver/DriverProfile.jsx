@@ -5,10 +5,10 @@ import img3 from "../Imagenes/viaje-en-carro1.jpg";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap";
-import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaEnvelope, FaPhone, FaFileAlt } from "react-icons/fa"; // ← AÑADÍ FaFileAlt
+import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
-import { useNavigate } from "react-router-dom"; // ← AÑADIR ESTA LÍNEA
-
+import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from 'react-hot-toast';
 
 const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
   const [index, setIndex] = useState(0);
@@ -46,7 +46,7 @@ const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(1
               backgroundImage: `url(${src})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              opacity: i === index ? (fade ? 1 : 1) : (fade && (i === (index + images.length - 1) % images.length) ? 0 : 0),
+              opacity: i === index ? (fade ? 1 : 1) : 0,
               transition: 'opacity 1s cubic-bezier(.4,0,.2,1)',
               filter: 'grayscale(10%) contrast(95%) brightness(95%)',
               zIndex: i === index ? 1 : 0,
@@ -60,48 +60,107 @@ const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(1
 };
 
 function DriverProfile() {
-  const { usuario, token, logout } = useAuth();
-  const navigate = useNavigate(); // ← AÑADIR ESTA LÍNEA
+  const { usuario, token, logout, setUsuario } = useAuth();
+  const navigate = useNavigate();
   
   const [nombre, setNombre] = useState(usuario?.nombre || '');
   const [telefono, setTelefono] = useState(usuario?.telefono || '');
-  const [imagenUrl, setImagenUrl] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
+  const [loading, setLoading] = useState(false);
   
   const backgroundImages = [img1, img2, img3];
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImagenUrl(URL.createObjectURL(file));
-    }
+  const formatearFecha = (fecha) => {
+    if (!fecha) return 'Fecha no disponible';
+    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(fecha).toLocaleDateString('es-ES', opciones);
   };
 
   const generarQr = () => {
     if (!token) {
-      alert("No hay Token disponible. Inicia sesión nuevamente.");
+      toast.error("No hay Token disponible. Inicia sesión nuevamente.");
       return;
     }
 
     const qrData = `${token}|${usuario?.nombre || ''}`;
-    console.log("🔍 ===== GENERANDO QR CONDUCTOR =====");
-    console.log("🔍 Longitud total:", qrData.length, "caracteres");
-    console.log("🔑 Token:", token.substring(0, 30) + "...");
-    console.log("👤 Nombre incluido:", usuario?.nombre || 'sin nombre');
-    console.log("🔍 ===== FIN GENERACIÓN =====\n");
-    
     setQrValue(qrData);
     setShowQRModal(true);
   };
 
-  // ← NUEVA FUNCIÓN PARA IR A DOCUMENTACIÓN
   const irADocumentacion = () => {
     navigate("/documentacion");
   };
 
+  const guardarCambios = async () => {
+    try {
+      setLoading(true);
+      
+      const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${usuario.idUsuarios}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          nombre: nombre,
+          telefono: telefono
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setUsuario({
+          ...usuario,
+          nombre: nombre,
+          telefono: telefono
+        });
+        
+        toast.success('Datos actualizados correctamente');
+      } else {
+        toast.error(data.error || 'Error al actualizar los datos');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al guardar los cambios');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fotoAMostrar = usuario?.fotoPerfil;
+
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '10px',
+            fontSize: '14px',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4acfbd',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ff4b4b',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+      
       <BackgroundSlider images={backgroundImages} interval={2500} overlayColor={'rgba(163,133,255,0.35)'} />
       <div style={{ position: 'relative', zIndex: 2 }}>
         <div style={{ background: '#a385ff', width: '100%', position: 'relative', zIndex: 10 }}>
@@ -119,9 +178,9 @@ function DriverProfile() {
                 <Row className="g-0">
                   <Col md={4} className="bg-light text-center p-4 border-end">
                     <div className="mb-3">
-                      {imagenUrl || usuario?.foto ? (
+                      {fotoAMostrar ? (
                         <img 
-                          src={imagenUrl || usuario?.foto} 
+                          src={fotoAMostrar} 
                           alt="Perfil" 
                           className="rounded-circle shadow"
                           style={{ width: '150px', height: '150px', objectFit: 'cover' }}
@@ -136,19 +195,12 @@ function DriverProfile() {
                       <FaStar className="me-1" /> 4.9 Conductor
                     </Badge>
                     
-                    <Form.Group controlId="formFile" className="mb-3">
-                      <Form.Label className="btn btn-outline-primary w-100 rounded-pill">
-                        Cambiar Foto
-                      </Form.Label>
-                      <Form.Control type="file" onChange={handleImageChange} style={{ display: 'none' }} />
-                    </Form.Group>
-                    
-                    {/* ← NUEVO BOTÓN PARA DOCUMENTACIÓN (arriba del QR) */}
                     <Button 
                       onClick={irADocumentacion}
                       variant="outline-success" 
                       className="w-100 mb-3 rounded-pill"
                       style={{ borderColor: '#28a745', color: '#28a745' }}
+                      disabled={loading}
                     >
                       <FaFileAlt className="me-2" />
                       Subir Documentación
@@ -159,6 +211,7 @@ function DriverProfile() {
                       variant="outline-primary" 
                       className="w-100 mb-3 rounded-pill"
                       style={{ borderColor: '#a385ff', color: '#a385ff' }}
+                      disabled={loading}
                     >
                       <FaQrcode className="me-2" />
                       Generar QR de acceso
@@ -167,7 +220,7 @@ function DriverProfile() {
                     <hr />
                     <div className="text-start px-3">
                       <p className="small text-muted mb-1">MIEMBRO DESDE</p>
-                      <p className="fw-bold">Enero 2025</p>
+                      <p className="fw-bold">{formatearFecha(usuario?.creadoEn)}</p>
                       <p className="small text-muted mb-1">VIAJES COMPLETADOS</p>
                       <p className="fw-bold">154 servicios</p>
                     </div>
@@ -185,6 +238,7 @@ function DriverProfile() {
                               value={nombre} 
                               onChange={(e) => setNombre(e.target.value)} 
                               placeholder="Ingresa tu nombre"
+                              disabled={loading}
                             />
                           </Form.Group>
                         </Col>
@@ -196,6 +250,7 @@ function DriverProfile() {
                               value={telefono} 
                               onChange={(e) => setTelefono(e.target.value)} 
                               placeholder="Ingresa tu teléfono"
+                              disabled={loading}
                             />
                           </Form.Group>
                         </Col>
@@ -229,37 +284,16 @@ function DriverProfile() {
                         </Col>
                       </Row>
 
-                      <Row className="g-3 mb-4">
-                        <Col sm={6}>
-                          <Card className="p-3 border-0 bg-light rounded-3">
-                            <div className="d-flex align-items-center mb-2">
-                              <FaEnvelope className="text-primary me-2" />
-                              <span className="fw-bold small">ESTADÍSTICAS</span>
-                            </div>
-                            <p className="mb-0 small">Calificación promedio: 4.9</p>
-                            <p className="mb-0 small">Viajes este mes: 45</p>
-                          </Card>
-                        </Col>
-                        <Col sm={6}>
-                          <Card className="p-3 border-0 bg-light rounded-3">
-                            <div className="d-flex align-items-center mb-2">
-                              <FaPhone className="text-primary me-2" />
-                              <span className="fw-bold small">VERIFICACIÓN</span>
-                            </div>
-                            <p className="mb-0 small">Teléfono: <span className="text-success">✓</span></p>
-                            <p className="mb-0 small">Documentos: <span className="text-success">✓</span></p>
-                          </Card>
-                        </Col>
-                      </Row>
-
                       <div className="d-flex gap-2">
                         <Button 
                           className="flex-grow-1 border-0 fw-bold" 
                           style={{ background: 'linear-gradient(135deg, #a385ff, #8a65ff)' }}
+                          onClick={guardarCambios}
+                          disabled={loading}
                         >
-                          <FaSave className="me-2" /> Guardar Cambios
+                          <FaSave className="me-2" /> {loading ? 'Guardando...' : 'Guardar Cambios'}
                         </Button>
-                        <Button variant="outline-danger" onClick={logout}>Salir</Button>
+                        <Button variant="outline-danger" onClick={logout} disabled={loading}>Salir</Button>
                       </div>
                     </Form>
                   </Col>
