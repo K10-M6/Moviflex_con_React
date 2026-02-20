@@ -57,7 +57,7 @@ function HomeBase() {
     <div style={{ minHeight: '100vh', minWidth: '100vw', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <BackgroundSlider images={backgroundImages} interval={3500} overlayColor={'rgba(18,76,131,0.35)'} />
       <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-      {/* Navbar con fondo sólido */}
+
       <div style={{ background: '#124c83', width: '100%', position: 'relative', zIndex: 10 }}>
       <Navbar />
       </div>
@@ -86,37 +86,43 @@ function HomeBase() {
       <Container style={{background: '#124c8367',
       minHeight: '100vh'
       }} className="p-4 rounded shadow">
-      <Row className="text-center mb-4">
-      <Col>
-      <h2 className="mb-3">¿Cómo Funciona?</h2>
-      <p className="text-muted">Tres pasos simples para comenzar</p>
-      </Col>
+      <Row className="text-center mb-4 text-white">
+        <Col>
+        <h2 className="mb-3">¿Cómo Funciona?</h2>
+        <p className="text-center text-white">Tres pasos simples para comenzar</p>
+        </Col>
       </Row>
       <Row>
       <Col md={4} className="mb-4">
-      <Card className="h-100" style={{ border: '3px solid #124c83' }}>
-      <Card.Body className="text-center p-4">
-      <div className="display-4 fw-bold text-dark mb-3">1</div>
-      <Card.Title className="mb-3">Registrate</Card.Title>
-      <Card.Text>Crea tu cuenta como pasajero o conductor en segundos</Card.Text>
+      <Card className="h-100">
+      <Card.Body className="text-center p-4" style={{
+        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+      }}>
+      <div className="display-4 fw-bold text-white mb-3">1</div>
+      <Card.Title className="mb-3 text-white">Registrate</Card.Title>
+      <Card.Text className="text-white">Crea tu cuenta como pasajero o conductor en segundos</Card.Text>
       </Card.Body>
       </Card>
       </Col>
       <Col md={4} className="mb-4">
-      <Card className="h-100" style={{ border: '3px solid #124c83' }}>
-      <Card.Body className="text-center p-4">
-      <div className="display-4 fw-bold text-dark mb-3">2</div>
-      <Card.Title className="mb-3">Busca o Crea</Card.Title>
-      <Card.Text>Busca rutas disponibles o crea tu propia ruta fija</Card.Text>
+      <Card className="h-100">
+      <Card.Body className="text-center p-4" style={{
+        background: 'linear-gradient(135deg, #93fbd3 0%, #50aa79 100%)'
+      }}>
+      <div className="display-4 fw-bold text-white mb-3">2</div>
+      <Card.Title className="mb-3 text-white">Busca o Crea</Card.Title>
+      <Card.Text className="text-white">Busca rutas disponibles o crea tu propia ruta fija</Card.Text>
       </Card.Body>
       </Card>
       </Col>
       <Col md={4} className="mb-4" >
-      <Card className="h-100" style={{ border: '3px solid #124c83' }}>
-      <Card.Body className="text-center p-4">
-      <div className="display-4 fw-bold text-black mb-3">3</div>
-      <Card.Title className="mb-3" >Viaja Seguro</Card.Title>
-      <Card.Text>Disfruta de viajes compartidos seguros y económicos</Card.Text>
+      <Card className="h-100">
+      <Card.Body className="text-center p-4" style={{
+        background: 'linear-gradient(135deg, #f093fb 0%, #9457f5 100%)'
+      }}>
+      <div className="display-4 fw-bold text-white mb-3">3</div>
+      <Card.Title className="mb-3 text-white ">Viaja Seguro</Card.Title>
+      <Card.Text className="text-white">Disfruta de viajes compartidos seguros y económicos</Card.Text>
       </Card.Body>
       </Card>
       </Col>
@@ -140,33 +146,37 @@ function HomeBase() {
       </Row>
       <Row className="justify-content-center">
       <Col lg={4} className="mb-4">
-      <Card className="h-100 shadow" style={{ border: '3px solid #124c83' }}>
-      <Card.Body className="text-center p-4">
-      <Card.Title className="mb-3">Pasajero</Card.Title>
-      <div className="display-4 fw-bold mb-4">Gratis</div>
+      <Card className="h-100 shadow">
+      <Card.Body className="text-center p-4" style={{
+        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+      }}>
+      <Card.Title className="mb-3 text-white">Pasajero</Card.Title>
+      <div className="display-4 fw-bold mb-4 text-white">Gratis</div>
       <div className="text-start">
-      <div className="mb-2">Buscar rutas</div>
-      <div className="mb-2">Reservar asiento</div>
-      <div className="mb-2">Calificar conductores</div>
-      <div>Historial de viajes</div>
+      <div className="mb-2 text-white">Buscar rutas</div>
+      <div className="mb-2 text-white">Reservar asiento</div>
+      <div className="mb-2 text-white">Calificar conductores</div>
+      <div className="text-white">Historial de viajes</div>
       </div>
       </Card.Body>
       </Card>
       </Col>
       <Col lg={4} className="mb-4">
-      <Card className="h-100 shadow" style={{ border: '3px solid #124c83' }}>
-      <Card.Body className="text-center p-4">
-      <Card.Title className="mb-3">Conductor Premium</Card.Title>
-      <div className="display-4 fw-bold mb-4">$4.99/mes</div>
+      <Card className="h-100 shadow">
+      <Card.Body className="text-center p-4" style={{
+        background: 'linear-gradient(135deg, #f093fb 0%, #9457f5 100%)'
+      }}>
+      <Card.Title className="mb-3 text-white">Conductor Premium</Card.Title>
+      <div className="display-4 fw-bold mb-4 text-white">$4.99/mes</div>
       <Button variant="outline-dark" className="w-100 mb-4">
       Elegir Plan
       </Button>
       <div className="text-start">
-      <div className="mb-2">Crear rutas</div>
-      <div className="mb-2">Aceptar pasajeros</div>
-      <div className="mb-2">Estadísticas de viajes</div>
-      <div className="mb-2">Prioridad en soporte</div>
-      <div>Sin comisión extra</div>
+      <div className="mb-2 text-white">Crear rutas</div>
+      <div className="mb-2 text-white">Aceptar pasajeros</div>
+      <div className="mb-2 text-white">Estadísticas de viajes</div>
+      <div className="mb-2 text-white">Prioridad en soporte</div>
+      <div className="text-white">Sin comisión extra</div>
       </div>
       </Card.Body>
       </Card>

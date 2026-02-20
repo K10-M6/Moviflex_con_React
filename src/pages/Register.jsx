@@ -239,7 +239,6 @@ function Register() {
         }
     }
 
-    // --- FUNCIONES EXISTENTES (sin cambios) ---
     const iniciarCamara = async () => {
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({ 

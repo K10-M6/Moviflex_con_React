@@ -84,7 +84,7 @@ export default function NavbarCustom() {
   const fotoAMostrar = fotoPerfil || usuario?.fotoPerfil || usuario?.foto;
 
   return (
-    <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top" style={{ backgroundColor: '#124c83' }}>
+    <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top" style={{ backgroundColor: '#124c83',borderBottom: '3px solid #66a8df' }}>
       <Container>
         <Navbar.Brand as={Link} to={token ? homePath : "/"}>
           <img src={Logo} height="50px" className="me-1" alt="Logo MoviFlexx" />
