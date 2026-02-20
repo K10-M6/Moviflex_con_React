@@ -11,7 +11,6 @@ function Register() {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     
-    // --- ESTADOS DE DATOS ---
     const [step, setStep] = useState(1);
     const [nombre, setNombre] = useState("");
     const [email, setEmail] = useState("");
@@ -21,20 +20,18 @@ function Register() {
     const [fotoPreview, setFotoPreview] = useState("");
     const rol = "CONDUCTOR";
 
-    // --- ESTADOS de UX ---
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [passwordError, setPasswordError] = useState("");
 
-    
     const [showCamera, setShowCamera] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [stream, setStream] = useState(null);
     const [rostroValido, setRostroValido] = useState(null); 
     const [mensajeRostro, setMensajeRostro] = useState("");
     const [verificandoRostro, setVerificandoRostro] = useState(false);
-    const [advertenciaMostrada, setAdvertenciaMostrada] = useState(false);
+    const [errorRostroBackend, setErrorRostroBackend] = useState("");
 
     const imagenes = [
         "https://st2.depositphotos.com/1757635/7119/i/950/depositphotos_71197259-stock-photo-man-driving-a-car.jpg",
@@ -45,9 +42,10 @@ function Register() {
     const verificarRostroAntesDeEnviar = async (base64Image) => {
         setVerificandoRostro(true);
         setRostroValido(null);
+        setErrorRostroBackend("");
         
         try {
-            const img = new Image();
+            const img = document.createElement('img');
             img.src = base64Image;
             
             await new Promise((resolve) => {
@@ -56,29 +54,28 @@ function Register() {
             
             if (img.width < 200 || img.height < 200) {
                 setRostroValido(false);
-                setMensajeRostro("⚠️ La imagen es muy pequeña. Usa una foto más grande para mejor reconocimiento.");
+                setMensajeRostro("La imagen es muy pequeña. Usa una foto más grande para mejor reconocimiento.");
                 toast.error('Imagen demasiado pequeña para análisis facial', { icon: '📸' });
                 return false;
             }
             
-   
             const calidadAparente = base64Image.length > 50000; 
             if (!calidadAparente) {
                 setRostroValido(false);
-                setMensajeRostro("⚠️ La imagen parece tener baja calidad. Usa una foto más nítida.");
+                setMensajeRostro("La imagen parece tener baja calidad. Usa una foto más nítida.");
                 toast.error('Baja calidad de imagen', { icon: '🔍' });
                 return false;
             }
             
             setRostroValido(true);
-            setMensajeRostro("✅ La imagen tiene buena calidad para análisis facial");
+            setMensajeRostro("La imagen tiene buena calidad para análisis facial");
             toast.success('Imagen apta para reconocimiento facial', { icon: '🤖' });
             return true;
             
         } catch (error) {
             console.error("Error al verificar imagen:", error);
             setRostroValido(false);
-            setMensajeRostro("⚠️ No se pudo verificar la imagen. Intenta de nuevo.");
+            setMensajeRostro("No se pudo verificar la imagen. Intenta de nuevo.");
             return false;
         } finally {
             setVerificandoRostro(false);
@@ -107,6 +104,7 @@ function Register() {
                 const base64 = await convertirABase64(file);
                 setFotoBase64(base64);
                 setError("");
+                setErrorRostroBackend("");
                 toast.success('Imagen cargada correctamente');
                 
                 await verificarRostroAntesDeEnviar(base64);
@@ -117,7 +115,6 @@ function Register() {
             }
         }
     };
-
 
     const tomarFoto = () => {
         if (videoRef.current && canvasRef.current) {
@@ -134,11 +131,12 @@ function Register() {
             
             setFotoBase64(fotoBase64);
             setFotoPreview(fotoBase64);
+            setErrorRostroBackend("");
             
             detenerCamara();
             
             toast.success('¡Foto tomada correctamente!');
-
+            
             verificarRostroAntesDeEnviar(fotoBase64);
         }
     };
@@ -146,6 +144,7 @@ function Register() {
     async function guardar(e) {
         e.preventDefault();
         setError("");
+        setErrorRostroBackend("");
         setLoading(true);
 
         const loadingToast = toast.loading('Registrando usuario...');
@@ -160,8 +159,6 @@ function Register() {
                 image: fotoBase64
             };
 
-            console.log("Enviando datos...", { ...datosEnviar, image: fotoBase64 ? "Base64 presente" : "Sin imagen" });
-
             const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/registro", {
                 method: "POST",
                 headers: { 
@@ -171,7 +168,6 @@ function Register() {
             });
 
             const data = await respuesta.json();
-            console.log("Respuesta del servidor:", data);
 
             toast.dismiss(loadingToast);
 
@@ -192,21 +188,20 @@ function Register() {
                     mensajeError.toLowerCase().includes("duplicado")) {
                     
                     setRostroValido(false);
-                    setMensajeRostro("🚫 " + mensajeError);
-                    setAdvertenciaMostrada(true);
+                    setErrorRostroBackend(mensajeError);
                     
                     toast.error('❌ ' + mensajeError, {
                         duration: 6000,
                         icon: '👤'
                     });
                     
-                    setStep(2); 
+                    setStep(2);
                     
                 } else if (mensajeError.toLowerCase().includes("foto") || 
                          mensajeError.toLowerCase().includes("imagen") ||
                          mensajeError.toLowerCase().includes("cloudinary")) {
 
-                    setMensajeRostro("📸 Problema con la imagen: " + mensajeError);
+                    setErrorRostroBackend("📸 Problema con la imagen: " + mensajeError);
                     toast.error('Error en la imagen: ' + mensajeError, {
                         icon: '🖼️'
                     });
@@ -293,6 +288,7 @@ function Register() {
 
     const handleNextStep = () => {
         setError("");
+        setErrorRostroBackend("");
         
         if (step === 1) {
             if (!nombre || !email || !telefono) {
@@ -335,6 +331,7 @@ function Register() {
 
     const handlePrevStep = () => {
         setError("");
+        setErrorRostroBackend("");
         setStep(step - 1);
         
         if (step === 3 && cameraActive) {
@@ -378,7 +375,6 @@ function Register() {
             <Container className="d-flex flex-column justify-content-center py-5" style={{ flexGrow: 1 }}>
                 <Row className="justify-content-center align-items-center">
                     
-
                     <Col xs={12} md={6} lg={5}>
                         <Card className="shadow-lg border-0" style={{ borderRadius: '25px', overflow: 'hidden' }}>
                             <Card.Body className="p-4 p-md-5">
@@ -400,7 +396,14 @@ function Register() {
 
                                 {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
                                 
-                                {step === 2 && fotoBase64 && (
+                                {errorRostroBackend && (
+                                    <Alert variant="danger" className="py-2 small">
+                                        <FaExclamationTriangle className="me-2" />
+                                        {errorRostroBackend}
+                                    </Alert>
+                                )}
+                                
+                                {step === 2 && fotoBase64 && !errorRostroBackend && (
                                     <>
                                         {verificandoRostro ? (
                                             <Alert variant="info" className="py-2 small d-flex align-items-center">
@@ -412,12 +415,12 @@ function Register() {
                                         ) : rostroValido === true ? (
                                             <Alert variant="success" className="py-2 small d-flex align-items-center">
                                                 <FaSmile className="me-2" size={18} />
-                                                {mensajeRostro || "✅ Imagen apta para reconocimiento facial"}
+                                                {mensajeRostro}
                                             </Alert>
                                         ) : rostroValido === false ? (
                                             <Alert variant="warning" className="py-2 small d-flex align-items-center">
                                                 <FaFrown className="me-2" size={18} />
-                                                {mensajeRostro || "⚠️ Esta imagen podría no ser reconocida por el sistema"}
+                                                {mensajeRostro}
                                             </Alert>
                                         ) : null}
                                     </>
@@ -425,7 +428,6 @@ function Register() {
 
                                 <Form onSubmit={guardar}>
                                     
-                                    {/* PASO 1: DATOS PERSONALES */}
                                     {step === 1 && (
                                         <div className="animate__animated animate__fadeIn">
                                             <Form.Group className="mb-3">
@@ -477,9 +479,14 @@ function Register() {
                                                 <Form.Label className="small fw-bold d-block">
                                                     <FaCamera className="me-2"/>
                                                     Foto de Perfil
-                                                    {fotoBase64 && (
+                                                    {fotoBase64 && !errorRostroBackend && (
                                                         <Badge bg={rostroValido ? "success" : "secondary"} className="ms-2">
-                                                            {rostroValido ? "✓ Verificada" : "Pendiente"}
+                                                            {rostroValido ? "Verificada" : "Pendiente"}
+                                                        </Badge>
+                                                    )}
+                                                    {errorRostroBackend && (
+                                                        <Badge bg="danger" className="ms-2">
+                                                            Error
                                                         </Badge>
                                                     )}
                                                 </Form.Label>
@@ -490,7 +497,11 @@ function Register() {
                                                         height: '150px', 
                                                         borderRadius: '50%', 
                                                         overflow: 'hidden',
-                                                        border: `3px solid ${rostroValido === true ? '#4acfbd' : rostroValido === false ? '#ffc107' : '#4acfbd'}`,
+                                                        border: `3px solid ${
+                                                            errorRostroBackend ? '#dc3545' : 
+                                                            rostroValido === true ? '#4acfbd' : 
+                                                            rostroValido === false ? '#ffc107' : '#4acfbd'
+                                                        }`,
                                                         backgroundColor: '#f0f0f0',
                                                         display: 'flex',
                                                         alignItems: 'center',
@@ -540,7 +551,6 @@ function Register() {
                                                     Formatos: PNG, JPG, JPEG (Máx. 5MB)
                                                 </Form.Text>
                                                 
-                                                {/* NUEVO: Información sobre el reconocimiento facial */}
                                                 <div className="mt-3 p-2 bg-light rounded-3 small text-start">
                                                     <div className="fw-bold mb-1">
                                                         <FaExclamationTriangle className="me-1 text-warning" />
@@ -563,7 +573,7 @@ function Register() {
                                                     onClick={handleNextStep} 
                                                     className="w-50 py-3" 
                                                     style={{ background: '#4acfbd', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}
-                                                    disabled={!fotoBase64 || verificandoRostro}
+                                                    disabled={!fotoBase64 || verificandoRostro || !!errorRostroBackend}
                                                 >
                                                     {verificandoRostro ? 'Verificando...' : 'Siguiente'} 
                                                     {!verificandoRostro && <FaArrowRight className="ms-2" />}
@@ -572,7 +582,6 @@ function Register() {
                                         </div>
                                     )}
 
-                                    {/* PASO 3: CONTRASEÑA */}
                                     {step === 3 && (
                                         <div className="animate__animated animate__fadeIn">
                                             <Form.Group className="mb-4">
@@ -620,7 +629,6 @@ function Register() {
                                         </div>
                                     )}
 
-                                    {/* PASO 4: CONFIRMACIÓN - MODIFICADO CON ADVERTENCIA FACIAL */}
                                     {step === 4 && (
                                         <div className="text-center animate__animated animate__fadeIn">
                                             <FaCheckCircle size={50} color="#4acfbd" className="mb-3" />
@@ -637,7 +645,9 @@ function Register() {
                                                     <div>
                                                         <strong>Nombre:</strong> {nombre}
                                                         <div className="small">
-                                                            {rostroValido === true ? (
+                                                            {errorRostroBackend ? (
+                                                                <span className="text-danger">❌ Error: {errorRostroBackend}</span>
+                                                            ) : rostroValido === true ? (
                                                                 <span className="text-success">✓ Rostro verificado</span>
                                                             ) : rostroValido === false ? (
                                                                 <span className="text-warning">⚠️ Posible problema con el rostro</span>
@@ -664,7 +674,7 @@ function Register() {
                                                     type="submit" 
                                                     className="w-50 py-3" 
                                                     style={{ background: '#124c83', border: 'none', borderRadius: '12px', fontWeight: 'bold' }} 
-                                                    disabled={loading}
+                                                    disabled={loading || !!errorRostroBackend}
                                                 >
                                                     {loading ? "Registrando..." : "Finalizar"}
                                                 </Button>
@@ -676,7 +686,6 @@ function Register() {
                         </Card>
                     </Col>
 
-                    {/* COLUMNA DERECHA: DISEÑO VISUAL */}
                     <Col md={6} lg={6} className="d-none d-md-block ps-lg-5">
                         <div style={{ borderRadius: '40px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', border: '6px solid rgba(255,255,255,0.1)' }}>
                             <Carousel fade indicators={false} controls={false} interval={3500}>
