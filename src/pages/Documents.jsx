@@ -33,7 +33,7 @@ function Documents() {
 
   const validarImagen = (file) => {
     const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    const tamañoMaximo = 5 * 1024 * 1024; // 5MB
+    const tamañoMaximo = 5 * 1024 * 1024;
     
     if (!tiposPermitidos.includes(file.type)) {
       return "Formato no permitido. Usa JPG, PNG o WEBP";
@@ -44,7 +44,6 @@ function Documents() {
     return null;
   };
 
-  // Convertir archivo a base64 (igual que en Register)
   const convertirABase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -120,7 +119,6 @@ function Documents() {
     setSuccess("");
     setLoading(true);
 
-    // Validaciones
     if (!frontalBase64 || !dorsalBase64) {
       const errorMsg = "Debes seleccionar ambas imágenes";
       setError(errorMsg);
@@ -128,7 +126,6 @@ function Documents() {
       setLoading(false);
       return;
     }
-  }
 
     if (!tipoDocumento || !numeroDocumento) {
       const errorMsg = "Todos los campos son obligatorios";
@@ -141,7 +138,6 @@ function Documents() {
     const toastId = toast.loading('Enviando documentación...');
 
     try {
-      // IMPORTANTE: Enviar como JSON con imágenes en base64
       const datosEnviar = {
         tipoDocumento: tipoDocumento,
         numeroDocumento: numeroDocumento,
@@ -152,7 +148,7 @@ function Documents() {
       console.log("Enviando datos como JSON con imágenes en base64");
 
       const headers = {
-        'Content-Type': 'application/json' // ← IMPORTANTE: JSON, no FormData
+        'Content-Type': 'application/json'
       };
       
       if (token) {
@@ -162,7 +158,7 @@ function Documents() {
       const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_subir", {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(datosEnviar) // ← Enviar como JSON
+        body: JSON.stringify(datosEnviar) 
       });
 
       console.log('Status:', respuesta.status);
@@ -289,7 +285,6 @@ function Documents() {
                     )}
                   </Form.Group>
 
-                  {/* IMAGEN DORSAL */}
                   <Form.Group className="mb-4">
                     <Form.Label className="d-flex align-items-center">
                       <FaFileImage className="me-2" />
@@ -351,5 +346,4 @@ function Documents() {
     </div>
   );
 }
-
 export default Documents;
