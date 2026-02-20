@@ -101,7 +101,6 @@ function HomeBase() {
                   <Col md={6} className="text-white mt-3 mt-md-0">
                     <h3 className="display-6 fw-bold">{item.id}. {item.titulo}</h3>
                     <p className="lead">{item.desc}</p>
-                    <small className="text-white-50">Haz clic en la imagen para más información</small>
                   </Col>
                 </Row>
               </Carousel.Item>
