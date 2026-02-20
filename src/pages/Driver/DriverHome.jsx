@@ -14,8 +14,9 @@ const DriverHome = () => {
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     
-    const [vehiculo, setVehiculo] = useState(null);
+    const [vehiculos, setVehiculos] = useState([]);
     const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
+    const [errorVehiculo, setErrorVehiculo] = useState("");
 
     useEffect(() => {
         const hasSeenTutorial = localStorage.getItem("tutorial_conductor_visto");
@@ -25,32 +26,59 @@ const DriverHome = () => {
     }, []);
 
     useEffect(() => {
-        const obtenerVehiculo = async () => {
-            if (!usuario?.idUsuarios || !token) return;
+        const obtenerVehiculos = async () => {
+            if (!token) {
+                console.log("No hay token disponible");
+                return;
+            }
             
             try {
                 setCargandoVehiculo(true);
-                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${usuario.idUsuarios}`, {
+                setErrorVehiculo("");
+                
+                console.log("Obteniendo vehículos con token:", token.substring(0, 20) + "...");
+                
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
                 
+                console.log("Status de respuesta:", respuesta.status);
+                
                 if (respuesta.ok) {
                     const data = await respuesta.json();
-                    setVehiculo(data);
+                    console.log("Datos recibidos de la API:", data);
+                    
+                    if (Array.isArray(data)) {
+                        console.log("Es un array con", data.length, "vehículos");
+                        setVehiculos(data);
+                    } else if (data && typeof data === 'object') {
+                        console.log("Es un objeto único:", data);
+                        setVehiculos([data]);
+                    } else {
+                        console.log("Formato no esperado:", data);
+                        setVehiculos([]);
+                    }
+                } else if (respuesta.status === 404) {
+                    console.log("No se encontraron vehículos (404)");
+                    setVehiculos([]);
                 } else {
-                    console.error("Error al obtener vehículo:", respuesta.status);
+                    const errorText = await respuesta.text();
+                    console.log("Error response:", errorText);
+                    setErrorVehiculo(`Error ${respuesta.status}: No se pudieron cargar los vehículos`);
                 }
             } catch (error) {
                 console.error("Error de conexión:", error);
+                setErrorVehiculo("Error de conexión con el servidor");
             } finally {
                 setCargandoVehiculo(false);
             }
         };
 
-        obtenerVehiculo();
-    }, [usuario, token]);
+        obtenerVehiculos();
+    }, [token]);
 
     const manejarSiguiente = () => {
         if (currentStep < 3) {
@@ -104,6 +132,8 @@ const DriverHome = () => {
         transition: "all 0.3s ease"
     });
 
+    const vehiculoPrincipal = vehiculos.length > 0 ? vehiculos[0] : null;
+
     return (
         <div style={{ backgroundColor: primaryBlue, minHeight: '100vh' }}>
             <Navbar />
@@ -149,27 +179,56 @@ const DriverHome = () => {
                                         </div>
                                         <p className="mt-2 text-muted">Cargando datos del vehículo...</p>
                                     </div>
-                                ) : vehiculo ? (
+                                ) : errorVehiculo ? (
+                                    <div className="text-center py-4">
+                                        <p className="text-danger">{errorVehiculo}</p>
+                                        <Button 
+                                            variant="outline-primary" 
+                                            size="sm"
+                                            onClick={() => window.location.reload()}
+                                        >
+                                            Reintentar
+                                        </Button>
+                                    </div>
+                                ) : vehiculoPrincipal ? (
                                     <Row className="align-items-center">
                                         <Col xs={4} className="text-center">
                                             <div className="p-3 bg-light rounded-circle d-inline-block" style={{ fontSize: '2.5rem' }}>🚘</div>
                                         </Col>
                                         <Col xs={8}>
-                                            <p className="mb-1"><strong>Modelo:</strong> {vehiculo.marca} {vehiculo.modelo} {vehiculo.año || ''}</p>
-                                            <p className="mb-1"><strong>Placa:</strong> {vehiculo.placa}</p>
-                                            <Badge bg={vehiculo.estado === 'ACTIVO' ? 'success' : 'warning'} className="px-3 rounded-pill">
-                                                {vehiculo.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente'}
+                                            <p className="mb-1">
+                                                <strong>Vehículo:</strong> {vehiculoPrincipal.marca || ''} {vehiculoPrincipal.modelo || ''}
+                                            </p>
+                                            <p className="mb-1"><strong>Placa:</strong> {vehiculoPrincipal.placa || 'No registrada'}</p>
+                                            <p className="mb-1"><strong>Capacidad:</strong> {vehiculoPrincipal.capacidad || 0} pasajeros</p>
+                                            <Badge bg={vehiculoPrincipal.estado === 'ACTIVO' ? 'success' : 'warning'} className="px-3 rounded-pill">
+                                                {vehiculoPrincipal.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente'}
                                             </Badge>
                                         </Col>
                                     </Row>
                                 ) : (
                                     <div className="text-center py-4">
                                         <p className="text-muted">No tienes un vehículo registrado</p>
-                                        <Button variant="outline-primary" size="sm">Registrar vehículo</Button>
+                                        <Button 
+                                            variant="outline-primary" 
+                                            size="sm"
+                                            onClick={() => navigate("/registrar-vehiculo")}
+                                        >
+                                            Registrar vehículo
+                                        </Button>
                                     </div>
                                 )}
                                 
-                                <Button variant="link" className="mt-4 p-0 text-decoration-none fw-bold" style={{ color: primaryBlue }}>Actualizar datos</Button>
+                                {vehiculoPrincipal && (
+                                    <Button 
+                                        variant="link" 
+                                        className="mt-4 p-0 text-decoration-none fw-bold" 
+                                        style={{ color: primaryBlue }}
+                                        onClick={() => navigate(`/driver-home`)}
+                                    >
+                                        Ver detalles del vehículo
+                                    </Button>
+                                )}
                             </Card.Body>
                         </Card>
                     </Col>
