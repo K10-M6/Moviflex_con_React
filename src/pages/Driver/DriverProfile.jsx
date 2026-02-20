@@ -163,7 +163,7 @@ function DriverProfile() {
       
       <BackgroundSlider images={backgroundImages} interval={2500} overlayColor={'rgba(163,133,255,0.35)'} />
       <div style={{ position: 'relative', zIndex: 2 }}>
-        <div style={{ background: '#a385ff', width: '100%', position: 'relative', zIndex: 10 }}>
+        <div style={{ background: '#124c83', width: '100%', position: 'relative', zIndex: 10 }}>
           <Navbar />
         </div>
         
@@ -172,7 +172,7 @@ function DriverProfile() {
             <Col lg={10}>
               <Card className="shadow border-0 rounded-4 overflow-hidden">
                 <Card.Header className="bg-white border-0 p-4">
-                  <h2 className="fw-bold mb-0" style={{ color: '#a385ff' }}>Mi Perfil de Conductor</h2>
+                  <h2 className="fw-bold mb-0" style={{ color: '#124c83' }}>Mi Perfil de Conductor</h2>
                 </Card.Header>
                 
                 <Row className="g-0">
@@ -186,7 +186,7 @@ function DriverProfile() {
                           style={{ width: '150px', height: '150px', objectFit: 'cover' }}
                         />
                       ) : (
-                        <FaUserCircle size={150} color="#a385ff" className="shadow-sm rounded-circle bg-white p-2" />
+                        <FaUserCircle size={150} color="#124c83" className="shadow-sm rounded-circle bg-white p-2" />
                       )}
                     </div>
                     
