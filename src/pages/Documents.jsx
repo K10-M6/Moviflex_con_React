@@ -223,40 +223,52 @@ function Documents() {
                 {success && <Alert variant="success">{success}</Alert>}
 
                 <Form onSubmit={guardarDocumentacion}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Tipo de Documento <span className="text-danger">*</span></Form.Label>
+                  <Form.Group className="mb-3" controlId="tipoDocumento">
+                    <Form.Label>
+                      <strong>Tipo de documento de identidad</strong> <span className="text-danger">*</span>
+                    </Form.Label>
                     <Form.Select
                       value={tipoDocumento}
                       onChange={(e) => setTipoDocumento(e.target.value)}
                       required
                       disabled={loading}
                     >
-                      <option value="">Seleccione tipo</option>
+                      <option value="">-- Seleccione una opción --</option>
                       <option value="LICENCIA">Licencia de conducir</option>
                       <option value="CEDULA">Cédula de ciudadanía</option>
                       <option value="PASAPORTE">Pasaporte</option>
                     </Form.Select>
+                    <Form.Text className="text-muted">
+                      Elige el tipo de documento que vas a registrar para verificación
+                    </Form.Text>
                   </Form.Group>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Número de Documento <span className="text-danger">*</span></Form.Label>
+                  <Form.Group className="mb-3" controlId="numeroDocumento">
+                    <Form.Label>
+                      <strong>Número de identificación personal</strong> <span className="text-danger">*</span>
+                    </Form.Label>
                     <Form.Control
                       type="text"
-                      placeholder="Ingrese el número"
+                      placeholder="Ej: 1234567890"
                       value={numeroDocumento}
                       onChange={(e) => setNumeroDocumento(e.target.value)}
                       required
                       disabled={loading}
                     />
+                    <Form.Text className="text-muted">
+                      Ingresa el número completo sin puntos, espacios ni guiones
+                    </Form.Text>
                   </Form.Group>
 
-                  {/* IMAGEN FRONTAL */}
-                  <Form.Group className="mb-4">
+                  <Form.Group className="mb-4" controlId="imagenFrontal">
                     <Form.Label className="d-flex align-items-center">
                       <FaFileImage className="me-2" />
-                      Imagen Frontal <span className="text-danger">*</span>
-                      {frontalBase64 && <FaCheckCircle className="text-success ms-2" />}
+                      <strong>Fotografía frontal del documento</strong> <span className="text-danger">*</span>
+                      {frontalBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
                     </Form.Label>
+                    <Form.Text className="text-muted d-block mb-2">
+                      Sube una foto clara y legible de la parte frontal donde se vean todos tus datos
+                    </Form.Text>
 
                     <Form.Control
                       ref={frontalInputRef}
@@ -273,24 +285,28 @@ function Documents() {
                       disabled={loading || convirtiendoFrontal}
                     >
                       <FaCamera className="me-2" />
-                      {imagenFrontal ? 'Cambiar imagen' : 'Seleccionar imagen frontal'}
+                      {imagenFrontal ? '📸 Cambiar foto frontal' : '📤 Seleccionar foto frontal'}
                     </Button>
                     
-                    {convirtiendoFrontal && <Alert variant="info">Procesando imagen...</Alert>}
+                    {convirtiendoFrontal && <Alert variant="info">⏳ Procesando imagen frontal...</Alert>}
                     
                     {imagenFrontalPreview && (
-                      <div className="text-center">
-                        <img src={imagenFrontalPreview} alt="Preview" style={{ maxHeight: '150px' }} />
+                      <div className="text-center mt-2">
+                        <p className="mb-1"><small>Vista previa frontal:</small></p>
+                        <img src={imagenFrontalPreview} alt="Vista previa frontal del documento" style={{ maxHeight: '150px', border: '1px solid #ddd', borderRadius: '4px' }} />
                       </div>
                     )}
                   </Form.Group>
 
-                  <Form.Group className="mb-4">
+                  <Form.Group className="mb-4" controlId="imagenDorsal">
                     <Form.Label className="d-flex align-items-center">
                       <FaFileImage className="me-2" />
-                      Imagen Dorsal <span className="text-danger">*</span>
-                      {dorsalBase64 && <FaCheckCircle className="text-success ms-2" />}
+                      <strong>Fotografía dorsal del documento</strong> <span className="text-danger">*</span>
+                      {dorsalBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
                     </Form.Label>
+                    <Form.Text className="text-muted d-block mb-2">
+                      Sube una foto clara de la parte posterior donde se vea el código de barras o información adicional
+                    </Form.Text>
 
                     <Form.Control
                       ref={dorsalInputRef}
@@ -307,14 +323,15 @@ function Documents() {
                       disabled={loading || convirtiendoDorsal}
                     >
                       <FaCamera className="me-2" />
-                      {imagenDorsal ? 'Cambiar imagen' : 'Seleccionar imagen dorsal'}
+                      {imagenDorsal ? '📸 Cambiar foto dorsal' : '📤 Seleccionar foto dorsal'}
                     </Button>
                     
-                    {convirtiendoDorsal && <Alert variant="info">Procesando imagen...</Alert>}
+                    {convirtiendoDorsal && <Alert variant="info">⏳ Procesando imagen dorsal...</Alert>}
                     
                     {imagenDorsalPreview && (
-                      <div className="text-center">
-                        <img src={imagenDorsalPreview} alt="Preview" style={{ maxHeight: '150px' }} />
+                      <div className="text-center mt-2">
+                        <p className="mb-1"><small>Vista previa dorsal:</small></p>
+                        <img src={imagenDorsalPreview} alt="Vista previa dorsal del documento" style={{ maxHeight: '150px', border: '1px solid #ddd', borderRadius: '4px' }} />
                       </div>
                     )}
                   </Form.Group>
@@ -329,7 +346,7 @@ function Documents() {
                       }}
                       disabled={loading || !ambasImagenesListas || !tipoDocumento || !numeroDocumento}
                     >
-                      {loading ? 'Enviando...' : 'Enviar Documentación'}
+                      {loading ? 'Enviando documentación...' : '📨 Enviar documentación para revisión'}
                     </Button>
 
                     <Button variant="outline-secondary" onClick={() => navigate("/driver-profile")}>
