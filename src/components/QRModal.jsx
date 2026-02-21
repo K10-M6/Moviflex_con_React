@@ -4,12 +4,12 @@ import QRCode from 'react-qr-code';
 import { FaDownload, FaPrint, FaQrcode, FaUserTag } from 'react-icons/fa';
 import PropTypes from 'prop-types';
 
-const QRModal = ({ 
-  show, 
-  onHide, 
-  qrValue, 
-  usuario, 
-  onDownload, 
+const QRModal = ({
+  show,
+  onHide,
+  qrValue,
+  usuario,
+  onDownload,
   onPrint,
   titulo = "Tu código QR de acceso",
   mensajeExpiracion = "Este código QR expira en tres horas"
@@ -38,7 +38,7 @@ const QRModal = ({
         setQrReady(true);
       }
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, [show, qrValue]);
 
@@ -51,24 +51,24 @@ const QRModal = ({
         canvas.height = 500;
 
         const svgData = new XMLSerializer().serializeToString(svgElement);
-        
+
         const img = new Image();
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(svgBlob);
-        
+
         img.onload = () => {
           const ctx = canvas.getContext('2d');
           ctx.fillStyle = 'white';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
+
           URL.revokeObjectURL(url);
-          
+
           canvas.toBlob((blob) => {
             resolve(blob);
           }, 'image/png');
         };
-        
+
         img.onerror = reject;
         img.src = url;
       } catch (error) {
@@ -79,7 +79,7 @@ const QRModal = ({
 
   const handleDownload = useCallback(async () => {
     console.log(" Iniciando descarga...");
-    
+
     if (onDownload) {
       onDownload();
       return;
@@ -93,20 +93,22 @@ const QRModal = ({
 
     try {
       const blob = await svgToPng(svgElement);
-      
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `QR-${usuario?.nombre || 'usuario'}.png`;
-      
+
       document.body.appendChild(link);
       link.click();
-      
+
       setTimeout(() => {
-        document.body.removeChild(link);
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
         URL.revokeObjectURL(url);
       }, 100);
-      
+
     } catch (error) {
       console.error("Error:", error);
       alert("Error al descargar el QR");
@@ -123,7 +125,7 @@ const QRModal = ({
 
     svgToPng(svgElement).then((blob) => {
       const url = URL.createObjectURL(blob);
-      
+
       const ventanaImpresion = window.open('', '_blank');
       ventanaImpresion.document.write(`
         <html>
@@ -159,11 +161,11 @@ const QRModal = ({
     <Modal show={show} onHide={onHide} centered size="lg">
       <Modal.Header closeButton style={{ backgroundColor: '#124c83', color: 'white' }}>
         <Modal.Title>
-          <FaQrcode className="me-2" /> 
+          <FaQrcode className="me-2" />
           {titulo}
         </Modal.Title>
       </Modal.Header>
-      
+
       <Modal.Body className="text-center p-4">
         {qrValue ? (
           <>
@@ -172,8 +174,8 @@ const QRModal = ({
                 ⏳ Generando código QR...
               </div>
             )}
-            
-            <div 
+
+            <div
               ref={qrContainerRef}
               style={{
                 padding: '20px',
@@ -193,20 +195,20 @@ const QRModal = ({
                 bgColor="#ffffff"
               />
             </div>
-            
+
             <p className="mb-3">
               <strong>Usuario:</strong> {usuario?.nombre || 'No especificado'}<br />
               <small className="text-muted">Email: {usuario?.email || 'No disponible'}</small><br />
               <small className="text-info">
-                <FaUserTag className="me-1" /> 
+                <FaUserTag className="me-1" />
                 Rol: {getRolNombre(usuario?.idRol)}
               </small><br />
               <small className="text-warning">⏰ {mensajeExpiracion}</small>
             </p>
-            
+
             <div className="d-flex gap-2 justify-content-center">
-              <Button 
-                variant="success" 
+              <Button
+                variant="success"
                 onClick={handleDownload}
                 disabled={!qrReady}
               >

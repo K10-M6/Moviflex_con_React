@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   preview: {
     host: true,
-    port: process.env.PORT,
-    allowedHosts: 'all'
+    port: process.env.PORT || 5173,
+    allowedHosts: ['moviflexconreact-production.up.railway.app']
   }
 })
