@@ -19,6 +19,7 @@ import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
 import DashboardLayout from "./Dashboard/DashboardLayout"
 import Documents from "./pages/Documents";
+import Notificaciones from "./components/Notificaciones"
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
@@ -66,7 +67,7 @@ function App() {
           <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
           <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
           <Route path="/documents" element={<RequiredAuth><Documents /></RequiredAuth>} />
-
+          <Route path="/notificaciones" element={<RequiredAuth><Notificaciones /></RequiredAuth>} />
           {/* Dashboard/Admin Routes wrapped in Layout */}
           <Route path="/dashboard/home" element={
             <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>

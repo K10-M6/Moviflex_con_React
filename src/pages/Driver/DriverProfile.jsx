@@ -68,8 +68,123 @@ function DriverProfile() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [vehiculo, setVehiculo] = useState(null);
+  const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
+  const [calificaciones, setCalificaciones] = useState([]);
+  const [promedioCalificacion, setPromedioCalificacion] = useState(0);
+  const [totalCalificaciones, setTotalCalificaciones] = useState(0);
+  const [totalViajes, setTotalViajes] = useState(0);
+  const [documentacion, setDocumentacion] = useState({
+    licencia: { estado: 'PENDIENTE' },
+    soat: { estado: 'PENDIENTE' }
+  });
   
   const backgroundImages = [img1, img2, img3];
+
+  useEffect(() => {
+    const obtenerVehiculo = async () => {
+      if (!token) return;
+      
+      try {
+        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (respuesta.ok) {
+          const data = await respuesta.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setVehiculo(data[0]);
+          } else if (data && typeof data === 'object') {
+            setVehiculo(data);
+          }
+        }
+      } catch (error) {
+        console.error("Error al obtener vehículo:", error);
+      } finally {
+        setCargandoVehiculo(false);
+      }
+    };
+
+    obtenerVehiculo();
+  }, [token]);
+
+  useEffect(() => {
+    const obtenerCalificaciones = async () => {
+      if (!token || !usuario?.idUsuarios) return;
+      
+      try {
+        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/calificaciones/usuario/${usuario.idUsuarios}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (respuesta.ok) {
+          const data = await respuesta.json();
+          setCalificaciones(data);
+          
+          if (Array.isArray(data) && data.length > 0) {
+            const suma = data.reduce((acc, cal) => acc + cal.puntuacion, 0);
+            setPromedioCalificacion(suma / data.length);
+            setTotalCalificaciones(data.length);
+          }
+        }
+      } catch (error) {
+        console.error("Error al obtener calificaciones:", error);
+      }
+    };
+
+    const obtenerEstadisticasViajes = async () => {
+      if (!token || !usuario?.idUsuarios) return;
+      
+      try {
+        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (respuesta.ok) {
+          const data = await respuesta.json();
+          setTotalViajes(data.totalViajes || 0);
+        }
+      } catch (error) {
+        console.error("Error al obtener estadísticas:", error);
+      }
+    };
+
+    const obtenerDocumentacion = async () => {
+      if (!token || !usuario?.idUsuarios) return;
+      
+      try {
+        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/usuario/${usuario.idUsuarios}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (respuesta.ok) {
+          const data = await respuesta.json();
+          setDocumentacion({
+            licencia: { estado: data.licencia?.estado || 'PENDIENTE' },
+            soat: { estado: data.soat?.estado || 'PENDIENTE' }
+          });
+        }
+      } catch (error) {
+        console.error("Error al obtener documentación:", error);
+      }
+    };
+
+    obtenerCalificaciones();
+    obtenerEstadisticasViajes();
+    obtenerDocumentacion();
+  }, [token, usuario?.idUsuarios]);
 
   const formatearFecha = (fecha) => {
     if (!fecha) return 'Fecha no disponible';
@@ -82,7 +197,6 @@ function DriverProfile() {
       toast.error("No hay Token disponible. Inicia sesión nuevamente.");
       return;
     }
-
     const qrData = `${token}|${usuario?.nombre || ''}`;
     setQrValue(qrData);
     setShowQRModal(true);
@@ -116,7 +230,6 @@ function DriverProfile() {
           nombre: nombre,
           telefono: telefono
         });
-        
         toast.success('Datos actualizados correctamente');
       } else {
         toast.error(data.error || 'Error al actualizar los datos');
@@ -130,6 +243,16 @@ function DriverProfile() {
   };
 
   const fotoAMostrar = usuario?.fotoPerfil;
+
+  const getBadgeColor = (estado) => {
+    return estado === 'APROBADO' || estado === 'VIGENTE' ? 'success' : 
+           estado === 'PENDIENTE' ? 'warning' : 'danger';
+  };
+
+  const getEstadoTexto = (estado) => {
+    return estado === 'APROBADO' ? 'VIGENTE' : 
+           estado === 'PENDIENTE' ? 'PENDIENTE' : 'VENCIDO';
+  };
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
@@ -192,7 +315,7 @@ function DriverProfile() {
                     
                     <h3 className="fw-bold mb-1">{nombre || usuario?.nombre}</h3>
                     <Badge bg="warning" text="dark" className="px-3 rounded-pill mb-3">
-                      <FaStar className="me-1" /> 4.9 Conductor
+                      <FaStar className="me-1" /> {promedioCalificacion.toFixed(1)} ({totalCalificaciones} {totalCalificaciones === 1 ? 'reseña' : 'reseñas'})
                     </Badge>
                     
                     <Button 
@@ -222,7 +345,7 @@ function DriverProfile() {
                       <p className="small text-muted mb-1">MIEMBRO DESDE</p>
                       <p className="fw-bold">{formatearFecha(usuario?.creadoEn)}</p>
                       <p className="small text-muted mb-1">VIAJES COMPLETADOS</p>
-                      <p className="fw-bold">154 servicios</p>
+                      <p className="fw-bold">{totalViajes} servicios</p>
                     </div>
                   </Col>
 
@@ -268,8 +391,16 @@ function DriverProfile() {
                               <FaIdCard className="text-primary me-2" />
                               <span className="fw-bold small">DOCUMENTACIÓN</span>
                             </div>
-                            <p className="mb-0 small">Licencia: <span className="text-success fw-bold">VIGENTE</span></p>
-                            <p className="mb-0 small">SOAT: <span className="text-success fw-bold">VIGENTE</span></p>
+                            <p className="mb-0 small">
+                              Licencia: <Badge bg={getBadgeColor(documentacion.licencia.estado)} className="rounded-pill">
+                                {getEstadoTexto(documentacion.licencia.estado)}
+                              </Badge>
+                            </p>
+                            <p className="mb-0 small">
+                              SOAT: <Badge bg={getBadgeColor(documentacion.soat.estado)} className="rounded-pill">
+                                {getEstadoTexto(documentacion.soat.estado)}
+                              </Badge>
+                            </p>
                           </Card>
                         </Col>
                         <Col sm={6}>
@@ -278,8 +409,23 @@ function DriverProfile() {
                               <FaCar className="text-primary me-2" />
                               <span className="fw-bold small">MI VEHÍCULO</span>
                             </div>
-                            <p className="mb-0 small">Placa: <span className="fw-bold">KHM-456</span></p>
-                            <p className="mb-0 small">Modelo: <span className="fw-bold">Sedán 2022</span></p>
+                            {cargandoVehiculo ? (
+                              <p className="mb-0 small text-muted">Cargando...</p>
+                            ) : vehiculo ? (
+                              <>
+                                <p className="mb-0 small">Placa: <span className="fw-bold">{vehiculo.placa || 'No registrada'}</span></p>
+                                <p className="mb-0 small">
+                                  Modelo: <span className="fw-bold">
+                                    {vehiculo.marca || ''} {vehiculo.modelo || ''} {vehiculo.año ? vehiculo.año : ''}
+                                  </span>
+                                </p>
+                                {vehiculo.color && (
+                                  <p className="mb-0 small">Color: <span className="fw-bold">{vehiculo.color}</span></p>
+                                )}
+                              </>
+                            ) : (
+                              <p className="mb-0 small text-muted">No hay vehículo registrado</p>
+                            )}
                           </Card>
                         </Col>
                       </Row>

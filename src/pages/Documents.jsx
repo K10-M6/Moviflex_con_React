@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
-import { FaIdCard, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera } from "react-icons/fa";
+import { Container, Row, Col, Card, Form, Button, Alert, Modal, ProgressBar, Badge } from "react-bootstrap";
+import { FaIdCard, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown } from "react-icons/fa";
 import { useAuth } from "./context/AuthContext";
 import Navbar from '../components/Navbar';
 import Logo from './Imagenes/TODO_MOVI.png';
@@ -28,6 +28,19 @@ function Documents() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [showCameraFrontal, setShowCameraFrontal] = useState(false);
+  const [showCameraDorsal, setShowCameraDorsal] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [stream, setStream] = useState(null);
+  const [tipoDocumentoActual, setTipoDocumentoActual] = useState("frontal");
+  
+  const [documentoValido, setDocumentoValido] = useState(null);
+  const [mensajeDocumento, setMensajeDocumento] = useState("");
+  const [verificandoDocumento, setVerificandoDocumento] = useState(false);
+  const [errorDocumentoBackend, setErrorDocumentoBackend] = useState("");
+
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const frontalInputRef = useRef(null);
   const dorsalInputRef = useRef(null);
 
@@ -44,13 +57,47 @@ function Documents() {
     return null;
   };
 
-  const convertirABase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+  const verificarDocumentoAntesDeEnviar = async (base64Image, tipo) => {
+    setVerificandoDocumento(true);
+    setDocumentoValido(null);
+    setErrorDocumentoBackend("");
+    
+    try {
+      const img = document.createElement('img');
+      img.src = base64Image;
+      
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+      
+      if (img.width < 300 || img.height < 200) {
+        setDocumentoValido(false);
+        setMensajeDocumento("La imagen es muy pequeña. Usa una foto más grande para mejor legibilidad.");
+        toast.error('Imagen demasiado pequeña para análisis', { icon: '📸' });
+        return false;
+      }
+      
+      const calidadAparente = base64Image.length > 50000;
+      if (!calidadAparente) {
+        setDocumentoValido(false);
+        setMensajeDocumento("La imagen parece tener baja calidad. Usa una foto más nítida.");
+        toast.error('Baja calidad de imagen', { icon: '🔍' });
+        return false;
+      }
+      
+      setDocumentoValido(true);
+      setMensajeDocumento("La imagen tiene buena calidad para verificación");
+      toast.success('Imagen apta para verificación', { icon: '✅' });
+      return true;
+      
+    } catch (error) {
+      console.error("Error al verificar imagen:", error);
+      setDocumentoValido(false);
+      setMensajeDocumento("No se pudo verificar la imagen. Intenta de nuevo.");
+      return false;
+    } finally {
+      setVerificandoDocumento(false);
+    }
   };
 
   const handleImageFrontalChange = async (e) => {
@@ -73,8 +120,11 @@ function Documents() {
         
         const base64 = await convertirABase64(file);
         setFrontalBase64(base64);
+        setErrorDocumentoBackend("");
         
         toast.success('Imagen frontal seleccionada correctamente');
+        await verificarDocumentoAntesDeEnviar(base64, 'frontal');
+        
       } catch (error) {
         toast.error('Error al procesar la imagen frontal');
       } finally {
@@ -103,8 +153,11 @@ function Documents() {
         
         const base64 = await convertirABase64(file);
         setDorsalBase64(base64);
+        setErrorDocumentoBackend("");
         
         toast.success('Imagen dorsal seleccionada correctamente');
+        await verificarDocumentoAntesDeEnviar(base64, 'dorsal');
+        
       } catch (error) {
         toast.error('Error al procesar la imagen dorsal');
       } finally {
@@ -113,10 +166,100 @@ function Documents() {
     }
   };
 
+  const iniciarCamara = (tipo) => {
+    setTipoDocumentoActual(tipo);
+    if (tipo === 'frontal') {
+      setShowCameraFrontal(true);
+    } else {
+      setShowCameraDorsal(true);
+    }
+    
+    setTimeout(() => {
+      iniciarCamaraStream();
+    }, 100);
+  };
+
+  const iniciarCamaraStream = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      
+      setStream(mediaStream);
+      setCameraActive(true);
+      
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+      }, 100);
+      
+      toast.success('Cámara activada correctamente');
+    } catch (err) {
+      console.error("Error al acceder a la cámara:", err);
+      toast.error('No se pudo acceder a la cámara. Verifica los permisos.');
+    }
+  };
+
+  const detenerCamara = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setCameraActive(false);
+    setShowCameraFrontal(false);
+    setShowCameraDorsal(false);
+  };
+
+  const tomarFoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      const fotoBase64 = canvas.toDataURL('image/jpeg', 0.9);
+      
+      if (tipoDocumentoActual === 'frontal') {
+        setFrontalBase64(fotoBase64);
+        setImagenFrontalPreview(fotoBase64);
+        setErrorDocumentoBackend("");
+        verificarDocumentoAntesDeEnviar(fotoBase64, 'frontal');
+        toast.success('¡Foto frontal tomada correctamente!');
+      } else {
+        setDorsalBase64(fotoBase64);
+        setImagenDorsalPreview(fotoBase64);
+        setErrorDocumentoBackend("");
+        verificarDocumentoAntesDeEnviar(fotoBase64, 'dorsal');
+        toast.success('¡Foto dorsal tomada correctamente!');
+      }
+      
+      detenerCamara();
+    }
+  };
+
+  const convertirABase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   async function guardarDocumentacion(e) {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setErrorDocumentoBackend("");
     setLoading(true);
 
     if (!frontalBase64 || !dorsalBase64) {
@@ -145,8 +288,6 @@ function Documents() {
         imagenDorsal: dorsalBase64
       };
 
-      console.log("Enviando datos como JSON con imágenes en base64");
-
       const headers = {
         'Content-Type': 'application/json'
       };
@@ -158,13 +299,10 @@ function Documents() {
       const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_subir", {
         method: "POST",
         headers: headers,
-        body: JSON.stringify(datosEnviar) 
+        body: JSON.stringify(datosEnviar)
       });
 
-      console.log('Status:', respuesta.status);
-      
       const data = await respuesta.json();
-      console.log("Respuesta del servidor:", data);
 
       toast.dismiss(toastId);
 
@@ -176,9 +314,19 @@ function Documents() {
           navigate("/driver-profile");
         }, 2000);
       } else {
-        const errorMsg = data.error || data.message || 'Error al enviar la documentación';
-        setError(errorMsg);
-        toast.error(errorMsg);
+        let mensajeError = data.error || data.message || 'Error al enviar la documentación';
+        
+        if (mensajeError.toLowerCase().includes("documento") || 
+            mensajeError.toLowerCase().includes("ilegible") ||
+            mensajeError.toLowerCase().includes("calidad")) {
+          
+          setDocumentoValido(false);
+          setErrorDocumentoBackend(mensajeError);
+          toast.error('❌ ' + mensajeError, { duration: 6000 });
+        } else {
+          setError(mensajeError);
+          toast.error(mensajeError);
+        }
       }
     } catch (error) {
       console.error("Error completo:", error);
@@ -200,7 +348,34 @@ function Documents() {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      <Toaster />
+      <Toaster 
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+            padding: '16px',
+            borderRadius: '10px',
+            fontSize: '14px',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4acfbd',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ff4b4b',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       
       <Navbar />
       
@@ -221,6 +396,13 @@ function Documents() {
 
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
+                
+                {errorDocumentoBackend && (
+                  <Alert variant="danger" className="py-2 small">
+                    <FaExclamationTriangle className="me-2" />
+                    {errorDocumentoBackend}
+                  </Alert>
+                )}
 
                 <Form onSubmit={guardarDocumentacion}>
                   <Form.Group className="mb-3" controlId="tipoDocumento">
@@ -265,6 +447,12 @@ function Documents() {
                       <FaFileImage className="me-2" />
                       <strong>Fotografía frontal del documento</strong> <span className="text-danger">*</span>
                       {frontalBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
+                      {frontalBase64 && documentoValido === true && (
+                        <Badge bg="success" className="ms-2">Válida</Badge>
+                      )}
+                      {frontalBase64 && documentoValido === false && (
+                        <Badge bg="warning" className="ms-2">Revisar</Badge>
+                      )}
                     </Form.Label>
                     <Form.Text className="text-muted d-block mb-2">
                       Sube una foto clara y legible de la parte frontal donde se vean todos tus datos
@@ -278,17 +466,36 @@ function Documents() {
                       style={{ display: 'none' }}
                     />
                   
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => frontalInputRef.current.click()}
-                      className="w-100 mb-2"
-                      disabled={loading || convirtiendoFrontal}
-                    >
-                      <FaCamera className="me-2" />
-                      {imagenFrontal ? '📸 Cambiar foto frontal' : '📤 Seleccionar foto frontal'}
-                    </Button>
+                    <div className="d-grid gap-2 mb-2">
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => frontalInputRef.current.click()}
+                        className="w-100"
+                        disabled={loading || convirtiendoFrontal}
+                      >
+                        <FaCamera className="me-2" />
+                        {imagenFrontal ? '📸 Cambiar foto frontal' : '📤 Seleccionar foto frontal'}
+                      </Button>
+                      
+                      <Button
+                        variant="outline-success"
+                        onClick={() => iniciarCamara('frontal')}
+                        className="w-100"
+                        disabled={cameraActive || convirtiendoFrontal}
+                      >
+                        <FaVideo className="me-2" />
+                        Tomar foto con cámara
+                      </Button>
+                    </div>
                     
-                    {convirtiendoFrontal && <Alert variant="info">⏳ Procesando imagen frontal...</Alert>}
+                    {convirtiendoFrontal && (
+                      <Alert variant="info" className="py-2 small">
+                        <div className="spinner-border spinner-border-sm me-2" role="status">
+                          <span className="visually-hidden">Procesando...</span>
+                        </div>
+                        Procesando imagen frontal...
+                      </Alert>
+                    )}
                     
                     {imagenFrontalPreview && (
                       <div className="text-center mt-2">
@@ -303,6 +510,12 @@ function Documents() {
                       <FaFileImage className="me-2" />
                       <strong>Fotografía dorsal del documento</strong> <span className="text-danger">*</span>
                       {dorsalBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
+                      {dorsalBase64 && documentoValido === true && (
+                        <Badge bg="success" className="ms-2">Válida</Badge>
+                      )}
+                      {dorsalBase64 && documentoValido === false && (
+                        <Badge bg="warning" className="ms-2">Revisar</Badge>
+                      )}
                     </Form.Label>
                     <Form.Text className="text-muted d-block mb-2">
                       Sube una foto clara de la parte posterior donde se vea el código de barras o información adicional
@@ -316,17 +529,36 @@ function Documents() {
                       style={{ display: 'none' }}
                     />
                     
-                    <Button
-                      variant="outline-primary"
-                      onClick={() => dorsalInputRef.current.click()}
-                      className="w-100 mb-2"
-                      disabled={loading || convirtiendoDorsal}
-                    >
-                      <FaCamera className="me-2" />
-                      {imagenDorsal ? '📸 Cambiar foto dorsal' : '📤 Seleccionar foto dorsal'}
-                    </Button>
+                    <div className="d-grid gap-2 mb-2">
+                      <Button
+                        variant="outline-primary"
+                        onClick={() => dorsalInputRef.current.click()}
+                        className="w-100"
+                        disabled={loading || convirtiendoDorsal}
+                      >
+                        <FaCamera className="me-2" />
+                        {imagenDorsal ? '📸 Cambiar foto dorsal' : '📤 Seleccionar foto dorsal'}
+                      </Button>
+                      
+                      <Button
+                        variant="outline-success"
+                        onClick={() => iniciarCamara('dorsal')}
+                        className="w-100"
+                        disabled={cameraActive || convirtiendoDorsal}
+                      >
+                        <FaVideo className="me-2" />
+                        Tomar foto con cámara
+                      </Button>
+                    </div>
                     
-                    {convirtiendoDorsal && <Alert variant="info">⏳ Procesando imagen dorsal...</Alert>}
+                    {convirtiendoDorsal && (
+                      <Alert variant="info" className="py-2 small">
+                        <div className="spinner-border spinner-border-sm me-2" role="status">
+                          <span className="visually-hidden">Procesando...</span>
+                        </div>
+                        Procesando imagen dorsal...
+                      </Alert>
+                    )}
                     
                     {imagenDorsalPreview && (
                       <div className="text-center mt-2">
@@ -336,7 +568,44 @@ function Documents() {
                     )}
                   </Form.Group>
 
-                  <div className="d-flex gap-2">
+                  {verificandoDocumento && (
+                    <Alert variant="info" className="py-2 small d-flex align-items-center">
+                      <div className="spinner-border spinner-border-sm me-2" role="status">
+                        <span className="visually-hidden">Verificando...</span>
+                      </div>
+                      Verificando calidad de imagen para análisis...
+                    </Alert>
+                  )}
+
+                  {!verificandoDocumento && documentoValido === true && (
+                    <Alert variant="success" className="py-2 small d-flex align-items-center">
+                      <FaSmile className="me-2" size={18} />
+                      {mensajeDocumento}
+                    </Alert>
+                  )}
+
+                  {!verificandoDocumento && documentoValido === false && (
+                    <Alert variant="warning" className="py-2 small d-flex align-items-center">
+                      <FaFrown className="me-2" size={18} />
+                      {mensajeDocumento}
+                    </Alert>
+                  )}
+
+                  <div className="mt-3 p-2 bg-light rounded-3 small text-start">
+                    <div className="fw-bold mb-1">
+                      <FaExclamationTriangle className="me-1 text-warning" />
+                      Recomendaciones para fotos de documentos
+                    </div>
+                    <ul className="mb-0 ps-3" style={{ fontSize: '0.8rem' }}>
+                      <li>Usa buena iluminación, evita sombras</li>
+                      <li>Asegura que todo el texto sea legible</li>
+                      <li>El documento debe ocupar la mayor parte de la foto</li>
+                      <li>Evita reflejos, brillos o fotos borrosas</li>
+                      <li>La foto debe ser a color y nítida</li>
+                    </ul>
+                  </div>
+
+                  <div className="d-flex gap-2 mt-4">
                     <Button 
                       type="submit" 
                       className="flex-fill"
@@ -344,7 +613,7 @@ function Documents() {
                         background: ambasImagenesListas ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
                         border: 'none'
                       }}
-                      disabled={loading || !ambasImagenesListas || !tipoDocumento || !numeroDocumento}
+                      disabled={loading || !ambasImagenesListas || !tipoDocumento || !numeroDocumento || verificandoDocumento}
                     >
                       {loading ? 'Enviando documentación...' : '📨 Enviar documentación para revisión'}
                     </Button>
@@ -360,7 +629,69 @@ function Documents() {
           </Col>
         </Row>
       </Container>
+
+      <Modal show={showCameraFrontal || showCameraDorsal} onHide={detenerCamara} size="lg" centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Tomar Foto - {tipoDocumentoActual === 'frontal' ? 'Parte Frontal' : 'Parte Dorsal'}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center p-0">
+          <div style={{ position: 'relative', backgroundColor: '#000', minHeight: '400px' }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              style={{ width: '100%', height: 'auto', maxHeight: '480px', objectFit: 'cover' }}
+            />
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
+            
+            {!cameraActive && (
+              <div style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                backgroundColor: 'rgba(0,0,0,0.7)',
+                color: 'white'
+              }}>
+                <p>Iniciando cámara...</p>
+              </div>
+            )}
+            
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '90%',
+              height: '60%',
+              border: '3px solid rgba(74, 207, 189, 0.5)',
+              borderRadius: '10px',
+              pointerEvents: 'none',
+              boxShadow: '0 0 20px rgba(74, 207, 189, 0.3)'
+            }} />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={detenerCamara}>
+            Cancelar
+          </Button>
+          <Button 
+            variant="success" 
+            onClick={tomarFoto}
+            disabled={!cameraActive}
+          >
+            <FaCamera /> Tomar Foto
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
+
 export default Documents;
