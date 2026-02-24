@@ -60,7 +60,7 @@ const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(1
 };
 
 function DriverProfile() {
-  const { usuario, token, logout, setUsuario } = useAuth();
+  const { usuario, token, setUsuario } = useAuth();
   const navigate = useNavigate();
   
   const [nombre, setNombre] = useState(usuario?.nombre || '');
@@ -439,7 +439,6 @@ function DriverProfile() {
                         >
                           <FaSave className="me-2" /> {loading ? 'Guardando...' : 'Guardar Cambios'}
                         </Button>
-                        <Button variant="outline-danger" onClick={logout} disabled={loading}>Salir</Button>
                       </div>
                     </Form>
                   </Col>
