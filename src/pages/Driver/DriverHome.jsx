@@ -18,12 +18,107 @@ const DriverHome = () => {
     const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
     const [errorVehiculo, setErrorVehiculo] = useState("");
 
+    const [ganancias, setGanancias] = useState({
+        hoy: 0,
+        estaSemana: 0,
+        esteMes: 0
+    });
+
+    const [documentos, setDocumentos] = useState({
+        licencia: { estado: 'PENDIENTE', fechaVencimiento: null },
+        soat: { estado: 'PENDIENTE', fechaVencimiento: null },
+        tecnomecanica: { estado: 'PENDIENTE', fechaVencimiento: null },
+        seguro: { estado: 'PENDIENTE', fechaVencimiento: null }
+    });
+
+    const [cargarDocumentos, setCargarDocumentos] = useState(false);
+    const [errorDocumentos, setErrorDocumentos] = useState("");
+
     useEffect(() => {
         const hasSeenTutorial = localStorage.getItem("tutorial_conductor_visto");
         if (!hasSeenTutorial) {
             setShowTutorial(true);
         }
     }, []);
+
+    useEffect(() => {
+        const obtenerGanancias = async () => {
+            if (!token  || !usuario?.idUsuarios) {
+                console.log("No hay token disponible para obtener ganancias");
+                return;
+            }
+            try {
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    setGanancias({
+                        hoy: data.hoy || 0,
+                        estaSemana: data.estaSemana || 0,
+                        esteMes: data.esteMes || 0
+                    });
+                } else {
+                    console.log("Error al obtener ganancias:", respuesta.status);
+                }
+            } catch (error) {
+                console.error("Error de conexión al obtener ganancias:", error);
+            }
+        };
+        obtenerGanancias();
+        const instervaloGanancias = setInterval(obtenerGanancias, 60000);
+        return () => clearInterval(instervaloGanancias);
+    }, [token, usuario?.idUsuarios]);
+
+    useEffect(() => {
+        const obtenerDocumentos = async () => {
+            if (!token || !usuario?.idUsuarios) {
+                console.log("No hay token disponible para obtener documentos");
+                return;
+            }
+            try {
+                setCargarDocumentos(true);
+                setErrorDocumentos("");
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentos/usuario/${usuario.idUsuarios}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    setDocumentos({
+                        licencia: data.licencia || { estado: 'PENDIENTE', fechaVencimiento: null },
+                        soat: data.soat || { estado: 'PENDIENTE', fechaVencimiento: null },
+                        tecnomecanica: data.tecnomecanica || { estado: 'PENDIENTE', fechaVencimiento: null },
+                        seguro: data.seguro || { estado: 'PENDIENTE', fechaVencimiento: null }
+                    });
+                } else if (respuesta.status === 404) {
+                    console.log("No se encontraron documentos para el usuario");
+                } 
+            } catch (error) {
+                console.error("Error de conexión al obtener documentos:", error);
+                    setErrorDocumentos("Error al obtener documentos");
+                } finally {
+                    setCargarDocumentos(false);
+                }
+            };
+        obtenerDocumentos();
+    }, [token, usuario?.idUsuarios]);
+
+    useEffect(() => {
+        const obtenerDocumentos = async () => {
+            if (!token || !usuario?.idUsuarios) {
+                console.log("No hay token disponible para obtener documentos");
+                return;
+            }
+        };
+        obtenerDocumentos();
+    }, [token, usuario?.idUsuarios]);
+
 
     useEffect(() => {
         const obtenerVehiculos = async () => {
@@ -79,6 +174,29 @@ const DriverHome = () => {
 
         obtenerVehiculos();
     }, [token]);
+    const getDocumentoBadge = (estado) => {
+        switch (estado?.toUpperCase()) {
+            case 'VÁLIDO':
+            case 'VALIDO':
+            case 'APROBADO':
+                return <Badge bg="success" className="rounded-pill">Válido</Badge>;
+            case 'VENCIDO':
+            case 'RECHAZADO':
+                return <Badge bg="danger" className="rounded-pill">Vencido</Badge>;
+            case 'PENDIENTE':
+            case 'REVISION':
+                return <Badge bg="warning" className="rounded-pill">Pendiente</Badge>;
+            default:
+                return <Badge bg="secondary" className="rounded-pill">No subido</Badge>;
+        }
+    };
+
+    const estaVencido = (fechaVencimiento) => {
+        if (!fechaVencimiento) return false;
+        const hoy = new Date();
+        const vencimiento = new Date(fechaVencimiento);
+        return vencimiento < hoy;
+    };
 
     const manejarSiguiente = () => {
         if (currentStep < 3) {
@@ -134,6 +252,9 @@ const DriverHome = () => {
 
     const vehiculoPrincipal = vehiculos.length > 0 ? vehiculos[0] : null;
 
+    const estadoVehiculo = vehiculoPrincipal ? (vehiculoPrincipal.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente') : 'No registrado';
+    
+
     return (
         <div style={{ backgroundColor: primaryBlue, minHeight: '100vh' }}>
             <Navbar />
@@ -158,7 +279,9 @@ const DriverHome = () => {
                         </div>
                         <div className="text-end">
                             <span className="small text-muted d-block">Ganancias hoy</span>
-                            <h3 className="fw-bold text-success mb-0">$000.0</h3>
+                            <h3 className="fw-bold text-success mb-0">
+                                ${ganancias.hoy.toLocaleString('es-CO')}
+                            </h3>
                         </div>
                     </Card.Body>
                 </Card>
@@ -241,12 +364,58 @@ const DriverHome = () => {
                                     <h5 className="mb-0 fw-bold">Documentación</h5>
                                 </div>
                                 <ListGroup variant="flush">
-                                    <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
-                                        Licencia <Badge bg="success" className="rounded-pill">Válida</Badge>
-                                    </ListGroup.Item>
-                                    <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
-                                        SOAT <Badge bg="success" className="rounded-pill">Válido</Badge>
-                                    </ListGroup.Item>
+                                    {cargarDocumentos ? (
+                                        <div className="text-center py-2">
+                                            <div className="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span className="visually-hidden">Cargando...</span>
+                                            </div>
+                                        </div>
+                                    ) : errorDocumentos ? (
+                                        <p className="text-danger small text-center">{errorDocumentos}</p>
+                                    ) : (
+                                        <>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
+                                                Licencia 
+                                                {getDocumentoBadge(documentos.licencia.estado)}
+                                                {estaVencido(documentos.licencia.fechaVencimiento) && 
+                                                    documentos.licencia.estado === 'VÁLIDO' && (
+                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
+                                                        VENCE PRONTO
+                                                    </Badge>
+                                                )}
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
+                                                SOAT 
+                                                {getDocumentoBadge(documentos.soat.estado)}
+                                                {estaVencido(documentos.soat.fechaVencimiento) && 
+                                                    documentos.soat.estado === 'VÁLIDO' && (
+                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
+                                                        VENCE PRONTO
+                                                    </Badge>
+                                                )}
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
+                                                Tecno-mecánica 
+                                                {getDocumentoBadge(documentos.tecnomecanica.estado)}
+                                                {estaVencido(documentos.tecnomecanica.fechaVencimiento) && 
+                                                    documentos.tecnomecanica.estado === 'VÁLIDO' && (
+                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
+                                                        VENCE PRONTO
+                                                    </Badge>
+                                                )}
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
+                                                Seguro 
+                                                {getDocumentoBadge(documentos.seguro.estado)}
+                                                {estaVencido(documentos.seguro.fechaVencimiento) && 
+                                                    documentos.seguro.estado === 'VÁLIDO' && (
+                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
+                                                        VENCE PRONTO
+                                                    </Badge>
+                                                )}
+                                            </ListGroup.Item>
+                                        </>
+                                    )}
                                 </ListGroup>
                                 <Button 
                                     variant="dark" 
@@ -292,6 +461,20 @@ const DriverHome = () => {
                                     Monitorea tus ingresos diarios de forma transparente. 
                                     Verás el acumulado de tus viajes en tiempo real.
                                 </p>
+                                <div className="mt-4 p-3 bg-light rounded">
+                                    <div className="d-flex justify-content-between mb-2">
+                                        <span>Hoy:</span>
+                                        <strong className="text-success">${ganancias.hoy.toLocaleString('es-CO')}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between mb-2">
+                                        <span>Esta semana:</span>
+                                        <strong className="text-success">${ganancias.estaSemana.toLocaleString('es-CO')}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between">
+                                        <span>Este mes:</span>
+                                        <strong className="text-success">${ganancias.esteMes.toLocaleString('es-CO')}</strong>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -305,6 +488,15 @@ const DriverHome = () => {
                                     Asegúrate de que los datos de tu vehículo sean los correctos. 
                                     Esto garantiza la seguridad de tus pasajeros y la tuya.
                                 </p>
+                                {vehiculoPrincipal && (
+                                    <div className="mt-4 p-3 bg-light rounded">
+                                        <p className="mb-1"><strong>Vehículo:</strong> {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}</p>
+                                        <p className="mb-1"><strong>Placa:</strong> {vehiculoPrincipal.placa}</p>
+                                        <Badge bg={vehiculoPrincipal.estado === 'ACTIVO' ? 'success' : 'warning'}>
+                                            {vehiculoPrincipal.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente'}
+                                        </Badge>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -318,6 +510,22 @@ const DriverHome = () => {
                                     ¡Último paso! Para activar tu cuenta, necesitamos validar tu documentación. 
                                     Te llevaremos a la sección de carga ahora mismo.
                                 </p>
+                                {!cargarDocumentos && !errorDocumentos && (
+                                    <div className="mt-4 p-3 bg-light rounded">
+                                        <div className="d-flex justify-content-between mb-2">
+                                            <span>Licencia:</span>
+                                            {getDocumentoBadge(documentos.licencia.estado)}
+                                        </div>
+                                        <div className="d-flex justify-content-between mb-2">
+                                            <span>SOAT:</span>
+                                            {getDocumentoBadge(documentos.soat.estado)}
+                                        </div>
+                                        <div className="d-flex justify-content-between">
+                                            <span>Tecno-mecánica:</span>
+                                            {getDocumentoBadge(documentos.tecnomecanica.estado)}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

@@ -17,11 +17,35 @@ function Notificaciones() {
   useEffect(() => {
     if (usuario?.idUsuarios && token) {
       obtenerNotificaciones();
+      obtenerContadorNoLeídas();
 
       const intervalo = setInterval(obtenerNotificaciones, 30000);
       return () => clearInterval(intervalo);
+      obtenerContadorNoLeídas();
     }
   }, [usuario?.idUsuarios, token]);
+
+  const obtenerContadorNoLeídas = async () => {
+    if (!token || !usuario?.idUsuarios) return;
+    try {
+      const respuesta = await fetch(
+        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/usuario/${usuario.idUsuarios}/count`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (respuesta.ok) {
+        const data = await respuesta.json();
+        setNoLeidas(data.noLeidas || 0);
+      }
+    } catch (error) {
+      console.error("Error al obtener contador de notificaciones no leídas:", error);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -72,7 +96,7 @@ function Notificaciones() {
       const respuesta = await fetch(
         `https://backendmovi-production-c657.up.railway.app/api/notificaciones/${idNotificacion}/leer`, 
         {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -85,6 +109,7 @@ function Notificaciones() {
           prev.map(n => n.idNotificacion === idNotificacion ? {...n, leido: true} : n)
         );
         setNoLeidas(prev => Math.max(0, prev - 1));
+        await obtenerContadorNoLeídas();
 
         toast.success('Notificación marcada como leída', {
           icon: '✓',
@@ -101,7 +126,7 @@ function Notificaciones() {
       const respuesta = await fetch(
         `https://backendmovi-production-c657.up.railway.app/api/notificaciones/usuario/${usuario.idUsuarios}/leer-todas`, 
         {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -112,6 +137,7 @@ function Notificaciones() {
       if (respuesta.ok) {
         setNotificaciones(prev => prev.map(n => ({...n, leido: true})));
         setNoLeidas(0);
+        await obtenerContadorNoLeídas();
         toast.success('Todas las notificaciones marcadas como leídas');
       }
     } catch (error) {
@@ -119,6 +145,32 @@ function Notificaciones() {
     }
   };
 
+  const eliminarNotificacion = async (idNotificacion, event) => {
+    event.stopPropagation();
+
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
+      return;
+    }
+
+    try {
+      const respuesta = await fetch(
+        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/${idNotificacion}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (respuesta.ok) {
+        setNotificaciones(prev => prev.filter(n => n.idNotificacion !== idNotificacion));
+        toast.success('Notificación eliminada');
+      }
+    } catch (error) {
+      console.error("Error al eliminar notificación:", error);
+    }
+  };
 
   const getIcono = (tipo) => {
     switch(tipo?.toUpperCase()) {
@@ -245,7 +297,8 @@ function Notificaciones() {
                     style={{ 
                       cursor: 'pointer',
                       transition: 'background-color 0.2s ease',
-                      borderLeft: !notif.leido ? '3px solid #124c83' : 'none'
+                      borderLeft: !notif.leido ? '3px solid #124c83' : 'none',
+                      paddingRight: '40px'
                     }}
                   >
                     <div className="mt-1" style={{ minWidth: '20px' }}>
@@ -282,6 +335,18 @@ function Notificaciones() {
                         </small>
                       </div>
                     </div>
+
+                    <Button 
+                      variant="link" 
+                      size="sm"
+                      onClick={(e) => eliminarNotificacion(notif.idNotificacion, e)}
+                      className="position-absolute top-50 end-0 translate-middle-y text-danger p-2"
+                      style={{ fontSize: '0.8rem' }}
+                      aria-label="Eliminar notificación"
+                    >
+                      &times;
+                    </Button>
+                    
                   </ListGroup.Item>
                 ))}
               </ListGroup>
