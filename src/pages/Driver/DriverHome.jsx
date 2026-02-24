@@ -158,7 +158,7 @@ const DriverHome = () => {
                         </div>
                         <div className="text-end">
                             <span className="small text-muted d-block">Ganancias hoy</span>
-                            <h3 className="fw-bold text-success mb-0">$128.50</h3>
+                            <h3 className="fw-bold text-success mb-0">$000.0</h3>
                         </div>
                     </Card.Body>
                 </Card>
