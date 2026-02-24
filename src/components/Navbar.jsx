@@ -164,7 +164,7 @@ export default function NavbarCustom() {
                       Editar Perfil
                     </Dropdown.Item>
                     <Dropdown.Item as={Link} to="/profile/stats">Estadísticas</Dropdown.Item>
-                    <Dropdown.Item as={Link} to="/tus-viajes">Mis Viajes</Dropdown.Item>
+                    <Dropdown.Item as={Link} to="/">Mis Viajes</Dropdown.Item>
                     
                     <Dropdown.Divider />
                     <Dropdown.Item onClick={handleLogout} className="text-danger">
