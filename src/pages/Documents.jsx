@@ -15,16 +15,13 @@ function Documents() {
   const [numeroDocumento, setNumeroDocumento] = useState("");
 
   const [frontalBase64, setFrontalBase64] = useState("");
-  const [dorsalBase64, setDorsalBase64] = useState("");
   const [frontalPreview, setFrontalPreview] = useState("");
-  const [dorsalPreview, setDorsalPreview] = useState("");
   
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [showCameraFrontal, setShowCameraFrontal] = useState(false);
-  const [showCameraDorsal, setShowCameraDorsal] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [stream, setStream] = useState(null);
   const [tipoDocumentoActual, setTipoDocumentoActual] = useState("frontal");
@@ -80,13 +77,9 @@ function Documents() {
     }
   };
 
-  const iniciarCamara = (tipo) => {
-    setTipoDocumentoActual(tipo);
-    if (tipo === 'frontal') {
-      setShowCameraFrontal(true);
-    } else {
-      setShowCameraDorsal(true);
-    }
+  const iniciarCamara = () => {
+    setTipoDocumentoActual('frontal');
+    setShowCameraFrontal(true);
     
     setTimeout(() => {
       iniciarCamaraStream();
@@ -126,7 +119,6 @@ function Documents() {
     }
     setCameraActive(false);
     setShowCameraFrontal(false);
-    setShowCameraDorsal(false);
   };
 
   const tomarFoto = () => {
@@ -142,19 +134,11 @@ function Documents() {
       
       const fotoBase64 = canvas.toDataURL('image/jpeg', 0.9);
       
-      if (tipoDocumentoActual === 'frontal') {
-        setFrontalBase64(fotoBase64);
-        setFrontalPreview(fotoBase64);
-        setErrorDocumentoBackend("");
-        verificarDocumentoAntesDeEnviar(fotoBase64, 'frontal');
-        toast.success('¡Foto frontal tomada correctamente!');
-      } else {
-        setDorsalBase64(fotoBase64);
-        setDorsalPreview(fotoBase64);
-        setErrorDocumentoBackend("");
-        verificarDocumentoAntesDeEnviar(fotoBase64, 'dorsal');
-        toast.success('¡Foto dorsal tomada correctamente!');
-      }
+      setFrontalBase64(fotoBase64);
+      setFrontalPreview(fotoBase64);
+      setErrorDocumentoBackend("");
+      verificarDocumentoAntesDeEnviar(fotoBase64, 'frontal');
+      toast.success('¡Foto tomada correctamente!');
       
       detenerCamara();
     }
@@ -167,8 +151,8 @@ function Documents() {
     setErrorDocumentoBackend("");
     setLoading(true);
 
-    if (!frontalBase64 || !dorsalBase64) {
-      const errorMsg = "Debes tomar ambas fotos del documento";
+    if (!frontalBase64) {
+      const errorMsg = "Debes tomar la foto del documento";
       setError(errorMsg);
       toast.error(errorMsg);
       setLoading(false);
@@ -189,8 +173,7 @@ function Documents() {
       const datosEnviar = {
         tipoDocumento: tipoDocumento,
         numeroDocumento: numeroDocumento,
-        imagenFrontal: frontalBase64,
-        imagenDorsal: dorsalBase64
+        imagenFrontal: frontalBase64
       };
 
       const headers = {
@@ -243,7 +226,7 @@ function Documents() {
     }
   }
 
-  const ambasImagenesListas = frontalBase64 && dorsalBase64;
+  const imagenLista = frontalBase64;
 
   return (
     <div style={{
@@ -366,13 +349,13 @@ function Documents() {
                     <div className="d-grid gap-2 mb-2">
                       <Button
                         variant="outline-success"
-                        onClick={() => iniciarCamara('frontal')}
+                        onClick={() => iniciarCamara()}
                         className="w-100 py-3"
                         disabled={cameraActive || verificandoDocumento}
                         size="lg"
                       >
                         <FaVideo className="me-2" />
-                        {frontalBase64 ? '📸 Tomar otra foto frontal' : '📸 Tomar foto frontal del documento'}
+                        {frontalBase64 ? '📸 Tomar otra foto' : '📸 Tomar foto del documento'}
                       </Button>
                     </div>
                     
@@ -396,54 +379,7 @@ function Documents() {
                     )}
                   </Form.Group>
 
-                  <Form.Group className="mb-4" controlId="imagenDorsal">
-                    <Form.Label className="d-flex align-items-center">
-                      <FaFileImage className="me-2" />
-                      <strong>Fotografía dorsal del documento</strong> <span className="text-danger">*</span>
-                      {dorsalBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
-                      {dorsalBase64 && documentoValido === true && (
-                        <Badge bg="success" className="ms-2">Válida</Badge>
-                      )}
-                      {dorsalBase64 && documentoValido === false && (
-                        <Badge bg="warning" className="ms-2">Revisar</Badge>
-                      )}
-                    </Form.Label>
-                    <Form.Text className="text-muted d-block mb-2">
-                      Toma una foto clara de la parte posterior donde se vea el código de barras o información adicional
-                    </Form.Text>
-                    
-                    <div className="d-grid gap-2 mb-2">
-                      <Button
-                        variant="outline-success"
-                        onClick={() => iniciarCamara('dorsal')}
-                        className="w-100 py-3"
-                        disabled={cameraActive || verificandoDocumento}
-                        size="lg"
-                      >
-                        <FaVideo className="me-2" />
-                        {dorsalBase64 ? '📸 Tomar otra foto dorsal' : '📸 Tomar foto dorsal del documento'}
-                      </Button>
-                    </div>
-                    
-                    {dorsalPreview && (
-                      <div className="text-center mt-3">
-                        <p className="mb-2"><strong>Vista previa dorsal:</strong></p>
-                        <div style={{ 
-                          maxHeight: '200px', 
-                          border: `2px solid ${documentoValido === true ? '#4acfbd' : documentoValido === false ? '#ffc107' : '#ddd'}`,
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                          display: 'inline-block'
-                        }}>
-                          <img 
-                            src={dorsalPreview} 
-                            alt="Vista previa dorsal del documento" 
-                            style={{ maxHeight: '200px', width: 'auto' }} 
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </Form.Group>
+
 
                   {verificandoDocumento && (
                     <Alert variant="info" className="py-2 small d-flex align-items-center">
@@ -488,11 +424,11 @@ function Documents() {
                       type="submit" 
                       className="flex-fill py-3"
                       style={{ 
-                        background: ambasImagenesListas ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
+                        background: imagenLista ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
                         border: 'none',
                         fontSize: '1.1rem'
                       }}
-                      disabled={loading || !ambasImagenesListas || !tipoDocumento || !numeroDocumento || verificandoDocumento}
+                      disabled={loading || !imagenLista || !tipoDocumento || !numeroDocumento || verificandoDocumento}
                     >
                       {loading ? 'Enviando documentación...' : '📨 Enviar documentación para revisión'}
                     </Button>
@@ -509,10 +445,10 @@ function Documents() {
         </Row>
       </Container>
 
-      <Modal show={showCameraFrontal || showCameraDorsal} onHide={detenerCamara} size="lg" centered>
+      <Modal show={showCameraFrontal} onHide={detenerCamara} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
-            Tomar Foto - {tipoDocumentoActual === 'frontal' ? 'Parte Frontal' : 'Parte Dorsal'}
+            Tomar Foto del Documento
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center p-0">
