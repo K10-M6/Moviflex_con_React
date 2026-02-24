@@ -14,15 +14,10 @@ function Documents() {
   const [tipoDocumento, setTipoDocumento] = useState("");
   const [numeroDocumento, setNumeroDocumento] = useState("");
 
-  const [imagenFrontal, setImagenFrontal] = useState(null);
-  const [imagenDorsal, setImagenDorsal] = useState(null);
-  const [imagenFrontalPreview, setImagenFrontalPreview] = useState("");
-  const [imagenDorsalPreview, setImagenDorsalPreview] = useState("");
-  
   const [frontalBase64, setFrontalBase64] = useState("");
   const [dorsalBase64, setDorsalBase64] = useState("");
-  const [convirtiendoFrontal, setConvirtiendoFrontal] = useState(false);
-  const [convirtiendoDorsal, setConvirtiendoDorsal] = useState(false);
+  const [frontalPreview, setFrontalPreview] = useState("");
+  const [dorsalPreview, setDorsalPreview] = useState("");
   
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -41,21 +36,6 @@ function Documents() {
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const frontalInputRef = useRef(null);
-  const dorsalInputRef = useRef(null);
-
-  const validarImagen = (file) => {
-    const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    const tamañoMaximo = 5 * 1024 * 1024;
-    
-    if (!tiposPermitidos.includes(file.type)) {
-      return "Formato no permitido. Usa JPG, PNG o WEBP";
-    }
-    if (file.size > tamañoMaximo) {
-      return "La imagen no debe superar los 5MB";
-    }
-    return null;
-  };
 
   const verificarDocumentoAntesDeEnviar = async (base64Image, tipo) => {
     setVerificandoDocumento(true);
@@ -97,72 +77,6 @@ function Documents() {
       return false;
     } finally {
       setVerificandoDocumento(false);
-    }
-  };
-
-  const handleImageFrontalChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const error = validarImagen(file);
-      if (error) {
-        toast.error(error);
-        setError(error);
-        e.target.value = '';
-        return;
-      }
-
-      try {
-        setConvirtiendoFrontal(true);
-        
-        const previewUrl = URL.createObjectURL(file);
-        setImagenFrontalPreview(previewUrl);
-        setImagenFrontal(file);
-        
-        const base64 = await convertirABase64(file);
-        setFrontalBase64(base64);
-        setErrorDocumentoBackend("");
-        
-        toast.success('Imagen frontal seleccionada correctamente');
-        await verificarDocumentoAntesDeEnviar(base64, 'frontal');
-        
-      } catch (error) {
-        toast.error('Error al procesar la imagen frontal');
-      } finally {
-        setConvirtiendoFrontal(false);
-      }
-    }
-  };
-
-  const handleImageDorsalChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const error = validarImagen(file);
-      if (error) {
-        toast.error(error);
-        setError(error);
-        e.target.value = '';
-        return;
-      }
-
-      try {
-        setConvirtiendoDorsal(true);
-        
-        const previewUrl = URL.createObjectURL(file);
-        setImagenDorsalPreview(previewUrl);
-        setImagenDorsal(file);
-        
-        const base64 = await convertirABase64(file);
-        setDorsalBase64(base64);
-        setErrorDocumentoBackend("");
-        
-        toast.success('Imagen dorsal seleccionada correctamente');
-        await verificarDocumentoAntesDeEnviar(base64, 'dorsal');
-        
-      } catch (error) {
-        toast.error('Error al procesar la imagen dorsal');
-      } finally {
-        setConvirtiendoDorsal(false);
-      }
     }
   };
 
@@ -230,13 +144,13 @@ function Documents() {
       
       if (tipoDocumentoActual === 'frontal') {
         setFrontalBase64(fotoBase64);
-        setImagenFrontalPreview(fotoBase64);
+        setFrontalPreview(fotoBase64);
         setErrorDocumentoBackend("");
         verificarDocumentoAntesDeEnviar(fotoBase64, 'frontal');
         toast.success('¡Foto frontal tomada correctamente!');
       } else {
         setDorsalBase64(fotoBase64);
-        setImagenDorsalPreview(fotoBase64);
+        setDorsalPreview(fotoBase64);
         setErrorDocumentoBackend("");
         verificarDocumentoAntesDeEnviar(fotoBase64, 'dorsal');
         toast.success('¡Foto dorsal tomada correctamente!');
@@ -244,15 +158,6 @@ function Documents() {
       
       detenerCamara();
     }
-  };
-
-  const convertirABase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
   };
 
   async function guardarDocumentacion(e) {
@@ -263,7 +168,7 @@ function Documents() {
     setLoading(true);
 
     if (!frontalBase64 || !dorsalBase64) {
-      const errorMsg = "Debes seleccionar ambas imágenes";
+      const errorMsg = "Debes tomar ambas fotos del documento";
       setError(errorMsg);
       toast.error(errorMsg);
       setLoading(false);
@@ -455,52 +360,38 @@ function Documents() {
                       )}
                     </Form.Label>
                     <Form.Text className="text-muted d-block mb-2">
-                      Sube una foto clara y legible de la parte frontal donde se vean todos tus datos
+                      Toma una foto clara y legible de la parte frontal donde se vean todos tus datos
                     </Form.Text>
-
-                    <Form.Control
-                      ref={frontalInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageFrontalChange}
-                      style={{ display: 'none' }}
-                    />
                   
                     <div className="d-grid gap-2 mb-2">
                       <Button
-                        variant="outline-primary"
-                        onClick={() => frontalInputRef.current.click()}
-                        className="w-100"
-                        disabled={loading || convirtiendoFrontal}
-                      >
-                        <FaCamera className="me-2" />
-                        {imagenFrontal ? '📸 Cambiar foto frontal' : '📤 Seleccionar foto frontal'}
-                      </Button>
-                      
-                      <Button
                         variant="outline-success"
                         onClick={() => iniciarCamara('frontal')}
-                        className="w-100"
-                        disabled={cameraActive || convirtiendoFrontal}
+                        className="w-100 py-3"
+                        disabled={cameraActive || verificandoDocumento}
+                        size="lg"
                       >
                         <FaVideo className="me-2" />
-                        Tomar foto con cámara
+                        {frontalBase64 ? '📸 Tomar otra foto frontal' : '📸 Tomar foto frontal del documento'}
                       </Button>
                     </div>
                     
-                    {convirtiendoFrontal && (
-                      <Alert variant="info" className="py-2 small">
-                        <div className="spinner-border spinner-border-sm me-2" role="status">
-                          <span className="visually-hidden">Procesando...</span>
+                    {frontalPreview && (
+                      <div className="text-center mt-3">
+                        <p className="mb-2"><strong>Vista previa frontal:</strong></p>
+                        <div style={{ 
+                          maxHeight: '200px', 
+                          border: `2px solid ${documentoValido === true ? '#4acfbd' : documentoValido === false ? '#ffc107' : '#ddd'}`,
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          display: 'inline-block'
+                        }}>
+                          <img 
+                            src={frontalPreview} 
+                            alt="Vista previa frontal del documento" 
+                            style={{ maxHeight: '200px', width: 'auto' }} 
+                          />
                         </div>
-                        Procesando imagen frontal...
-                      </Alert>
-                    )}
-                    
-                    {imagenFrontalPreview && (
-                      <div className="text-center mt-2">
-                        <p className="mb-1"><small>Vista previa frontal:</small></p>
-                        <img src={imagenFrontalPreview} alt="Vista previa frontal del documento" style={{ maxHeight: '150px', border: '1px solid #ddd', borderRadius: '4px' }} />
                       </div>
                     )}
                   </Form.Group>
@@ -518,52 +409,38 @@ function Documents() {
                       )}
                     </Form.Label>
                     <Form.Text className="text-muted d-block mb-2">
-                      Sube una foto clara de la parte posterior donde se vea el código de barras o información adicional
+                      Toma una foto clara de la parte posterior donde se vea el código de barras o información adicional
                     </Form.Text>
-
-                    <Form.Control
-                      ref={dorsalInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageDorsalChange}
-                      style={{ display: 'none' }}
-                    />
                     
                     <div className="d-grid gap-2 mb-2">
                       <Button
-                        variant="outline-primary"
-                        onClick={() => dorsalInputRef.current.click()}
-                        className="w-100"
-                        disabled={loading || convirtiendoDorsal}
-                      >
-                        <FaCamera className="me-2" />
-                        {imagenDorsal ? '📸 Cambiar foto dorsal' : '📤 Seleccionar foto dorsal'}
-                      </Button>
-                      
-                      <Button
                         variant="outline-success"
                         onClick={() => iniciarCamara('dorsal')}
-                        className="w-100"
-                        disabled={cameraActive || convirtiendoDorsal}
+                        className="w-100 py-3"
+                        disabled={cameraActive || verificandoDocumento}
+                        size="lg"
                       >
                         <FaVideo className="me-2" />
-                        Tomar foto con cámara
+                        {dorsalBase64 ? '📸 Tomar otra foto dorsal' : '📸 Tomar foto dorsal del documento'}
                       </Button>
                     </div>
                     
-                    {convirtiendoDorsal && (
-                      <Alert variant="info" className="py-2 small">
-                        <div className="spinner-border spinner-border-sm me-2" role="status">
-                          <span className="visually-hidden">Procesando...</span>
+                    {dorsalPreview && (
+                      <div className="text-center mt-3">
+                        <p className="mb-2"><strong>Vista previa dorsal:</strong></p>
+                        <div style={{ 
+                          maxHeight: '200px', 
+                          border: `2px solid ${documentoValido === true ? '#4acfbd' : documentoValido === false ? '#ffc107' : '#ddd'}`,
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          display: 'inline-block'
+                        }}>
+                          <img 
+                            src={dorsalPreview} 
+                            alt="Vista previa dorsal del documento" 
+                            style={{ maxHeight: '200px', width: 'auto' }} 
+                          />
                         </div>
-                        Procesando imagen dorsal...
-                      </Alert>
-                    )}
-                    
-                    {imagenDorsalPreview && (
-                      <div className="text-center mt-2">
-                        <p className="mb-1"><small>Vista previa dorsal:</small></p>
-                        <img src={imagenDorsalPreview} alt="Vista previa dorsal del documento" style={{ maxHeight: '150px', border: '1px solid #ddd', borderRadius: '4px' }} />
                       </div>
                     )}
                   </Form.Group>
@@ -602,23 +479,25 @@ function Documents() {
                       <li>El documento debe ocupar la mayor parte de la foto</li>
                       <li>Evita reflejos, brillos o fotos borrosas</li>
                       <li>La foto debe ser a color y nítida</li>
+                      <li>Alinea el documento dentro del recuadro guía</li>
                     </ul>
                   </div>
 
                   <div className="d-flex gap-2 mt-4">
                     <Button 
                       type="submit" 
-                      className="flex-fill"
+                      className="flex-fill py-3"
                       style={{ 
                         background: ambasImagenesListas ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
-                        border: 'none'
+                        border: 'none',
+                        fontSize: '1.1rem'
                       }}
                       disabled={loading || !ambasImagenesListas || !tipoDocumento || !numeroDocumento || verificandoDocumento}
                     >
                       {loading ? 'Enviando documentación...' : '📨 Enviar documentación para revisión'}
                     </Button>
 
-                    <Button variant="outline-secondary" onClick={() => navigate("/driver-profile")}>
+                    <Button variant="outline-secondary" onClick={() => navigate("/driver-profile")} className="px-4">
                       <FaArrowLeft />
                     </Button>
                   </div>
@@ -637,12 +516,12 @@ function Documents() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center p-0">
-          <div style={{ position: 'relative', backgroundColor: '#000', minHeight: '400px' }}>
+          <div style={{ position: 'relative', backgroundColor: '#000', minHeight: '450px' }}>
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              style={{ width: '100%', height: 'auto', maxHeight: '480px', objectFit: 'cover' }}
+              style={{ width: '100%', height: 'auto', maxHeight: '500px', objectFit: 'cover' }}
             />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
             
@@ -669,24 +548,25 @@ function Documents() {
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: '90%',
-              height: '60%',
-              border: '3px solid rgba(74, 207, 189, 0.5)',
+              height: '70%',
+              border: '3px solid rgba(74, 207, 189, 0.7)',
               borderRadius: '10px',
               pointerEvents: 'none',
-              boxShadow: '0 0 20px rgba(74, 207, 189, 0.3)'
+              boxShadow: '0 0 30px rgba(74, 207, 189, 0.5)'
             }} />
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={detenerCamara}>
+          <Button variant="secondary" onClick={detenerCamara} size="lg">
             Cancelar
           </Button>
           <Button 
             variant="success" 
             onClick={tomarFoto}
             disabled={!cameraActive}
+            size="lg"
           >
-            <FaCamera /> Tomar Foto
+            <FaCamera className="me-2" /> Tomar Foto
           </Button>
         </Modal.Footer>
       </Modal>
