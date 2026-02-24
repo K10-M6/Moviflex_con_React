@@ -189,8 +189,8 @@ function AdminConductores() {
     return (
         <div style={{
             background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)',
-            width: '100%',
-            height: '100%',
+            minWidth: '100%',
+            minHeight: '100%',
             padding: '24px'
         }}>
             <Container fluid className="py-4">

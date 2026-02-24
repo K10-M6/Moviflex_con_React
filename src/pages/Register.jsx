@@ -82,40 +82,6 @@ function Register() {
         }
     };
 
-    const handleImageChange = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                setError("Por favor, selecciona un archivo de imagen válido.");
-                toast.error('Formato de archivo no válido');
-                return;
-            }
-            
-            if (file.size > 5 * 1024 * 1024) {
-                setError("La imagen no debe superar los 5MB.");
-                toast.error('La imagen es demasiado grande (máx 5MB)');
-                return;
-            }
-
-            try {
-                const previewUrl = URL.createObjectURL(file);
-                setFotoPreview(previewUrl);
-                
-                const base64 = await convertirABase64(file);
-                setFotoBase64(base64);
-                setError("");
-                setErrorRostroBackend("");
-                toast.success('Imagen cargada correctamente');
-                
-                await verificarRostroAntesDeEnviar(base64);
-                
-            } catch (error) {
-                setError("Error al procesar la imagen. Intenta de nuevo.");
-                toast.error('Error al procesar la imagen');
-            }
-        }
-    };
-
     const tomarFoto = () => {
         if (videoRef.current && canvasRef.current) {
             const video = videoRef.current;
@@ -277,15 +243,6 @@ function Register() {
         return "";
     };
 
-    const convertirABase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
     const handleNextStep = () => {
         setError("");
         setErrorRostroBackend("");
@@ -308,12 +265,12 @@ function Register() {
         
         if (step === 2) {
             if (!fotoBase64) {
-                const errorMsg = "Por favor, sube una foto de perfil o toma una foto con la cámara.";
+                const errorMsg = "Por favor, toma una foto con la cámara.";
                 setError(errorMsg);
                 toast.error(errorMsg);
                 return;
             }
-            toast.success('Foto de perfil cargada');
+            toast.success('Foto de perfil tomada correctamente');
         }
         
         if (step === 3) {
@@ -521,40 +478,24 @@ function Register() {
 
                                                 <div className="d-grid gap-2 mb-3">
                                                     <Button 
-                                                        variant="outline-primary" 
-                                                        onClick={() => document.getElementById('fileInput').click()}
-                                                        className="d-flex align-items-center justify-content-center gap-2 py-2"
-                                                        disabled={verificandoRostro}
-                                                    >
-                                                        <FaCamera /> Subir desde archivo
-                                                    </Button>
-                                                    
-                                                    <Button 
                                                         variant="outline-success" 
                                                         onClick={iniciarCamara}
-                                                        className="d-flex align-items-center justify-content-center gap-2 py-2"
+                                                        className="d-flex align-items-center justify-content-center gap-2 py-3"
                                                         disabled={cameraActive || verificandoRostro}
+                                                        size="lg"
                                                     >
-                                                        <FaVideo /> {cameraActive ? 'Cámara activa' : 'Tomar foto con cámara'}
+                                                        <FaVideo size={20} /> {cameraActive ? 'Cámara activa' : 'Tomar foto con cámara'}
                                                     </Button>
                                                 </div>
-
-                                                <Form.Control 
-                                                    id="fileInput"
-                                                    type="file" 
-                                                    accept="image/png, image/jpeg, image/jpg"
-                                                    onChange={handleImageChange}
-                                                    className="d-none"
-                                                />
                                                 
                                                 <Form.Text className="text-muted">
-                                                    Formatos: PNG, JPG, JPEG (Máx. 5MB)
+                                                    Toma una foto clara de tu rostro con buena iluminación
                                                 </Form.Text>
                                                 
                                                 <div className="mt-3 p-2 bg-light rounded-3 small text-start">
                                                     <div className="fw-bold mb-1">
                                                         <FaExclamationTriangle className="me-1 text-warning" />
-                                                        Reconocimiento Facial
+                                                        Recomendaciones para la foto
                                                     </div>
                                                     <ul className="mb-0 ps-3" style={{ fontSize: '0.8rem' }}>
                                                         <li>Usa buena iluminación</li>

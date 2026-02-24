@@ -17,7 +17,6 @@ function Login() {
     const [showQRScanner, setShowQRScanner] = useState(false);
     
     const [showFacialModal, setShowFacialModal] = useState(false);
-    const [facialMode, setFacialMode] = useState(null);
     const [fotoBase64, setFotoBase64] = useState("");
     const [fotoPreview, setFotoPreview] = useState("");
     const [verificando, setVerificando] = useState(false);
@@ -25,7 +24,6 @@ function Login() {
     const [stream, setStream] = useState(null);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    const fileInputRef = useRef(null);
     
     const navigate = useNavigate();
     const { login, token, usuario } = useAuth();
@@ -101,61 +99,24 @@ function Login() {
         }
     };
 
-    const convertirABase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
-    const handleImageChange = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                setError("Por favor, selecciona un archivo de imagen válido.");
-                return;
-            }
-            
-            if (file.size > 5 * 1024 * 1024) {
-                setError("La imagen no debe superar los 5MB.");
-                return;
-            }
-
-            try {
-                const base64 = await convertirABase64(file);
-                setFotoBase64(base64);
-                setFotoPreview(URL.createObjectURL(file));
-            } catch (error) {
-                setError("Error al procesar la imagen. Intenta de nuevo.");
-            }
-        }
-    };
-
-    const abrirFacialModal = (mode) => {
-        setFacialMode(mode);
+    const abrirFacialModal = () => {
         setFotoBase64("");
         setFotoPreview("");
         setError("");
         setShowFacialModal(true);
-        
-        if (mode === 'camera') {
-            setTimeout(() => iniciarCamara(), 500);
-        }
+        setTimeout(() => iniciarCamara(), 500);
     };
 
     const cerrarFacialModal = () => {
         detenerCamara();
         setShowFacialModal(false);
-        setFacialMode(null);
         setFotoBase64("");
         setFotoPreview("");
     };
 
     const enviarLoginFacial = async () => {
         if (!fotoBase64) {
-            setError("Debes tomar una foto o subir una imagen");
+            setError("Debes tomar una foto primero");
             return;
         }
 
@@ -343,7 +304,7 @@ function Login() {
                                 </Button>
 
                                 <Button
-                                    onClick={() => abrirFacialModal('camera')}
+                                    onClick={abrirFacialModal}
                                     variant="outline-success"
                                     className="w-100 py-2 mb-3 d-flex justify-content-center align-items-center gap-2"
                                     style={{ 
@@ -491,140 +452,107 @@ function Login() {
                     <Modal.Title>Inicio de Sesión Facial</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className="d-flex gap-2 mb-4">
-                        <Button
-                            variant={facialMode === 'camera' ? 'success' : 'outline-success'}
-                            onClick={() => {
-                                setFacialMode('camera');
-                                setFotoBase64("");
-                                setFotoPreview("");
-                                setTimeout(() => iniciarCamara(), 500);
-                            }}
-                            className="flex-fill"
-                        >
-                            <FaVideo className="me-2" />
-                            Usar Cámara
-                        </Button>
-                        <Button
-                            variant={facialMode === 'upload' ? 'primary' : 'outline-primary'}
-                            onClick={() => {
-                                setFacialMode('upload');
-                                detenerCamara();
-                                setFotoBase64("");
-                                setFotoPreview("");
-                            }}
-                            className="flex-fill"
-                        >
-                            <FaCamera className="me-2" />
-                            Subir Foto
-                        </Button>
-                    </div>
-
-                    {facialMode === 'camera' && (
-                        <div className="text-center">
-                            <div style={{ 
-                                position: 'relative', 
-                                backgroundColor: '#000', 
-                                minHeight: '300px',
-                                borderRadius: '10px',
-                                overflow: 'hidden'
-                            }}>
-                                <video
-                                    ref={videoRef}
-                                    autoPlay
-                                    playsInline
-                                    style={{ width: '100%', height: 'auto', maxHeight: '400px' }}
-                                />
-                                <canvas ref={canvasRef} style={{ display: 'none' }} />
-                                
-                                {!cameraActive && (
-                                    <div style={{ 
-                                        position: 'absolute', 
-                                        top: 0, 
-                                        left: 0, 
-                                        right: 0, 
-                                        bottom: 0, 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: 'center',
-                                        backgroundColor: 'rgba(0,0,0,0.7)',
-                                        color: 'white'
-                                    }}>
-                                        <p>Iniciando cámara...</p>
-                                    </div>
-                                )}
-                            </div>
-                            
-                            {cameraActive && (
-                                <Button 
-                                    variant="success" 
-                                    onClick={tomarFoto}
-                                    className="mt-3 w-100"
-                                    disabled={verificando}
-                                >
-                                    Tomar Foto
-                                </Button>
-                            )}
-                        </div>
-                    )}
-
-                    {facialMode === 'upload' && (
-                        <div className="text-center">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                style={{ display: 'none' }}
+                    <div className="text-center">
+                        <div style={{ 
+                            position: 'relative', 
+                            backgroundColor: '#000', 
+                            minHeight: '400px',
+                            borderRadius: '10px',
+                            overflow: 'hidden'
+                        }}>
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                style={{ width: '100%', height: 'auto', maxHeight: '450px' }}
                             />
+                            <canvas ref={canvasRef} style={{ display: 'none' }} />
                             
-                            <Button
-                                variant="primary"
-                                onClick={() => fileInputRef.current.click()}
-                                className="mb-3 w-100"
-                                disabled={verificando}
-                            >
-                                <FaCamera className="me-2" />
-                                Seleccionar Foto
-                            </Button>
-                        </div>
-                    )}
-
-                    {fotoPreview && (
-                        <div className="text-center mt-3">
-                            <div style={{ 
-                                width: '200px', 
-                                height: '200px', 
-                                margin: '0 auto',
-                                borderRadius: '10px',
-                                overflow: 'hidden',
-                                border: '3px solid #4acfbd'
-                            }}>
-                                <img 
-                                    src={fotoPreview} 
-                                    alt="Preview" 
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                />
-                            </div>
-                            
-                            {verificando && (
-                                <div className="mt-3">
-                                    <ProgressBar animated now={100} label="Verificando rostro..." />
+                            {!cameraActive && !fotoPreview && (
+                                <div style={{ 
+                                    position: 'absolute', 
+                                    top: 0, 
+                                    left: 0, 
+                                    right: 0, 
+                                    bottom: 0, 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    backgroundColor: 'rgba(0,0,0,0.7)',
+                                    color: 'white'
+                                }}>
+                                    <p>Iniciando cámara...</p>
                                 </div>
                             )}
-                            
-                            {!verificando && (
-                                <Button
-                                    variant="success"
-                                    onClick={enviarLoginFacial}
-                                    className="mt-3 w-100"
-                                    disabled={!fotoBase64}
-                                >
-                                    Verificar Rostro e Iniciar Sesión
-                                </Button>
-                            )}
                         </div>
-                    )}
+                        
+                        {!fotoPreview && cameraActive && (
+                            <Button 
+                                variant="success" 
+                                onClick={tomarFoto}
+                                className="mt-4 w-100 py-3"
+                                disabled={verificando}
+                                size="lg"
+                            >
+                                <FaCamera className="me-2" />
+                                Tomar Foto
+                            </Button>
+                        )}
+
+                        {fotoPreview && (
+                            <div className="text-center mt-4">
+                                <div style={{ 
+                                    width: '250px', 
+                                    height: '250px', 
+                                    margin: '0 auto',
+                                    borderRadius: '15px',
+                                    overflow: 'hidden',
+                                    border: '4px solid #4acfbd',
+                                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+                                }}>
+                                    <img 
+                                        src={fotoPreview} 
+                                        alt="Preview" 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                    />
+                                </div>
+                                
+                                {verificando && (
+                                    <div className="mt-4">
+                                        <ProgressBar animated now={100} label="Verificando rostro..." className="mb-2" />
+                                        <p className="text-muted">Procesando imagen...</p>
+                                    </div>
+                                )}
+                                
+                                {!verificando && (
+                                    <>
+                                        <Button
+                                            variant="success"
+                                            onClick={enviarLoginFacial}
+                                            className="mt-4 w-100 py-3"
+                                            disabled={!fotoBase64}
+                                            size="lg"
+                                        >
+                                            Verificar Rostro e Iniciar Sesión
+                                        </Button>
+                                        
+                                        <Button
+                                            variant="link"
+                                            onClick={() => {
+                                                setFotoBase64("");
+                                                setFotoPreview("");
+                                                iniciarCamara();
+                                            }}
+                                            className="mt-2"
+                                            disabled={verificando}
+                                        >
+                                            Tomar otra foto
+                                        </Button>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={cerrarFacialModal} disabled={verificando}>

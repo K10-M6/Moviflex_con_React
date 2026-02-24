@@ -116,7 +116,7 @@ function DriverProfile() {
       if (!token || !usuario?.idUsuarios) return;
       
       try {
-        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/calificaciones/usuario/${usuario.idUsuarios}`, {
+        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/calificaciones/${usuario.idUsuarios}/PROMEDIO`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -142,7 +142,7 @@ function DriverProfile() {
       if (!token || !usuario?.idUsuarios) return;
       
       try {
-        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes`, {
+        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
