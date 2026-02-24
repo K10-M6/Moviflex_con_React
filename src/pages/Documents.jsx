@@ -228,9 +228,14 @@ function Documents() {
 
   const imagenLista = frontalBase64;
 
-  return (
+return (
     <div style={{
-      backgroundColor: '#124c83',
+      // --- CONFIGURACIÓN DE IMAGEN DE FONDO ---
+      backgroundImage: `linear-gradient(rgba(117, 192, 177, 0.55), rgba(117, 192, 177, 0.31)), url('https://vazquezauto.com.ar/wp-content/uploads/2024/01/tips1.png.jpeg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed', // Esto hace que el fondo se quede quieto al hacer scroll
+      
       minHeight: '100vh',
       minWidth: '100vw',
       display: 'flex',
@@ -277,7 +282,7 @@ function Documents() {
                   <img src={Logo} alt="Logo" style={{ width: '180px' }} />
                 </div>
 
-                <h3 className="text-center mb-4" style={{ color: '#124c83' }}>
+                <h3 className="text-center mb-4" style={{ color: '#347064' }}>
                   <FaIdCard className="me-2" />
                   Registrar Documentación
                 </h3>

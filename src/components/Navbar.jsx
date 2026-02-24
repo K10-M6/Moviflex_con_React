@@ -85,7 +85,7 @@ export default function NavbarCustom() {
   const fotoAMostrar = fotoPerfil || usuario?.fotoPerfil || usuario?.foto;
 
   return (
-    <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top" style={{ backgroundColor: '#124c83', borderBottom: '3px solid #66a8df' }}>
+    <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top" style={{ backgroundColor: '#f3f3f3', borderBottom: '3px solid #adadad' }}>
       <Container>
         <Navbar.Brand as={Link} to={token ? homePath : "/"}>
           <img src={Logo} height="50px" className="me-1" alt="Logo MoviFlexx" />
@@ -97,10 +97,10 @@ export default function NavbarCustom() {
           <Nav className="ms-auto align-items-center">
             {!token ? (
               <>
-                <Nav.Link as={Link} to="/login" className="fw-bold text-white">
+                <Nav.Link as={Link} to="/login" className="fw-bold text-black">
                   Iniciar Sesión
                 </Nav.Link>
-                <Nav.Link as={Link} to="/register" className="text-white fw-bold">
+                <Nav.Link as={Link} to="/register" className="text-black fw-bold">
                   Registrarse
                 </Nav.Link>
               </>
