@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal } from "react-bootstrap";
-import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft } from "react-icons/fa";
+import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -9,11 +9,38 @@ const DriverHome = () => {
     const { usuario, token } = useAuth();
     const navigate = useNavigate();
 
-    const primaryBlue = "#124c83";
+    // Paleta de colores elegante
+    const brandColor = "#56bca7";
+    const darkBorder = "#1a1a1a";
 
+    // --- LÓGICA DE FONDO OPTIMIZADA (CROSS-FADE REAL) ---
+    const backgroundImages = [
+        "https://images.unsplash.com/photo-1549923746-c502d488b3ea?auto=format&fit=crop&q=80&w=2070",
+        "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80&w=2070",
+        "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&q=80&w=2070"
+    ];
+
+    const [bgIndex, setBgIndex] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setBgIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
+        }, 6000); // Cambia imagen cada 6 segundos
+        return () => clearInterval(timer);
+    }, []);
+
+    // Estilos de los contenedores elegantes
+    const cardStyle = {
+        background: "rgba(255, 255, 255, 0.95)", // Levemente traslúcido para integrarse con el fondo
+        borderRadius: '16px',
+        border: `1.5px solid ${darkBorder}`,
+        boxShadow: "4px 4px 0px rgba(0,0,0,0.08)", // Sombra plana minimalista
+        overflow: "hidden"
+    };
+
+    // --- ESTADO Y LÓGICA DE DATOS ---
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
-    
     const [vehiculos, setVehiculos] = useState([]);
     const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
     const [errorVehiculo, setErrorVehiculo] = useState("");
@@ -34,11 +61,18 @@ const DriverHome = () => {
     const [cargarDocumentos, setCargarDocumentos] = useState(false);
     const [errorDocumentos, setErrorDocumentos] = useState("");
 
+    const [viajesRecientes, setViajesRecientes] = useState([]);
+    const [cargandoViajes, setCargandoViajes] = useState(false);
+    const [errorViajes, setErrorViajes] = useState("");
+    const [estadisticasViajes, setEstadisticasViajes] = useState({
+        completados: 0,
+        cancelados: 0,
+        enCurso: 0
+    });
+
     useEffect(() => {
         const hasSeenTutorial = localStorage.getItem("tutorial_conductor_visto");
-        if (!hasSeenTutorial) {
-            setShowTutorial(true);
-        }
+        if (!hasSeenTutorial) setShowTutorial(true);
     }, []);
 
     useEffect(() => {
@@ -82,7 +116,7 @@ const DriverHome = () => {
             try {
                 setCargarDocumentos(true);
                 setErrorDocumentos("");
-                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentos/usuario/${usuario.idUsuarios}`, {
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -110,29 +144,65 @@ const DriverHome = () => {
     }, [token, usuario?.idUsuarios]);
 
     useEffect(() => {
-        const obtenerDocumentos = async () => {
+        const obtenerViajes = async () => {
             if (!token || !usuario?.idUsuarios) {
-                console.log("No hay token disponible para obtener documentos");
-                return;
-            }
-        };
-        obtenerDocumentos();
-    }, [token, usuario?.idUsuarios]);
-
-
-    useEffect(() => {
-        const obtenerVehiculos = async () => {
-            if (!token) {
-                console.log("No hay token disponible");
+                console.log("No hay token disponible para obtener viajes");
                 return;
             }
             
             try {
+                setCargandoViajes(true);
+                setErrorViajes("");
+                
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    console.log("Viajes recibidos:", data);
+                    
+                    const viajesData = Array.isArray(data) ? data : [];
+                    setViajesRecientes(viajesData.slice(0, 3)); 
+                    
+                    const completados = viajesData.filter(v => v.estado === 'FINALIZADO').length;
+                    const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
+                    const enCurso = viajesData.filter(v => v.estado === 'EN_CURSO').length;
+                    
+                    setEstadisticasViajes({ completados, cancelados, enCurso });
+                    
+                } else if (respuesta.status === 404) {
+                    console.log("No se encontraron viajes");
+                    setViajesRecientes([]);
+                } else {
+                    const errorText = await respuesta.text();
+                    console.log("Error response:", errorText);
+                    setErrorViajes(`Error ${respuesta.status}: No se pudieron cargar los viajes`);
+                }
+            } catch (error) {
+                console.error("Error de conexión al obtener viajes:", error);
+                setErrorViajes("Error de conexión con el servidor");
+            } finally {
+                setCargandoViajes(false);
+            }
+        };
+
+        obtenerViajes();
+        
+        const intervaloViajes = setInterval(obtenerViajes, 60000);
+        return () => clearInterval(intervaloViajes);
+        
+    }, [token, usuario?.idUsuarios]);
+
+    useEffect(() => {
+        const obtenerVehiculos = async () => {
+            if (!token) return;
+            try {
                 setCargandoVehiculo(true);
                 setErrorVehiculo("");
-                
-                console.log("Obteniendo vehículos con token:", token.substring(0, 20) + "...");
-                
                 const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -140,40 +210,69 @@ const DriverHome = () => {
                     }
                 });
                 
-                console.log("Status de respuesta:", respuesta.status);
-                
                 if (respuesta.ok) {
                     const data = await respuesta.json();
-                    console.log("Datos recibidos de la API:", data);
-                    
-                    if (Array.isArray(data)) {
-                        console.log("Es un array con", data.length, "vehículos");
-                        setVehiculos(data);
-                    } else if (data && typeof data === 'object') {
-                        console.log("Es un objeto único:", data);
-                        setVehiculos([data]);
-                    } else {
-                        console.log("Formato no esperado:", data);
-                        setVehiculos([]);
-                    }
+                    if (Array.isArray(data)) setVehiculos(data);
+                    else if (data && typeof data === 'object') setVehiculos([data]);
+                    else setVehiculos([]);
                 } else if (respuesta.status === 404) {
-                    console.log("No se encontraron vehículos (404)");
                     setVehiculos([]);
                 } else {
-                    const errorText = await respuesta.text();
-                    console.log("Error response:", errorText);
-                    setErrorVehiculo(`Error ${respuesta.status}: No se pudieron cargar los vehículos`);
+                    setErrorVehiculo(`Error ${respuesta.status}: No se pudieron cargar los datos`);
                 }
             } catch (error) {
-                console.error("Error de conexión:", error);
                 setErrorVehiculo("Error de conexión con el servidor");
             } finally {
                 setCargandoVehiculo(false);
             }
         };
-
         obtenerVehiculos();
     }, [token]);
+
+    const getEstadoColor = (estado) => {
+        switch(estado) {
+            case 'FINALIZADO': return 'success';
+            case 'CANCELADO': return 'danger';
+            case 'EN_CURSO': return 'warning';
+            case 'PUBLICADO': return 'info';
+            case 'CREADO': return 'secondary';
+            default: return 'secondary';
+        }
+    };
+
+    const getEstadoTexto = (estado) => {
+        switch(estado) {
+            case 'FINALIZADO': return 'Completado';
+            case 'CANCELADO': return 'Cancelado';
+            case 'EN_CURSO': return 'En curso';
+            case 'PUBLICADO': return 'Publicado';
+            case 'CREADO': return 'Creado';
+            default: return estado || 'Desconocido';
+        }
+    };
+
+    const formatearFecha = (fecha) => {
+        if (!fecha) return 'Fecha no disponible';
+        const date = new Date(fecha);
+        const hoy = new Date();
+        const ayer = new Date(hoy);
+        ayer.setDate(ayer.getDate() - 1);
+        
+        if (date.toDateString() === hoy.toDateString()) {
+            return `Hoy, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+        } else if (date.toDateString() === ayer.toDateString()) {
+            return `Ayer, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+        } else {
+            return date.toLocaleString('es-ES', { 
+                day: '2-digit', 
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    };
+
     const getDocumentoBadge = (estado) => {
         switch (estado?.toUpperCase()) {
             case 'VÁLIDO':
@@ -198,113 +297,239 @@ const DriverHome = () => {
         return vencimiento < hoy;
     };
 
+    // --- LÓGICA DEL TUTORIAL ---
     const manejarSiguiente = () => {
-        if (currentStep < 3) {
-            setCurrentStep(currentStep + 1);
-        } else {
+        if (currentStep < 3) setCurrentStep(currentStep + 1);
+        else {
             localStorage.setItem("tutorial_conductor_visto", "true");
             setShowTutorial(false);
             navigate("/documentacion"); 
         }
     };
 
-    const manejarAtras = () => {
-        if (currentStep > 1) {
-            setCurrentStep(currentStep - 1);
-        }
-    };
+    const manejarAtras = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); };
+    const saltarTutorial = () => { localStorage.setItem("tutorial_conductor_visto", "true"); setShowTutorial(false); };
+    const repetirTutorial = () => { setCurrentStep(1); setShowTutorial(true); };
 
-    const saltarTutorial = () => {
-        localStorage.setItem("tutorial_conductor_visto", "true");
-        setShowTutorial(false);
-    };
-
-    const repetirTutorial = () => {
-        setCurrentStep(1);
-        setShowTutorial(true);
-    };
-
+    // Estilos de los pasos del tutorial
     const stepCircleStyle = (stepNumber) => ({
-        width: "45px",
-        height: "45px",
+        width: "40px",
+        height: "40px",
         borderRadius: "50%",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         fontWeight: "bold",
-        fontSize: "1.2rem",
         zIndex: 2,
         transition: "all 0.3s ease",
-        background: currentStep >= stepNumber ? primaryBlue : "#f8f9fa",
-        color: currentStep >= stepNumber ? "#fff" : "#adb5bd",
-        border: currentStep >= stepNumber ? "none" : "2px solid #dee2e6",
-        boxShadow: currentStep === stepNumber ? `0 0 10px rgba(18, 76, 131, 0.3)` : "none"
+        background: currentStep >= stepNumber ? brandColor : "#fff",
+        color: currentStep >= stepNumber ? "#fff" : darkBorder,
+        border: `1.5px solid ${darkBorder}`
     });
 
     const stepLineStyle = (stepNumber) => ({
         flex: 1,
-        height: "4px",
-        background: currentStep > stepNumber ? primaryBlue : "#e9ecef",
-        margin: "0 -2px",
-        zIndex: 1,
-        transition: "all 0.3s ease"
+        height: "2px",
+        background: darkBorder,
+        opacity: currentStep > stepNumber ? 1 : 0.2,
+        zIndex: 1
     });
 
     const vehiculoPrincipal = vehiculos.length > 0 ? vehiculos[0] : null;
 
-    const estadoVehiculo = vehiculoPrincipal ? (vehiculoPrincipal.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente') : 'No registrado';
-    
-
     return (
-        <div style={{ backgroundColor: primaryBlue, minHeight: '100vh' }}>
-            <Navbar />
-            <Container className="py-5">
-                
-                <Card className="shadow border-0 mb-4 bg-white text-dark" style={{ borderRadius: '15px' }}>
+        <div style={{ minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
+            
+            {/* CAPAS DE FONDO PARA EL CROSS-FADE */}
+            {backgroundImages.map((img, i) => (
+                <div
+                    key={i}
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundImage: `url(${img})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        zIndex: -1,
+                        opacity: bgIndex === i ? 0.35 : 0, // Ajusta 0.35 si quieres más o menos visibilidad del fondo
+                        transition: 'opacity 2s ease-in-out',
+                        backgroundColor: '#f4f4f4' // Fondo sólido detrás de las imágenes
+                    }}
+                />
+            ))}
+            
+            {/* NAVBAR */}
+            <div style={{ backgroundColor: brandColor, borderBottom: `1.5px solid ${darkBorder}`, position: 'relative', zIndex: 10 }}>
+                <Navbar />
+            </div>
+            
+            <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
+                {/* TARJETA DE BIENVENIDA */}
+                <Card className="mb-4" style={cardStyle}>
                     <Card.Body className="p-4 d-flex justify-content-between align-items-center">
                         <div>
                             <div className="d-flex align-items-center gap-2">
-                                <h2 className="fw-bold mb-0" style={{ color: primaryBlue }}>Panel de Conductor</h2>
+                                <h2 className="fw-bold mb-0" style={{ color: darkBorder }}>Panel de Conductor</h2>
                                 <Button 
-                                    variant="outline-primary" 
-                                    size="sm" 
-                                    className="rounded-pill border-0 shadow-sm"
+                                    variant="link" 
+                                    className="p-0 ms-2 fw-bold text-decoration-none shadow-none"
                                     onClick={repetirTutorial}
-                                    style={{ background: '#f0f4f8', color: primaryBlue }}
+                                    style={{ color: brandColor }}
                                 >
                                     <FaInfoCircle className="me-1" /> Ayuda
                                 </Button>
                             </div>
-                            <p className="text-muted mb-0">Gestiona tu actividad diaria</p>
+                            <p className="text-muted mb-0">Bienvenido, gestiona tu actividad diaria</p>
                         </div>
                         <div className="text-end">
-                            <span className="small text-muted d-block">Ganancias hoy</span>
-                            <h3 className="fw-bold text-success mb-0">
-                                ${ganancias.hoy.toLocaleString('es-CO')}
-                            </h3>
+                            <span className="small text-uppercase fw-bold text-muted d-block">Ganancias Hoy</span>
+                            <h3 className="fw-bold mb-0" style={{ color: brandColor }}>00.00 COP</h3>
                         </div>
                     </Card.Body>
                 </Card>
 
                 <Row className="g-4">
+                    {/* TARJETA DE VEHÍCULO */}
                     <Col lg={7}>
-                        <Card className="shadow border-0 h-100" style={{ borderRadius: '15px' }}>
+                        <Card className="h-100" style={cardStyle}>
                             <Card.Body className="p-4">
-                                <div className="d-flex align-items-center mb-4" style={{ color: primaryBlue }}>
-                                    <FaCar size={24} className="me-2" />
-                                    <h5 className="mb-0 fw-bold">Vehículo Activo</h5>
+                                <div className="d-flex align-items-center mb-4">
+                                    <FaCar size={22} style={{ color: brandColor }} className="me-2" />
+                                    <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Vehículo Activo</h5>
                                 </div>
                                 
                                 {cargandoVehiculo ? (
+                                    <div className="text-center py-5">
+                                        <div className="spinner-border" style={{ color: brandColor }} />
+                                    </div>
+                                ) : errorVehiculo ? (
+                                    <div className="text-center py-4 border rounded-3" style={{ borderStyle: 'dashed !important' }}>
+                                        <p className="small text-danger mb-2">{errorVehiculo}</p>
+                                        <Button variant="outline-dark" size="sm" onClick={() => window.location.reload()}>Reintentar</Button>
+                                    </div>
+                                ) : vehiculoPrincipal ? (
+                                    <div className="p-3 rounded-3" style={{ border: `1.5px solid ${darkBorder}`, backgroundColor: '#fff' }}>
+                                        <Row className="align-items-center">
+                                            <Col xs={3} className="text-center display-6">🚘</Col>
+                                            <Col xs={9}>
+                                                <h6 className="fw-bold mb-1">{vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}</h6>
+                                                <p className="mb-1 text-muted small">Placa: <span className="text-dark fw-bold">{vehiculoPrincipal.placa}</span></p>
+                                                <p className="mb-2 text-muted small">Capacidad: {vehiculoPrincipal.capacidad} pasajeros</p>
+                                                <Badge style={{ backgroundColor: brandColor, color: 'white', border: `1px solid ${darkBorder}` }} className="px-3 py-2">
+                                                    {vehiculoPrincipal.estado === 'ACTIVO' ? '✓ Verificado' : '• Pendiente'}
+                                                </Badge>
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4 border rounded-3" style={{ borderStyle: 'dashed !important' }}>
+                                        <p className="text-muted small">No tienes un vehículo registrado</p>
+                                        <Button 
+                                            style={{ backgroundColor: brandColor, borderColor: darkBorder, color: 'white' }} 
+                                            className="fw-bold px-4" 
+                                            onClick={() => navigate("/registrar-vehiculo")}
+                                        >
+                                            Registrar ahora
+                                        </Button>
+                                    </div>
+                                )}
+                                
+                                {vehiculoPrincipal && (
+                                    <Button 
+                                        variant="link" 
+                                        className="mt-4 p-0 text-decoration-none fw-bold small shadow-none" 
+                                        style={{ color: darkBorder }}
+                                        onClick={() => navigate(`/driver-home`)}
+                                    >
+                                        GESTIONAR VEHÍCULO <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
+                                    </Button>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    
+                    {/* TARJETA DE DOCUMENTACIÓN */}
+                    <Col lg={5}>
+                        <Card className="h-100" style={cardStyle}>
+                            <Card.Body className="p-4 d-flex flex-column">
+                                <div className="d-flex align-items-center mb-4">
+                                    <FaIdCard size={22} style={{ color: brandColor }} className="me-2" />
+                                    <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Documentación</h5>
+                                </div>
+                                
+                                {cargarDocumentos ? (
+                                    <div className="text-center py-4">
+                                        <div className="spinner-border spinner-border-sm" style={{ color: brandColor }} />
+                                    </div>
+                                ) : errorDocumentos ? (
+                                    <p className="text-danger small">{errorDocumentos}</p>
+                                ) : (
+                                    <ListGroup variant="flush" className="mb-auto">
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                            <span className="text-muted">Licencia</span>
+                                            {getDocumentoBadge(documentos.licencia.estado)}
+                                        </ListGroup.Item>
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                            <span className="text-muted">SOAT</span>
+                                            {getDocumentoBadge(documentos.soat.estado)}
+                                        </ListGroup.Item>
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                            <span className="text-muted">Tecno-mecánica</span>
+                                            {getDocumentoBadge(documentos.tecnomecanica.estado)}
+                                        </ListGroup.Item>
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent">
+                                            <span className="text-muted">Seguro</span>
+                                            {getDocumentoBadge(documentos.seguro.estado)}
+                                        </ListGroup.Item>
+                                    </ListGroup>
+                                )}
+                                
+                                <Button 
+                                    className="w-100 mt-4 fw-bold py-2 shadow-sm" 
+                                    style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
+                                    onClick={() => navigate("/documentacion")}
+                                >
+                                    ACTUALIZAR ARCHIVOS
+                                </Button>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+
+                <Row className="mt-4">
+                    <Col lg={12}>
+                        <Card className="shadow border-0" style={{ borderRadius: '15px' }}>
+                            <Card.Body className="p-4">
+                                <div className="d-flex align-items-center justify-content-between mb-3">
+                                    <div className="d-flex align-items-center" style={{ color: brandColor }}>
+                                        <FaHistory size={24} className="me-2" />
+                                        <h5 className="mb-0 fw-bold">Viajes Recientes</h5>
+                                    </div>
+                                    <div className="d-flex gap-2">
+                                        <Badge bg="success" className="rounded-pill">
+                                            {estadisticasViajes.completados} Completados
+                                        </Badge>
+                                        {estadisticasViajes.enCurso > 0 && (
+                                            <Badge bg="warning" className="rounded-pill">
+                                                {estadisticasViajes.enCurso} En curso
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {cargandoViajes ? (
                                     <div className="text-center py-4">
                                         <div className="spinner-border text-primary" role="status">
                                             <span className="visually-hidden">Cargando...</span>
                                         </div>
-                                        <p className="mt-2 text-muted">Cargando datos del vehículo...</p>
+                                        <p className="mt-2 text-muted">Cargando viajes...</p>
                                     </div>
-                                ) : errorVehiculo ? (
+                                ) : errorViajes ? (
                                     <div className="text-center py-4">
-                                        <p className="text-danger">{errorVehiculo}</p>
+                                        <p className="text-danger">{errorViajes}</p>
                                         <Button 
                                             variant="outline-primary" 
                                             size="sm"
@@ -313,135 +538,50 @@ const DriverHome = () => {
                                             Reintentar
                                         </Button>
                                     </div>
-                                ) : vehiculoPrincipal ? (
-                                    <Row className="align-items-center">
-                                        <Col xs={4} className="text-center">
-                                            <div className="p-3 bg-light rounded-circle d-inline-block" style={{ fontSize: '2.5rem' }}>🚘</div>
-                                        </Col>
-                                        <Col xs={8}>
-                                            <p className="mb-1">
-                                                <strong>Vehículo:</strong> {vehiculoPrincipal.marca || ''} {vehiculoPrincipal.modelo || ''}
-                                            </p>
-                                            <p className="mb-1"><strong>Placa:</strong> {vehiculoPrincipal.placa || 'No registrada'}</p>
-                                            <p className="mb-1"><strong>Capacidad:</strong> {vehiculoPrincipal.capacidad || 0} pasajeros</p>
-                                            <Badge bg={vehiculoPrincipal.estado === 'ACTIVO' ? 'success' : 'warning'} className="px-3 rounded-pill">
-                                                {vehiculoPrincipal.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente'}
-                                            </Badge>
-                                        </Col>
-                                    </Row>
-                                ) : (
+                                ) : viajesRecientes.length === 0 ? (
                                     <div className="text-center py-4">
-                                        <p className="text-muted">No tienes un vehículo registrado</p>
-                                        <Button 
-                                            variant="outline-primary" 
-                                            size="sm"
-                                            onClick={() => navigate("/registrar-vehiculo")}
-                                        >
-                                            Registrar vehículo
-                                        </Button>
+                                        <FaHistory size={30} className="text-muted mb-2" />
+                                        <p className="text-muted">No hay viajes recientes</p>
                                     </div>
+                                ) : (
+                                    <ListGroup variant="flush">
+                                        {viajesRecientes.map((viaje) => (
+                                            <ListGroup.Item key={viaje.idViajes} className="px-0">
+                                                <Row className="align-items-center">
+                                                    <Col xs={1} className="text-center">
+                                                        <FaCar size={20} color={brandColor} />
+                                                    </Col>
+                                                    <Col xs={5}>
+                                                        <p className="mb-0 fw-bold">Viaje #{viaje.idViajes}</p>
+                                                        <small className="text-muted">
+                                                            {formatearFecha(viaje.fechaHoraSalida)}
+                                                        </small>
+                                                    </Col>
+                                                    <Col xs={3}>
+                                                        <small className="text-muted">
+                                                            {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                                        </small>
+                                                    </Col>
+                                                    <Col xs={3} className="text-end">
+                                                        <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill">
+                                                            {getEstadoTexto(viaje.estado)}
+                                                        </Badge>
+                                                    </Col>
+                                                </Row>
+                                            </ListGroup.Item>
+                                        ))}
+                                    </ListGroup>
                                 )}
-                                
-                                {vehiculoPrincipal && (
-                                    <Button 
-                                        variant="link" 
-                                        className="mt-4 p-0 text-decoration-none fw-bold" 
-                                        style={{ color: primaryBlue }}
-                                        onClick={() => navigate(`/driver-home`)}
-                                    >
-                                        Ver detalles del vehículo
-                                    </Button>
-                                )}
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    
-                    <Col lg={5}>
-                        <Card className="shadow border-0 mb-4" style={{ borderRadius: '15px' }}>
-                            <Card.Body className="p-4">
-                                <div className="d-flex align-items-center mb-4" style={{ color: primaryBlue }}>
-                                    <FaIdCard size={24} className="me-2" />
-                                    <h5 className="mb-0 fw-bold">Documentación</h5>
-                                </div>
-                                <ListGroup variant="flush">
-                                    {cargarDocumentos ? (
-                                        <div className="text-center py-2">
-                                            <div className="spinner-border spinner-border-sm text-primary" role="status">
-                                                <span className="visually-hidden">Cargando...</span>
-                                            </div>
-                                        </div>
-                                    ) : errorDocumentos ? (
-                                        <p className="text-danger small text-center">{errorDocumentos}</p>
-                                    ) : (
-                                        <>
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
-                                                Licencia 
-                                                {getDocumentoBadge(documentos.licencia.estado)}
-                                                {estaVencido(documentos.licencia.fechaVencimiento) && 
-                                                    documentos.licencia.estado === 'VÁLIDO' && (
-                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
-                                                        VENCE PRONTO
-                                                    </Badge>
-                                                )}
-                                            </ListGroup.Item>
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
-                                                SOAT 
-                                                {getDocumentoBadge(documentos.soat.estado)}
-                                                {estaVencido(documentos.soat.fechaVencimiento) && 
-                                                    documentos.soat.estado === 'VÁLIDO' && (
-                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
-                                                        VENCE PRONTO
-                                                    </Badge>
-                                                )}
-                                            </ListGroup.Item>
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
-                                                Tecno-mecánica 
-                                                {getDocumentoBadge(documentos.tecnomecanica.estado)}
-                                                {estaVencido(documentos.tecnomecanica.fechaVencimiento) && 
-                                                    documentos.tecnomecanica.estado === 'VÁLIDO' && (
-                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
-                                                        VENCE PRONTO
-                                                    </Badge>
-                                                )}
-                                            </ListGroup.Item>
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0">
-                                                Seguro 
-                                                {getDocumentoBadge(documentos.seguro.estado)}
-                                                {estaVencido(documentos.seguro.fechaVencimiento) && 
-                                                    documentos.seguro.estado === 'VÁLIDO' && (
-                                                    <Badge bg="danger" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
-                                                        VENCE PRONTO
-                                                    </Badge>
-                                                )}
-                                            </ListGroup.Item>
-                                        </>
-                                    )}
-                                </ListGroup>
-                                <Button 
-                                    variant="dark" 
-                                    className="w-100 mt-3 rounded-pill fw-bold" 
-                                    style={{ background: '#2D3436' }}
-                                    onClick={() => navigate("/documentacion")}
-                                >
-                                    Subir Documentos
-                                </Button>
                             </Card.Body>
                         </Card>
                     </Col>
                 </Row>
+
             </Container>
 
-            <Modal 
-                show={showTutorial} 
-                onHide={saltarTutorial} 
-                centered 
-                size="lg" 
-                backdrop="static" 
-                contentClassName="border-0 shadow-lg"
-                style={{ borderRadius: '25px' }}
-            >
-                <Modal.Body className="p-5">
-                    
+            {/* MODAL DEL TUTORIAL INTERACTIVO */}
+            <Modal show={showTutorial} onHide={saltarTutorial} centered size="lg" backdrop="static">
+                <Modal.Body className="p-5" style={{ border: `2px solid ${darkBorder}`, borderRadius: '15px' }}>
                     <div className="d-flex align-items-center justify-content-center mb-5">
                         <div style={stepCircleStyle(1)}>1</div>
                         <div style={stepLineStyle(1)}></div>
@@ -450,117 +590,54 @@ const DriverHome = () => {
                         <div style={stepCircleStyle(3)}>3</div>
                     </div>
 
-                    <div className="text-center" style={{ minHeight: '300px' }}>
+                    <div className="text-center animate__animated animate__fadeIn" style={{ minHeight: '200px' }}>
                         {currentStep === 1 && (
-                            <div className="animate__animated animate__fadeIn">
-                                <div className="p-4 bg-light rounded-circle d-inline-block mb-4">
-                                    <FaWallet size={60} style={{ color: primaryBlue }} />
-                                </div>
-                                <h2 className="fw-bold mb-3">Tus Ganancias</h2>
-                                <p className="text-muted fs-5">
-                                    Monitorea tus ingresos diarios de forma transparente. 
-                                    Verás el acumulado de tus viajes en tiempo real.
-                                </p>
-                                <div className="mt-4 p-3 bg-light rounded">
-                                    <div className="d-flex justify-content-between mb-2">
-                                        <span>Hoy:</span>
-                                        <strong className="text-success">${ganancias.hoy.toLocaleString('es-CO')}</strong>
-                                    </div>
-                                    <div className="d-flex justify-content-between mb-2">
-                                        <span>Esta semana:</span>
-                                        <strong className="text-success">${ganancias.estaSemana.toLocaleString('es-CO')}</strong>
-                                    </div>
-                                    <div className="d-flex justify-content-between">
-                                        <span>Este mes:</span>
-                                        <strong className="text-success">${ganancias.esteMes.toLocaleString('es-CO')}</strong>
-                                    </div>
-                                </div>
+                            <div>
+                                <FaWallet size={60} style={{ color: brandColor }} className="mb-3" />
+                                <h3 className="fw-bold" style={{ color: darkBorder }}>Tus Ganancias</h3>
+                                <p className="text-muted fs-5">Monitorea tus ingresos diarios de forma transparente.</p>
                             </div>
                         )}
-
                         {currentStep === 2 && (
-                            <div className="animate__animated animate__fadeIn">
-                                <div className="p-4 bg-light rounded-circle d-inline-block mb-4">
-                                    <FaCar size={60} style={{ color: primaryBlue }} />
-                                </div>
-                                <h2 className="fw-bold mb-3">Vehículo Verificado</h2>
-                                <p className="text-muted fs-5">
-                                    Asegúrate de que los datos de tu vehículo sean los correctos. 
-                                    Esto garantiza la seguridad de tus pasajeros y la tuya.
-                                </p>
-                                {vehiculoPrincipal && (
-                                    <div className="mt-4 p-3 bg-light rounded">
-                                        <p className="mb-1"><strong>Vehículo:</strong> {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}</p>
-                                        <p className="mb-1"><strong>Placa:</strong> {vehiculoPrincipal.placa}</p>
-                                        <Badge bg={vehiculoPrincipal.estado === 'ACTIVO' ? 'success' : 'warning'}>
-                                            {vehiculoPrincipal.estado === 'ACTIVO' ? 'Verificado' : 'Pendiente'}
-                                        </Badge>
-                                    </div>
-                                )}
+                            <div>
+                                <FaCar size={60} style={{ color: brandColor }} className="mb-3" />
+                                <h3 className="fw-bold" style={{ color: darkBorder }}>Vehículo Verificado</h3>
+                                <p className="text-muted fs-5">Seguridad garantizada para ti y tus pasajeros.</p>
                             </div>
                         )}
-
                         {currentStep === 3 && (
-                            <div className="animate__animated animate__fadeIn">
-                                <div className="p-4 bg-light rounded-circle d-inline-block mb-4">
-                                    <FaFileAlt size={60} style={{ color: primaryBlue }} />
-                                </div>
-                                <h2 className="fw-bold mb-3">Carga de Documentos</h2>
-                                <p className="text-muted fs-5">
-                                    ¡Último paso! Para activar tu cuenta, necesitamos validar tu documentación. 
-                                    Te llevaremos a la sección de carga ahora mismo.
-                                </p>
-                                {!cargarDocumentos && !errorDocumentos && (
-                                    <div className="mt-4 p-3 bg-light rounded">
-                                        <div className="d-flex justify-content-between mb-2">
-                                            <span>Licencia:</span>
-                                            {getDocumentoBadge(documentos.licencia.estado)}
-                                        </div>
-                                        <div className="d-flex justify-content-between mb-2">
-                                            <span>SOAT:</span>
-                                            {getDocumentoBadge(documentos.soat.estado)}
-                                        </div>
-                                        <div className="d-flex justify-content-between">
-                                            <span>Tecno-mecánica:</span>
-                                            {getDocumentoBadge(documentos.tecnomecanica.estado)}
-                                        </div>
-                                    </div>
-                                )}
+                            <div>
+                                <FaFileAlt size={60} style={{ color: brandColor }} className="mb-3" />
+                                <h3 className="fw-bold" style={{ color: darkBorder }}>Carga de Documentos</h3>
+                                <p className="text-muted fs-5">¡Casi listo! Solo falta validar tu documentación oficial.</p>
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-5 text-center">
-                        <div className="d-flex gap-3 justify-content-center">
+                    <div className="mt-4 d-flex flex-column align-items-center">
+                        <div className="d-flex gap-3 w-100 justify-content-center">
                             {currentStep > 1 && (
                                 <Button 
-                                    variant="light" 
-                                    onClick={manejarAtras}
-                                    className="rounded-pill px-4 fw-bold border"
+                                    variant="outline-dark" 
+                                    onClick={manejarAtras} 
+                                    className="rounded-pill px-4"
+                                    style={{ border: `1.5px solid ${darkBorder}` }}
                                 >
-                                    <FaArrowLeft className="me-2" /> Atrás
+                                    Atrás
                                 </Button>
                             )}
                             <Button 
-                                className="px-5 py-2 fw-bold border-0 rounded-pill shadow"
-                                style={{ 
-                                    backgroundColor: primaryBlue,
-                                    color: '#fff',
-                                    fontSize: '1.1rem',
-                                    minWidth: '200px'
-                                }}
+                                style={{ backgroundColor: brandColor, borderColor: darkBorder, color: 'white', border: `1.5px solid ${darkBorder}` }}
+                                className="px-5 fw-bold rounded-pill"
                                 onClick={manejarSiguiente}
                             >
-                                {currentStep === 3 ? "Ir a Documentos" : "Siguiente Paso"} <FaArrowRight className="ms-2" />
+                                {currentStep === 3 ? "Finalizar" : "Siguiente"}
                             </Button>
                         </div>
-                        <div className="mt-4">
-                            <Button variant="link" className="text-muted text-decoration-none" onClick={saltarTutorial}>
-                                Saltar recorrido
-                            </Button>
-                        </div>
+                        <Button variant="link" className="text-muted mt-3 text-decoration-none small shadow-none" onClick={saltarTutorial}>
+                            Saltar recorrido
+                        </Button>
                     </div>
-
                 </Modal.Body>
             </Modal>
         </div>

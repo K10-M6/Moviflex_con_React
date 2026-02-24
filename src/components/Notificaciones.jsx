@@ -224,7 +224,7 @@ function Notificaciones() {
         }}
         aria-label="Notificaciones"
       >
-        <FaBell size={20} />
+        <FaBell size={20} color="black" />
         {noLeidas > 0 && (
           <Badge 
             bg="danger" 

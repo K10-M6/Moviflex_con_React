@@ -106,8 +106,8 @@ export default function NavbarCustom() {
               </>
             ) : (
               <>
-                <div className="me-3">
-                  <Notificaciones />
+                <div className="me-3" >
+                  <Notificaciones/>
                 </div>
 
                 <Dropdown align="end">
@@ -115,9 +115,9 @@ export default function NavbarCustom() {
                     variant="link" 
                     id="dropdown-user"
                     className="d-flex align-items-center text-decoration-none p-0 border-0"
-                    style={{ color: 'white' }}
+                    style={{ color: 'black' }}
                   >
-                    <span className="me-2 fw-bold d-none d-sm-inline">
+                    <span className="me-2 fw-bold d-none d-sm-inline text-dark">
                       Hola, {getFirstName()}
                     </span>
                     
