@@ -343,7 +343,7 @@ function Documents() {
                       )}
                     </Form.Label>
                     <Form.Text className="text-muted d-block mb-2">
-                      Toma una foto clara y legible de la parte frontal donde se vean todos tus datos
+                      Toma una foto clara y legible de la parte frontal del documentodonde se vean todos tus datos
                     </Form.Text>
                   
                     <div className="d-grid gap-2 mb-2">

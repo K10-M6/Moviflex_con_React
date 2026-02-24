@@ -119,10 +119,6 @@ function Notificaciones() {
     }
   };
 
-  const verTodas = () => {
-    setMostrarDropdown(false);
-    navigate('/notificaciones');
-  };
 
   const getIcono = (tipo) => {
     switch(tipo?.toUpperCase()) {
@@ -291,20 +287,6 @@ function Notificaciones() {
               </ListGroup>
             )}
           </div>
-
-          {notificaciones.length > 0 && (
-            <div className="p-2 border-top text-center" style={{ backgroundColor: '#f8f9fa' }}>
-              <Button 
-                variant="link" 
-                size="sm" 
-                onClick={verTodas}
-                className="text-decoration-none w-100"
-                style={{ color: '#124c83' }}
-              >
-                Ver todas las notificaciones ({notificaciones.length})
-              </Button>
-            </div>
-          )}
         </div>
       )}
     </div>
