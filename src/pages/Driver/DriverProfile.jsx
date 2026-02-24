@@ -151,7 +151,19 @@ function DriverProfile() {
         
         if (respuesta.ok) {
           const data = await respuesta.json();
-          setTotalViajes(data.totalViajes || 0);
+          console.log("📊 Viajes recibidos en DriverProfile:", data);
+          
+          if (Array.isArray(data)) {
+            const viajesCompletados = data.filter(v => v.estado === 'FINALIZADO');
+            setTotalViajes(viajesCompletados.length);
+          } 
+          else if (data.viajes && Array.isArray(data.viajes)) {
+            const viajesCompletados = data.viajes.filter(v => v.estado === 'FINALIZADO');
+            setTotalViajes(viajesCompletados.length);
+          }
+          else if (data.totalViajes) {
+            setTotalViajes(data.totalViajes);
+          }
         }
       } catch (error) {
         console.error("Error al obtener estadísticas:", error);

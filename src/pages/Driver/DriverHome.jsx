@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal } from "react-bootstrap";
 import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
@@ -34,7 +34,6 @@ const DriverHome = () => {
     const [cargarDocumentos, setCargarDocumentos] = useState(false);
     const [errorDocumentos, setErrorDocumentos] = useState("");
 
-    // NUEVOS ESTADOS PARA VIAJES
     const [viajesRecientes, setViajesRecientes] = useState([]);
     const [cargandoViajes, setCargandoViajes] = useState(false);
     const [errorViajes, setErrorViajes] = useState("");
@@ -92,7 +91,7 @@ const DriverHome = () => {
             try {
                 setCargarDocumentos(true);
                 setErrorDocumentos("");
-                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentos/usuario/${usuario.idUsuarios}`, {
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -119,7 +118,6 @@ const DriverHome = () => {
         obtenerDocumentos();
     }, [token, usuario?.idUsuarios]);
 
-    // NUEVO: Obtener viajes del conductor usando la ruta /mis-viajes
     useEffect(() => {
         const obtenerViajes = async () => {
             if (!token || !usuario?.idUsuarios) {
@@ -142,11 +140,9 @@ const DriverHome = () => {
                     const data = await respuesta.json();
                     console.log("Viajes recibidos:", data);
                     
-                    // Asumiendo que la API devuelve un array de viajes
                     const viajesData = Array.isArray(data) ? data : [];
-                    setViajesRecientes(viajesData.slice(0, 3)); // Solo los 3 más recientes
+                    setViajesRecientes(viajesData.slice(0, 3)); 
                     
-                    // Calcular estadísticas
                     const completados = viajesData.filter(v => v.estado === 'FINALIZADO').length;
                     const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
                     const enCurso = viajesData.filter(v => v.estado === 'EN_CURSO').length;
@@ -171,7 +167,6 @@ const DriverHome = () => {
 
         obtenerViajes();
         
-        // Actualizar cada 60 segundos
         const intervaloViajes = setInterval(obtenerViajes, 60000);
         return () => clearInterval(intervaloViajes);
         
@@ -232,7 +227,6 @@ const DriverHome = () => {
         obtenerVehiculos();
     }, [token]);
 
-    // FUNCIONES AUXILIARES PARA VIAJES
     const getEstadoColor = (estado) => {
         switch(estado) {
             case 'FINALIZADO': return 'success';
@@ -267,9 +261,10 @@ const DriverHome = () => {
         } else if (date.toDateString() === ayer.toDateString()) {
             return `Ayer, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
         } else {
-            return date.toLocaleDateString('es-ES', { 
+            return date.toLocaleString('es-ES', { 
                 day: '2-digit', 
                 month: '2-digit',
+                year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit'
             });
@@ -529,7 +524,6 @@ const DriverHome = () => {
                     </Col>
                 </Row>
 
-                {/* NUEVA SECCIÓN DE VIAJES RECIENTES */}
                 <Row className="mt-4">
                     <Col lg={12}>
                         <Card className="shadow border-0" style={{ borderRadius: '15px' }}>
