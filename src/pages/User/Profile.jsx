@@ -66,7 +66,6 @@ function Profile() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
   
-  // Estados para datos del usuario
   const [estadisticas, setEstadisticas] = useState({
     totalViajes: 0,
     viajesCompletados: 0,
@@ -130,7 +129,6 @@ function Profile() {
     obtenerViajes();
   }, [token, usuario?.idUsuarios]);
 
-  // Obtener calificaciones recibidas
   useEffect(() => {
     const obtenerCalificaciones = async () => {
       if (!token || !usuario?.idUsuarios) return;
@@ -138,7 +136,7 @@ function Profile() {
       try {
         setCargando(prev => ({ ...prev, calificaciones: true }));
         const respuesta = await fetch(
-          `https://backendmovi-production-c657.up.railway.app/api/calificaciones/usuario/${usuario.idUsuarios}/recibidas`,
+          `https://backendmovi-production-c657.up.railway.app/api/calificaciones/${usuario.idUsuarios}/promedio`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -149,18 +147,12 @@ function Profile() {
         
         if (respuesta.ok) {
           const data = await respuesta.json();
-          console.log("⭐ Calificaciones recibidas:", data);
-          
-          const calificacionesData = Array.isArray(data) ? data : [];
-          
-          if (calificacionesData.length > 0) {
-            const suma = calificacionesData.reduce((acc, c) => acc + c.puntuacion, 0);
-            setEstadisticas(prev => ({
-              ...prev,
-              promedioCalificacion: suma / calificacionesData.length,
-              totalCalificaciones: calificacionesData.length
-            }));
-          }
+          console.log("⭐ Calificaciones recibidas:", data);        
+          setEstadisticas(prev => ({
+            ...prev,
+            promedioCalificacion: data.promedio || 0,
+            totalCalificaciones: data.totalCalificaciones || 0
+          }));
         }
       } catch (error) {
         console.error("Error al obtener calificaciones:", error);
@@ -245,7 +237,6 @@ function Profile() {
                 </Card.Header>
                 
                 <Row className="g-0">
-                  {/* Columna izquierda - Foto y datos básicos */}
                   <Col md={4} className="bg-light text-center p-4 border-end">
                     <div className="mb-3">
                       {fotoAMostrar ? (
@@ -309,7 +300,6 @@ function Profile() {
                     </div>
                   </Col>
 
-                  {/* Columna derecha - Información detallada (SOLO LECTURA) */}
                   <Col md={8} className="p-4">
                     <h4 className="fw-bold mb-4">Información de Cuenta</h4>
                     
