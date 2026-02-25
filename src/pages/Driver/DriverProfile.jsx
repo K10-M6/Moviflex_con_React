@@ -203,8 +203,6 @@ function DriverProfile() {
         console.error("Error al obtener documentación:", error);
       }
     };
-
-    obtenerCalificaciones();
     obtenerEstadisticasViajes();
     obtenerDocumentacion();
   }, [token, usuario?.idUsuarios]);

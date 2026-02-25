@@ -230,11 +230,10 @@ function Documents() {
 
 return (
     <div style={{
-      // --- CONFIGURACIÓN DE IMAGEN DE FONDO ---
       backgroundImage: `linear-gradient(rgba(117, 192, 177, 0.55), rgba(117, 192, 177, 0.31)), url('https://vazquezauto.com.ar/wp-content/uploads/2024/01/tips1.png.jpeg')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundAttachment: 'fixed', // Esto hace que el fondo se quede quieto al hacer scroll
+      backgroundAttachment: 'fixed',
       
       minHeight: '100vh',
       minWidth: '100vw',
