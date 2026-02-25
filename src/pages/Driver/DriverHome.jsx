@@ -24,19 +24,23 @@ const DriverHome = () => {
         esteMes: 0
     });
 
-    const [documentos, setDocumentos] = useState({
-        licencia: { estado: 'PENDIENTE', fechaVencimiento: null },
-        soat: { estado: 'PENDIENTE', fechaVencimiento: null },
-        tecnomecanica: { estado: 'PENDIENTE', fechaVencimiento: null },
-        seguro: { estado: 'PENDIENTE', fechaVencimiento: null }
+    const [licencia, setLicencia] = useState({
+        tipoDocumento: '',
+        numeroDocumento: '',
+        fechaExpedicion: '',
+        imagenFrontalUrl: '',
+        estado: 'PENDIENTE',
+        fechaSubida: '',
     });
 
     const [cargarDocumentos, setCargarDocumentos] = useState(false);
     const [errorDocumentos, setErrorDocumentos] = useState("");
 
     const [viajesRecientes, setViajesRecientes] = useState([]);
+    const [todosLosViajes, setTodosLosViajes] = useState([]);
     const [cargandoViajes, setCargandoViajes] = useState(false);
     const [errorViajes, setErrorViajes] = useState("");
+    const [showHistorialCompleto, setShowHistorialCompleto] = useState(false);
     const [estadisticasViajes, setEstadisticasViajes] = useState({
         completados: 0,
         cancelados: 0,
@@ -97,22 +101,24 @@ const DriverHome = () => {
                 });
                 if (respuesta.ok) {
                     const data = await respuesta.json();
-                    setDocumentos({
-                        licencia: data.licencia || { estado: 'PENDIENTE', fechaVencimiento: null },
-                        soat: data.soat || { estado: 'PENDIENTE', fechaVencimiento: null },
-                        tecnomecanica: data.tecnomecanica || { estado: 'PENDIENTE', fechaVencimiento: null },
-                        seguro: data.seguro || { estado: 'PENDIENTE', fechaVencimiento: null }
+                    setLicencia({
+                        numeroDocumento: data.licencia?.numeroDocumento || '',
+                        fechaExpedicion: data.licencia?.fechaExpedicion || '',
+                        imagenFrontalUrl: data.licencia?.imagenFrontalUrl || '',
+                        estado: data.licencia?.estado || 'PENDIENTE',
+                        fechaSubida: data.licencia?.fechaSubida || '',
+                        observaciones: data.licencia?.observaciones || ''   
                     });
                 } else if (respuesta.status === 404) {
                     console.log("No se encontraron documentos para el usuario");
                 } 
             } catch (error) {
                 console.error("Error de conexión al obtener documentos:", error);
-                    setErrorDocumentos("Error al obtener documentos");
-                } finally {
-                    setCargarDocumentos(false);
-                }
-            };
+                setErrorDocumentos("Error al obtener documentos");
+            } finally {
+                setCargarDocumentos(false);
+            }
+        };
         obtenerDocumentos();
     }, [token, usuario?.idUsuarios]);
 
@@ -139,6 +145,7 @@ const DriverHome = () => {
                     console.log("Viajes recibidos:", data);
                     
                     const viajesData = Array.isArray(data) ? data : [];
+                    setTodosLosViajes(viajesData);
                     setViajesRecientes(viajesData.slice(0, 3)); 
                     
                     const completados = viajesData.filter(v => v.estado === 'FINALIZADO').length;
@@ -150,6 +157,7 @@ const DriverHome = () => {
                 } else if (respuesta.status === 404) {
                     console.log("No se encontraron viajes");
                     setViajesRecientes([]);
+                    setTodosLosViajes([]);
                 } else {
                     const errorText = await respuesta.text();
                     console.log("Error response:", errorText);
@@ -246,6 +254,20 @@ const DriverHome = () => {
         }
     };
 
+    const formatearFechaDocumento = (fecha) => {
+        if (!fecha) return 'No disponible';
+        try {
+            const date = new Date(fecha);
+            return date.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch {
+            return 'Formato inválido';
+        }
+    };
+
     const getDocumentoBadge = (estado) => {
         switch (estado?.toUpperCase()) {
             case 'VÁLIDO':
@@ -261,13 +283,6 @@ const DriverHome = () => {
             default:
                 return <Badge bg="secondary" className="rounded-pill">No subido</Badge>;
         }
-    };
-
-    const estaVencido = (fechaVencimiento) => {
-        if (!fechaVencimiento) return false;
-        const hoy = new Date();
-        const vencimiento = new Date(fechaVencimiento);
-        return vencimiento < hoy;
     };
 
     // --- LÓGICA DEL TUTORIAL ---
@@ -374,9 +389,6 @@ const DriverHome = () => {
                                                 <h6 className="fw-bold mb-1">{vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}</h6>
                                                 <p className="mb-1 text-muted small">Placa: <span className="text-dark fw-bold">{vehiculoPrincipal.placa}</span></p>
                                                 <p className="mb-2 text-muted small">Capacidad: {vehiculoPrincipal.capacidad} pasajeros</p>
-                                                <Badge style={{ backgroundColor: brandColor, color: 'white', border: `1px solid ${darkBorder}` }} className="px-3 py-2">
-                                                    {vehiculoPrincipal.estado === 'ACTIVO' ? '✓ Verificado' : '• Pendiente'}
-                                                </Badge>
                                             </Col>
                                         </Row>
                                     </div>
@@ -412,7 +424,7 @@ const DriverHome = () => {
                             <Card.Body className="p-4 d-flex flex-column">
                                 <div className="d-flex align-items-center mb-4">
                                     <FaIdCard size={22} style={{ color: brandColor }} className="me-2" />
-                                    <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Documentación</h5>
+                                    <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Licencia de Conducir</h5>
                                 </div>
                                 
                                 {cargarDocumentos ? (
@@ -422,24 +434,33 @@ const DriverHome = () => {
                                 ) : errorDocumentos ? (
                                     <p className="text-danger small">{errorDocumentos}</p>
                                 ) : (
-                                    <ListGroup variant="flush" className="mb-auto">
-                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
-                                            <span className="text-muted">Licencia</span>
-                                            {getDocumentoBadge(documentos.licencia.estado)}
-                                        </ListGroup.Item>
-                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
-                                            <span className="text-muted">SOAT</span>
-                                            {getDocumentoBadge(documentos.soat.estado)}
-                                        </ListGroup.Item>
-                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
-                                            <span className="text-muted">Tecno-mecánica</span>
-                                            {getDocumentoBadge(documentos.tecnomecanica.estado)}
-                                        </ListGroup.Item>
-                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent">
-                                            <span className="text-muted">Seguro</span>
-                                            {getDocumentoBadge(documentos.seguro.estado)}
-                                        </ListGroup.Item>
-                                    </ListGroup>
+                                    <div className="mb-auto">
+                                        <ListGroup variant="flush">
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                                <span className="text-muted">Tipo</span>
+                                                <span className="fw-medium">Licencia de Conducir</span>
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                                <span className="text-muted">Número</span>
+                                                <span className="fw-medium">{licencia.numeroDocumento || 'Sin número'}</span>
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                                <span className="text-muted">Expedición</span>
+                                                <span className="fw-medium">{formatearFechaDocumento(licencia.fechaExpedicion)}</span>
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent">
+                                                <span className="text-muted">Estado</span>
+                                                {getDocumentoBadge(licencia.estado)}
+                                            </ListGroup.Item>
+                                        </ListGroup>
+                                        
+                                        {licencia.observaciones && (
+                                            <div className="mt-3 p-2 bg-light rounded">
+                                                <small className="text-muted d-block">Observaciones:</small>
+                                                <small className="text-dark">{licencia.observaciones}</small>
+                                            </div>
+                                        )}
+                                    </div>
                                 )}
                                 
                                 <Button 
@@ -447,7 +468,7 @@ const DriverHome = () => {
                                     style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
                                     onClick={() => navigate("/documentacion")}
                                 >
-                                    ACTUALIZAR ARCHIVOS
+                                    ACTUALIZAR LICENCIA
                                 </Button>
                             </Card.Body>
                         </Card>
@@ -499,33 +520,48 @@ const DriverHome = () => {
                                         <p className="text-muted">No hay viajes recientes</p>
                                     </div>
                                 ) : (
-                                    <ListGroup variant="flush">
-                                        {viajesRecientes.map((viaje) => (
-                                            <ListGroup.Item key={viaje.idViajes} className="px-0">
-                                                <Row className="align-items-center">
-                                                    <Col xs={1} className="text-center">
-                                                        <FaCar size={20} color={brandColor} />
-                                                    </Col>
-                                                    <Col xs={5}>
-                                                        <p className="mb-0 fw-bold">Viaje #{viaje.idViajes}</p>
-                                                        <small className="text-muted">
-                                                            {formatearFecha(viaje.fechaHoraSalida)}
-                                                        </small>
-                                                    </Col>
-                                                    <Col xs={3}>
-                                                        <small className="text-muted">
-                                                            {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
-                                                        </small>
-                                                    </Col>
-                                                    <Col xs={3} className="text-end">
-                                                        <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill">
-                                                            {getEstadoTexto(viaje.estado)}
-                                                        </Badge>
-                                                    </Col>
-                                                </Row>
-                                            </ListGroup.Item>
-                                        ))}
-                                    </ListGroup>
+                                    <>
+                                        <ListGroup variant="flush">
+                                            {viajesRecientes.map((viaje) => (
+                                                <ListGroup.Item key={viaje.idViajes} className="px-0">
+                                                    <Row className="align-items-center">
+                                                        <Col xs={1} className="text-center">
+                                                            <FaCar size={20} color={brandColor} />
+                                                        </Col>
+                                                        <Col xs={5}>
+                                                            <p className="mb-0 fw-bold">Viaje #{viaje.idViajes}</p>
+                                                            <small className="text-muted">
+                                                                {formatearFecha(viaje.fechaHoraSalida)}
+                                                            </small>
+                                                        </Col>
+                                                        <Col xs={3}>
+                                                            <small className="text-muted">
+                                                                {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                                            </small>
+                                                        </Col>
+                                                        <Col xs={3} className="text-end">
+                                                            <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill">
+                                                                {getEstadoTexto(viaje.estado)}
+                                                            </Badge>
+                                                        </Col>
+                                                    </Row>
+                                                </ListGroup.Item>
+                                            ))}
+                                        </ListGroup>
+                                        
+                                        {todosLosViajes.length > 3 && (
+                                            <div className="text-center mt-3">
+                                                <Button
+                                                    variant="outline-dark"
+                                                    onClick={() => setShowHistorialCompleto(true)}
+                                                    className="rounded-pill px-4"
+                                                    style={{ borderColor: brandColor, color: brandColor }}
+                                                >
+                                                    Ver historial completo ({todosLosViajes.length} viajes)
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </Card.Body>
                         </Card>
@@ -533,6 +569,55 @@ const DriverHome = () => {
                 </Row>
 
             </Container>
+            <Modal show={showHistorialCompleto} onHide={() => setShowHistorialCompleto(false)} size="lg" centered>
+                <Modal.Header closeButton style={{ borderBottom: `2px solid ${darkBorder}` }}>
+                    <Modal.Title className="fw-bold" style={{ color: brandColor }}>
+                        <FaHistory className="me-2" /> Historial Completo de Viajes
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                    {todosLosViajes.length === 0 ? (
+                        <p className="text-center text-muted py-4">No hay viajes para mostrar</p>
+                    ) : (
+                        <ListGroup variant="flush">
+                            {todosLosViajes.map((viaje) => (
+                                <ListGroup.Item key={viaje.idViajes} className="py-3">
+                                    <Row className="align-items-center">
+                                        <Col xs={1} className="text-center">
+                                            <FaCar size={20} color={brandColor} />
+                                        </Col>
+                                        <Col xs={4}>
+                                            <p className="mb-0 fw-bold">Viaje #{viaje.idViajes}</p>
+                                            <small className="text-muted">
+                                                {formatearFecha(viaje.fechaHoraSalida)}
+                                            </small>
+                                        </Col>
+                                        <Col xs={2}>
+                                            <small className="text-muted">
+                                                {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                            </small>
+                                        </Col>
+                                        <Col xs={2} className="text-end">
+                                            <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill">
+                                                {getEstadoTexto(viaje.estado)}
+                                            </Badge>
+                                        </Col>
+                                    </Row>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    )}
+                </Modal.Body>
+                <Modal.Footer style={{ borderTop: `2px solid ${darkBorder}` }}>
+                    <Button 
+                        variant="outline-dark" 
+                        onClick={() => setShowHistorialCompleto(false)}
+                        className="rounded-pill px-4"
+                    >
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
             <Modal show={showTutorial} onHide={saltarTutorial} centered size="lg" backdrop="static">
                 <Modal.Body className="p-5" style={{ border: `2px solid ${darkBorder}`, borderRadius: '15px' }}>

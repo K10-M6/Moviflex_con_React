@@ -70,14 +70,13 @@ function DriverProfile() {
   const [loading, setLoading] = useState(false);
   const [vehiculo, setVehiculo] = useState(null);
   const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
-  const [calificaciones, setCalificaciones] = useState([]);
-  const [promedioCalificacion, setPromedioCalificacion] = useState(0);
-  const [totalCalificaciones, setTotalCalificaciones] = useState(0);
-  const [totalViajes, setTotalViajes] = useState(0);
-  const [documentacion, setDocumentacion] = useState({
-    licencia: { estado: 'PENDIENTE' },
-    soat: { estado: 'PENDIENTE' }
+  const [datosCalificacion, setDatosCalificacion] = useState({
+    promedio: 0,
+    total: 0
   });
+  const [totalViajes, setTotalViajes] = useState(0);
+  const [licencia, setLicencia] = useState(null);
+  const [cargandoLicencia, setCargandoLicencia] = useState(false);
   
   const backgroundImages = [img1, img2, img3];
 
@@ -127,18 +126,17 @@ function DriverProfile() {
           const data = await respuesta.json();
           console.log("⭐ Datos de calificación recibidos:", data);
           
+          // El backend ya devuelve el promedio calculado
           if (typeof data === 'number') {
-            setPromedioCalificacion(data);
-            setTotalCalificaciones(0);
-          } 
-          else if (data.promedio !== undefined) {
-            setPromedioCalificacion(data.promedio);
-            setTotalCalificaciones(data.total || 0);
-          }
-          else if (Array.isArray(data) && data.length > 0) {
-            const suma = data.reduce((acc, cal) => acc + cal.puntuacion, 0);
-            setPromedioCalificacion(suma / data.length);
-            setTotalCalificaciones(data.length);
+            setDatosCalificacion({
+              promedio: data,
+              total: 0
+            });
+          } else if (data.promedio !== undefined) {
+            setDatosCalificacion({
+              promedio: data.promedio,
+              total: data.total || 0
+            });
           }
         }
       } catch (error) {
@@ -168,12 +166,10 @@ function DriverProfile() {
           if (Array.isArray(data)) {
             const viajesCompletados = data.filter(v => v.estado === 'FINALIZADO');
             setTotalViajes(viajesCompletados.length);
-          } 
-          else if (data.viajes && Array.isArray(data.viajes)) {
+          } else if (data.viajes && Array.isArray(data.viajes)) {
             const viajesCompletados = data.viajes.filter(v => v.estado === 'FINALIZADO');
             setTotalViajes(viajesCompletados.length);
-          }
-          else if (data.totalViajes) {
+          } else if (data.totalViajes) {
             setTotalViajes(data.totalViajes);
           }
         }
@@ -181,11 +177,17 @@ function DriverProfile() {
         console.error("Error al obtener estadísticas:", error);
       }
     };
-    const obtenerDocumentacion = async () => {
+    
+    obtenerEstadisticasViajes();
+  }, [token, usuario?.idUsuarios]);
+
+  useEffect(() => {
+    const obtenerLicencia = async () => {
       if (!token || !usuario?.idUsuarios) return;
       
       try {
-        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/usuario/${usuario.idUsuarios}`, {
+        setCargandoLicencia(true);
+        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -194,23 +196,38 @@ function DriverProfile() {
         
         if (respuesta.ok) {
           const data = await respuesta.json();
-          setDocumentacion({
-            licencia: { estado: data.licencia?.estado || 'PENDIENTE' },
-            soat: { estado: data.soat?.estado || 'PENDIENTE' }
-          });
+          setLicencia(data);
+        } else if (respuesta.status === 404) {
+          setLicencia(null);
         }
       } catch (error) {
-        console.error("Error al obtener documentación:", error);
+        console.error("Error al obtener licencia:", error);
+      } finally {
+        setCargandoLicencia(false);
       }
     };
-    obtenerEstadisticasViajes();
-    obtenerDocumentacion();
+    
+    obtenerLicencia();
   }, [token, usuario?.idUsuarios]);
 
   const formatearFecha = (fecha) => {
     if (!fecha) return 'Fecha no disponible';
     const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(fecha).toLocaleDateString('es-ES', opciones);
+  };
+
+  const formatearFechaDocumento = (fecha) => {
+    if (!fecha) return 'No disponible';
+    try {
+      const date = new Date(fecha);
+      return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return 'Formato inválido';
+    }
   };
 
   const generarQr = () => {
@@ -266,13 +283,20 @@ function DriverProfile() {
   const fotoAMostrar = usuario?.fotoPerfil;
 
   const getBadgeColor = (estado) => {
-    return estado === 'APROBADO' || estado === 'VIGENTE' ? 'success' : 
-           estado === 'PENDIENTE' ? 'warning' : 'danger';
-  };
-
-  const getEstadoTexto = (estado) => {
-    return estado === 'APROBADO' ? 'VIGENTE' : 
-           estado === 'PENDIENTE' ? 'PENDIENTE' : 'VENCIDO';
+    switch (estado?.toUpperCase()) {
+      case 'APROBADO':
+      case 'VÁLIDO':
+      case 'VALIDO':
+        return 'success';
+      case 'PENDIENTE':
+      case 'REVISION':
+        return 'warning';
+      case 'RECHAZADO':
+      case 'VENCIDO':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
   };
 
   return (
@@ -336,7 +360,7 @@ function DriverProfile() {
                     
                     <h3 className="fw-bold mb-1">{nombre || usuario?.nombre}</h3>
                     <Badge bg="warning" text="dark" className="px-3 rounded-pill mb-3">
-                      <FaStar className="me-1" /> {promedioCalificacion.toFixed(1)} ({totalCalificaciones} {totalCalificaciones === 1 ? 'reseña' : 'reseñas'})
+                      <FaStar className="me-1" /> {datosCalificacion.promedio.toFixed(1)} ({datosCalificacion.total} {datosCalificacion.total === 1 ? 'reseña' : 'reseñas'})
                     </Badge>
                     
                     <Button 
@@ -410,18 +434,32 @@ function DriverProfile() {
                           <Card className="p-3 border-0 bg-light rounded-3 h-100">
                             <div className="d-flex align-items-center mb-2">
                               <FaIdCard className="text-primary me-2" />
-                              <span className="fw-bold small">DOCUMENTACIÓN</span>
+                              <span className="fw-bold small">LICENCIA DE CONDUCIR</span>
                             </div>
-                            <p className="mb-0 small">
-                              Licencia: <Badge bg={getBadgeColor(documentacion.licencia.estado)} className="rounded-pill">
-                                {getEstadoTexto(documentacion.licencia.estado)}
-                              </Badge>
-                            </p>
-                            <p className="mb-0 small">
-                              SOAT: <Badge bg={getBadgeColor(documentacion.soat.estado)} className="rounded-pill">
-                                {getEstadoTexto(documentacion.soat.estado)}
-                              </Badge>
-                            </p>
+                            {cargandoLicencia ? (
+                              <p className="mb-0 small text-muted">Cargando...</p>
+                            ) : licencia ? (
+                              <>
+                                <p className="mb-0 small">
+                                  Número: <span className="fw-bold">{licencia.numeroDocumento || 'No disponible'}</span>
+                                </p>
+                                <p className="mb-0 small">
+                                  Expedición: <span className="fw-bold">{formatearFechaDocumento(licencia.fechaExpedicion)}</span>
+                                </p>
+                                <p className="mb-0 small">
+                                  Estado: <Badge bg={getBadgeColor(licencia.estado)} className="rounded-pill">
+                                    {licencia.estado || 'PENDIENTE'}
+                                  </Badge>
+                                </p>
+                                {licencia.observaciones && (
+                                  <p className="mb-0 small text-muted mt-1">
+                                    Obs: {licencia.observaciones}
+                                  </p>
+                                )}
+                              </>
+                            ) : (
+                              <p className="mb-0 small text-muted">No hay licencia registrada</p>
+                            )}
                           </Card>
                         </Col>
                         <Col sm={6}>
@@ -439,6 +477,9 @@ function DriverProfile() {
                                   Modelo: <span className="fw-bold">
                                     {vehiculo.marca || ''} {vehiculo.modelo || ''} {vehiculo.año ? vehiculo.año : ''}
                                   </span>
+                                </p>
+                                <p className="mb-0 small">
+                                  Capacidad: <span className="fw-bold">{vehiculo.capacidad || 'No especificada'} pasajeros</span>
                                 </p>
                                 {vehiculo.color && (
                                   <p className="mb-0 small">Color: <span className="fw-bold">{vehiculo.color}</span></p>
