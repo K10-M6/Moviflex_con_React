@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import img1 from "../Imagenes/DNNYPYGT65C3JHMUEEZKEUM7AY.jpg";
+import img2 from "../Imagenes/salir-a-carretera-gonhergo.jpg";
+import img3 from "../Imagenes/viaje-en-carro1.jpg";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap";
@@ -6,6 +9,55 @@ import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt } fr
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
+
+const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
+  const [index, setIndex] = useState(0);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    if (!images || images.length === 0) return;
+    setFade(true);
+    const timeout = setTimeout(() => setFade(false), interval - 1000);
+    const t = setInterval(() => {
+      setFade(true);
+      setTimeout(() => {
+        setIndex(i => (i + 1) % images.length);
+        setFade(false);
+      }, 1000);
+    }, interval);
+    return () => {
+      clearInterval(t);
+      clearTimeout(timeout);
+    };
+  }, [images, interval]);
+
+  return (
+    <div aria-hidden="true">
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        {images.map((src, i) => (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${src})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: i === index ? (fade ? 1 : 1) : 0,
+              transition: 'opacity 1s cubic-bezier(.4,0,.2,1)',
+              filter: 'grayscale(10%) contrast(95%) brightness(95%)',
+              zIndex: i === index ? 1 : 0,
+            }}
+          />
+        ))}
+        <div style={{ position: 'absolute', inset: 0, background: overlayColor, transition: 'background 300ms', pointerEvents: 'none' }} />
+      </div>
+    </div>
+  );
+};
 
 function DriverProfile() {
   const { usuario, token, setUsuario } = useAuth();
@@ -26,6 +78,8 @@ function DriverProfile() {
     licencia: { estado: 'PENDIENTE' },
     soat: { estado: 'PENDIENTE' }
   });
+  
+  const backgroundImages = [img1, img2, img3];
 
   useEffect(() => {
     const obtenerVehiculo = async () => {
@@ -222,7 +276,7 @@ function DriverProfile() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f3f1', position: 'relative' }}>
+    <div style={{ minHeight: '100vh', position: 'relative' }}>
       <Toaster 
         position="top-right"
         toastOptions={{
@@ -237,7 +291,7 @@ function DriverProfile() {
           success: {
             duration: 3000,
             iconTheme: {
-              primary: '#124c83',
+              primary: '#4acfbd',
               secondary: '#fff',
             },
           },
@@ -251,6 +305,7 @@ function DriverProfile() {
         }}
       />
       
+      <BackgroundSlider images={backgroundImages} interval={2500} overlayColor={'rgba(163,133,255,0.35)'} />
       <div style={{ position: 'relative', zIndex: 2 }}>
         <div style={{ background: '#124c83', width: '100%', position: 'relative', zIndex: 10 }}>
           <Navbar />
@@ -286,9 +341,9 @@ function DriverProfile() {
                     
                     <Button 
                       onClick={irADocumentacion}
-                      variant="outline-dark" 
+                      variant="outline-success" 
                       className="w-100 mb-3 rounded-pill"
-                      style={{ borderColor: '#000000', color: '#000000' }}
+                      style={{ borderColor: '#28a745', color: '#28a745' }}
                       disabled={loading}
                     >
                       <FaFileAlt className="me-2" />
@@ -299,7 +354,7 @@ function DriverProfile() {
                       onClick={generarQr}
                       variant="outline-primary" 
                       className="w-100 mb-3 rounded-pill"
-                      style={{ borderColor: '#124c83', color: '#124c83' }}
+                      style={{ borderColor: '#a385ff', color: '#a385ff' }}
                       disabled={loading}
                     >
                       <FaQrcode className="me-2" />
@@ -399,7 +454,7 @@ function DriverProfile() {
                       <div className="d-flex gap-2">
                         <Button 
                           className="flex-grow-1 border-0 fw-bold" 
-                          style={{ background: '#000000', color: 'white' }}
+                          style={{ background: 'linear-gradient(135deg, #a385ff, #8a65ff)' }}
                           onClick={guardarCambios}
                           disabled={loading}
                         >
