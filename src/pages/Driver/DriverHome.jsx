@@ -409,7 +409,7 @@ const DriverHome = () => {
                                         variant="link"
                                         className="mt-2 p-0 text-decoration-none fw-bold small shadow-none"
                                         style={{ color: darkBorder }}
-                                        onClick={() => navigate(`/vehiculos`)}
+                                        onClick={() => navigate("/vehicle-registration")}
                                     > Nuevo Vehículo
                                         <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
                                     </Button>
