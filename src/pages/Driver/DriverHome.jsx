@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal } from "react-bootstrap";
-import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt } from "react-icons/fa";
+import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -18,10 +18,157 @@ const DriverHome = () => {
     const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
     const [errorVehiculo, setErrorVehiculo] = useState("");
 
+    const [ganancias, setGanancias] = useState({
+        hoy: 0,
+        estaSemana: 0,
+        esteMes: 0
+    });
+
+    const [documentos, setDocumentos] = useState({
+        licencia: { estado: 'PENDIENTE', fechaVencimiento: null },
+        soat: { estado: 'PENDIENTE', fechaVencimiento: null },
+        tecnomecanica: { estado: 'PENDIENTE', fechaVencimiento: null },
+        seguro: { estado: 'PENDIENTE', fechaVencimiento: null }
+    });
+
+    const [cargarDocumentos, setCargarDocumentos] = useState(false);
+    const [errorDocumentos, setErrorDocumentos] = useState("");
+
+    const [viajesRecientes, setViajesRecientes] = useState([]);
+    const [cargandoViajes, setCargandoViajes] = useState(false);
+    const [errorViajes, setErrorViajes] = useState("");
+    const [estadisticasViajes, setEstadisticasViajes] = useState({
+        completados: 0,
+        cancelados: 0,
+        enCurso: 0
+    });
+
     useEffect(() => {
         const hasSeenTutorial = localStorage.getItem("tutorial_conductor_visto");
         if (!hasSeenTutorial) setShowTutorial(true);
     }, []);
+
+    useEffect(() => {
+        const obtenerGanancias = async () => {
+            if (!token  || !usuario?.idUsuarios) {
+                console.log("No hay token disponible para obtener ganancias");
+                return;
+            }
+            try {
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    setGanancias({
+                        hoy: data.hoy || 0,
+                        estaSemana: data.estaSemana || 0,
+                        esteMes: data.esteMes || 0
+                    });
+                } else {
+                    console.log("Error al obtener ganancias:", respuesta.status);
+                }
+            } catch (error) {
+                console.error("Error de conexión al obtener ganancias:", error);
+            }
+        };
+        obtenerGanancias();
+        const instervaloGanancias = setInterval(obtenerGanancias, 60000);
+        return () => clearInterval(instervaloGanancias);
+    }, [token, usuario?.idUsuarios]);
+
+    useEffect(() => {
+        const obtenerDocumentos = async () => {
+            if (!token || !usuario?.idUsuarios) {
+                console.log("No hay token disponible para obtener documentos");
+                return;
+            }
+            try {
+                setCargarDocumentos(true);
+                setErrorDocumentos("");
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    setDocumentos({
+                        licencia: data.licencia || { estado: 'PENDIENTE', fechaVencimiento: null },
+                        soat: data.soat || { estado: 'PENDIENTE', fechaVencimiento: null },
+                        tecnomecanica: data.tecnomecanica || { estado: 'PENDIENTE', fechaVencimiento: null },
+                        seguro: data.seguro || { estado: 'PENDIENTE', fechaVencimiento: null }
+                    });
+                } else if (respuesta.status === 404) {
+                    console.log("No se encontraron documentos para el usuario");
+                } 
+            } catch (error) {
+                console.error("Error de conexión al obtener documentos:", error);
+                    setErrorDocumentos("Error al obtener documentos");
+                } finally {
+                    setCargarDocumentos(false);
+                }
+            };
+        obtenerDocumentos();
+    }, [token, usuario?.idUsuarios]);
+
+    useEffect(() => {
+        const obtenerViajes = async () => {
+            if (!token || !usuario?.idUsuarios) {
+                console.log("No hay token disponible para obtener viajes");
+                return;
+            }
+            
+            try {
+                setCargandoViajes(true);
+                setErrorViajes("");
+                
+                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (respuesta.ok) {
+                    const data = await respuesta.json();
+                    console.log("Viajes recibidos:", data);
+                    
+                    const viajesData = Array.isArray(data) ? data : [];
+                    setViajesRecientes(viajesData.slice(0, 3)); 
+                    
+                    const completados = viajesData.filter(v => v.estado === 'FINALIZADO').length;
+                    const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
+                    const enCurso = viajesData.filter(v => v.estado === 'EN_CURSO').length;
+                    
+                    setEstadisticasViajes({ completados, cancelados, enCurso });
+                    
+                } else if (respuesta.status === 404) {
+                    console.log("No se encontraron viajes");
+                    setViajesRecientes([]);
+                } else {
+                    const errorText = await respuesta.text();
+                    console.log("Error response:", errorText);
+                    setErrorViajes(`Error ${respuesta.status}: No se pudieron cargar los viajes`);
+                }
+            } catch (error) {
+                console.error("Error de conexión al obtener viajes:", error);
+                setErrorViajes("Error de conexión con el servidor");
+            } finally {
+                setCargandoViajes(false);
+            }
+        };
+
+        obtenerViajes();
+        
+        const intervaloViajes = setInterval(obtenerViajes, 60000);
+        return () => clearInterval(intervaloViajes);
+        
+    }, [token, usuario?.idUsuarios]);
 
     useEffect(() => {
         const obtenerVehiculos = async () => {
@@ -55,6 +202,75 @@ const DriverHome = () => {
         obtenerVehiculos();
     }, [token]);
 
+    const getEstadoColor = (estado) => {
+        switch(estado) {
+            case 'FINALIZADO': return 'success';
+            case 'CANCELADO': return 'danger';
+            case 'EN_CURSO': return 'warning';
+            case 'PUBLICADO': return 'info';
+            case 'CREADO': return 'secondary';
+            default: return 'secondary';
+        }
+    };
+
+    const getEstadoTexto = (estado) => {
+        switch(estado) {
+            case 'FINALIZADO': return 'Completado';
+            case 'CANCELADO': return 'Cancelado';
+            case 'EN_CURSO': return 'En curso';
+            case 'PUBLICADO': return 'Publicado';
+            case 'CREADO': return 'Creado';
+            default: return estado || 'Desconocido';
+        }
+    };
+
+    const formatearFecha = (fecha) => {
+        if (!fecha) return 'Fecha no disponible';
+        const date = new Date(fecha);
+        const hoy = new Date();
+        const ayer = new Date(hoy);
+        ayer.setDate(ayer.getDate() - 1);
+        
+        if (date.toDateString() === hoy.toDateString()) {
+            return `Hoy, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+        } else if (date.toDateString() === ayer.toDateString()) {
+            return `Ayer, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+        } else {
+            return date.toLocaleString('es-ES', { 
+                day: '2-digit', 
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    };
+
+    const getDocumentoBadge = (estado) => {
+        switch (estado?.toUpperCase()) {
+            case 'VÁLIDO':
+            case 'VALIDO':
+            case 'APROBADO':
+                return <Badge bg="success" className="rounded-pill">Válido</Badge>;
+            case 'VENCIDO':
+            case 'RECHAZADO':
+                return <Badge bg="danger" className="rounded-pill">Vencido</Badge>;
+            case 'PENDIENTE':
+            case 'REVISION':
+                return <Badge bg="warning" className="rounded-pill">Pendiente</Badge>;
+            default:
+                return <Badge bg="secondary" className="rounded-pill">No subido</Badge>;
+        }
+    };
+
+    const estaVencido = (fechaVencimiento) => {
+        if (!fechaVencimiento) return false;
+        const hoy = new Date();
+        const vencimiento = new Date(fechaVencimiento);
+        return vencimiento < hoy;
+    };
+
+    // --- LÓGICA DEL TUTORIAL ---
     const manejarSiguiente = () => {
         if (currentStep < 3) setCurrentStep(currentStep + 1);
         else {
@@ -198,16 +414,34 @@ const DriverHome = () => {
                                     <FaIdCard size={22} style={{ color: brandColor }} className="me-2" />
                                     <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Documentación</h5>
                                 </div>
-                                <ListGroup variant="flush" className="mb-auto">
-                                    <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
-                                        <span className="text-muted">Licencia de conducción</span>
-                                        <Badge style={{ backgroundColor: brandColor, color: 'white', border: `1px solid ${darkBorder}` }}>Válida</Badge>
-                                    </ListGroup.Item>
-                                    <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0">
-                                        <span className="text-muted">SOAT Vigente</span>
-                                        <Badge style={{ backgroundColor: brandColor, color: 'white', border: `1px solid ${darkBorder}` }}>Válido</Badge>
-                                    </ListGroup.Item>
-                                </ListGroup>
+                                
+                                {cargarDocumentos ? (
+                                    <div className="text-center py-4">
+                                        <div className="spinner-border spinner-border-sm" style={{ color: brandColor }} />
+                                    </div>
+                                ) : errorDocumentos ? (
+                                    <p className="text-danger small">{errorDocumentos}</p>
+                                ) : (
+                                    <ListGroup variant="flush" className="mb-auto">
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                            <span className="text-muted">Licencia</span>
+                                            {getDocumentoBadge(documentos.licencia.estado)}
+                                        </ListGroup.Item>
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                            <span className="text-muted">SOAT</span>
+                                            {getDocumentoBadge(documentos.soat.estado)}
+                                        </ListGroup.Item>
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                            <span className="text-muted">Tecno-mecánica</span>
+                                            {getDocumentoBadge(documentos.tecnomecanica.estado)}
+                                        </ListGroup.Item>
+                                        <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent">
+                                            <span className="text-muted">Seguro</span>
+                                            {getDocumentoBadge(documentos.seguro.estado)}
+                                        </ListGroup.Item>
+                                    </ListGroup>
+                                )}
+                                
                                 <Button 
                                     className="w-100 mt-4 fw-bold py-2 shadow-sm" 
                                     style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
@@ -219,6 +453,85 @@ const DriverHome = () => {
                         </Card>
                     </Col>
                 </Row>
+
+                <Row className="mt-4">
+                    <Col lg={12}>
+                        <Card className="shadow border-0" style={{ borderRadius: '15px' }}>
+                            <Card.Body className="p-4">
+                                <div className="d-flex align-items-center justify-content-between mb-3">
+                                    <div className="d-flex align-items-center" style={{ color: brandColor }}>
+                                        <FaHistory size={24} className="me-2" />
+                                        <h5 className="mb-0 fw-bold">Viajes Recientes</h5>
+                                    </div>
+                                    <div className="d-flex gap-2">
+                                        <Badge bg="success" className="rounded-pill">
+                                            {estadisticasViajes.completados} Completados
+                                        </Badge>
+                                        {estadisticasViajes.enCurso > 0 && (
+                                            <Badge bg="warning" className="rounded-pill">
+                                                {estadisticasViajes.enCurso} En curso
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                {cargandoViajes ? (
+                                    <div className="text-center py-4">
+                                        <div className="spinner-border text-primary" role="status">
+                                            <span className="visually-hidden">Cargando...</span>
+                                        </div>
+                                        <p className="mt-2 text-muted">Cargando viajes...</p>
+                                    </div>
+                                ) : errorViajes ? (
+                                    <div className="text-center py-4">
+                                        <p className="text-danger">{errorViajes}</p>
+                                        <Button 
+                                            variant="outline-primary" 
+                                            size="sm"
+                                            onClick={() => window.location.reload()}
+                                        >
+                                            Reintentar
+                                        </Button>
+                                    </div>
+                                ) : viajesRecientes.length === 0 ? (
+                                    <div className="text-center py-4">
+                                        <FaHistory size={30} className="text-muted mb-2" />
+                                        <p className="text-muted">No hay viajes recientes</p>
+                                    </div>
+                                ) : (
+                                    <ListGroup variant="flush">
+                                        {viajesRecientes.map((viaje) => (
+                                            <ListGroup.Item key={viaje.idViajes} className="px-0">
+                                                <Row className="align-items-center">
+                                                    <Col xs={1} className="text-center">
+                                                        <FaCar size={20} color={brandColor} />
+                                                    </Col>
+                                                    <Col xs={5}>
+                                                        <p className="mb-0 fw-bold">Viaje #{viaje.idViajes}</p>
+                                                        <small className="text-muted">
+                                                            {formatearFecha(viaje.fechaHoraSalida)}
+                                                        </small>
+                                                    </Col>
+                                                    <Col xs={3}>
+                                                        <small className="text-muted">
+                                                            {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                                        </small>
+                                                    </Col>
+                                                    <Col xs={3} className="text-end">
+                                                        <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill">
+                                                            {getEstadoTexto(viaje.estado)}
+                                                        </Badge>
+                                                    </Col>
+                                                </Row>
+                                            </ListGroup.Item>
+                                        ))}
+                                    </ListGroup>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+
             </Container>
 
             <Modal show={showTutorial} onHide={saltarTutorial} centered size="lg" backdrop="static">

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
 
 function DriverProfile() {
-  const { usuario, token, logout, setUsuario } = useAuth();
+  const { usuario, token, setUsuario } = useAuth();
   const navigate = useNavigate();
   
   const [nombre, setNombre] = useState(usuario?.nombre || '');
@@ -71,9 +71,17 @@ function DriverProfile() {
         
         if (respuesta.ok) {
           const data = await respuesta.json();
-          setCalificaciones(data);
+          console.log("⭐ Datos de calificación recibidos:", data);
           
-          if (Array.isArray(data) && data.length > 0) {
+          if (typeof data === 'number') {
+            setPromedioCalificacion(data);
+            setTotalCalificaciones(0);
+          } 
+          else if (data.promedio !== undefined) {
+            setPromedioCalificacion(data.promedio);
+            setTotalCalificaciones(data.total || 0);
+          }
+          else if (Array.isArray(data) && data.length > 0) {
             const suma = data.reduce((acc, cal) => acc + cal.puntuacion, 0);
             setPromedioCalificacion(suma / data.length);
             setTotalCalificaciones(data.length);
@@ -84,6 +92,10 @@ function DriverProfile() {
       }
     };
 
+    obtenerCalificaciones();
+  }, [token, usuario?.idUsuarios]);
+
+  useEffect(() => {
     const obtenerEstadisticasViajes = async () => {
       if (!token || !usuario?.idUsuarios) return;
       
@@ -97,13 +109,24 @@ function DriverProfile() {
         
         if (respuesta.ok) {
           const data = await respuesta.json();
-          setTotalViajes(data.totalViajes || 0);
+          console.log("📊 Viajes recibidos en DriverProfile:", data);
+          
+          if (Array.isArray(data)) {
+            const viajesCompletados = data.filter(v => v.estado === 'FINALIZADO');
+            setTotalViajes(viajesCompletados.length);
+          } 
+          else if (data.viajes && Array.isArray(data.viajes)) {
+            const viajesCompletados = data.viajes.filter(v => v.estado === 'FINALIZADO');
+            setTotalViajes(viajesCompletados.length);
+          }
+          else if (data.totalViajes) {
+            setTotalViajes(data.totalViajes);
+          }
         }
       } catch (error) {
         console.error("Error al obtener estadísticas:", error);
       }
     };
-
     const obtenerDocumentacion = async () => {
       if (!token || !usuario?.idUsuarios) return;
       
@@ -126,8 +149,6 @@ function DriverProfile() {
         console.error("Error al obtener documentación:", error);
       }
     };
-
-    obtenerCalificaciones();
     obtenerEstadisticasViajes();
     obtenerDocumentacion();
   }, [token, usuario?.idUsuarios]);
@@ -384,7 +405,6 @@ function DriverProfile() {
                         >
                           <FaSave className="me-2" /> {loading ? 'Guardando...' : 'Guardar Cambios'}
                         </Button>
-                        <Button variant="outline-danger" onClick={logout} disabled={loading}>Salir</Button>
                       </div>
                     </Form>
                   </Col>
