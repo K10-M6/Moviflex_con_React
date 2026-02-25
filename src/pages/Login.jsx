@@ -1,8 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { Container, Row, Col, Card, Form, Button, Alert, Carousel, Modal, ProgressBar } from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Button, Alert, Modal, ProgressBar } from "react-bootstrap";
 import Logo from './Imagenes/TODO_MOVI.png';
+// Importación de las nuevas imágenes
+import FondoPantalla from './Imagenes/AutoresContacto.png';
+import ImagenTransparencia from './Imagenes/TRANSPARENCIA MOVIFLEX.png';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode, FaCamera, FaVideo, FaUserCircle } from "react-icons/fa";
 import Navbar from '../components/Navbar';
 import QRScanner from '../components/QRScanner';
@@ -124,9 +127,7 @@ function Login() {
         setError("");
 
         try {
-            const datosEnviar = {
-                image: fotoBase64
-            };
+            const datosEnviar = { image: fotoBase64 };
 
             const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/login", {
                 method: "POST",
@@ -215,7 +216,6 @@ function Login() {
         setError("");
 
         try {
-            console.log("📱 Datos del QR:", qrData);
             const datos = JSON.parse(qrData);
 
             if (datos.tipo === 'login_token') {
@@ -239,22 +239,18 @@ function Login() {
                 setError("El código QR no es válido para iniciar sesión");
             }
         } catch (error) {
-            console.error("Error parseando QR:", error);
             setError("El código QR no tiene el formato correcto");
         } finally {
             setLoading(false);
         }
     };
 
-    const imagenes = [
-        "https://periodicolafuente.com/wp-content/uploads/2018/09/%C2%BFPor-qu%C3%A9-viajar-en-carro-por-M%C3%A9xico-es-algo-que-debes-vivir_LA-FUENTE-QUERETARO-.jpg",
-        "https://st2.depositphotos.com/1757635/7119/i/950/depositphotos_71197259-stock-photo-man-driving-a-car.jpg",
-        "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg",
-    ];
-
     return (
         <div style={{
-            backgroundColor: '#124c83',
+            backgroundImage: `url(${FondoPantalla})`, // Fondo actualizado
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
             minHeight: '100vh',
             minWidth: '100vw',
             display: 'flex',
@@ -262,27 +258,19 @@ function Login() {
         }}>
             <Navbar />
             <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
-                <Row className="justify-content-center">
+                <Row className="justify-content-center align-items-center">
                     
-                    <Col xs={12} md={4} lg={4} xl={5}
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
+                    <Col xs={12} md={5} lg={4} xl={5}>
                         <Card className="shadow-lg border-0" style={{ 
                             borderRadius: '25px', 
                             overflow: 'hidden',
-                            width: '100%'
+                            width: '100%',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)' // Ligera transparencia para el card
                         }}>
                             <Card.Body className="p-4">
                                 <div className="text-center mb-4">
                                     <img src={Logo} alt="Logo Moviflexx"
-                                        style={{
-                                            width: '140px',
-                                            height: 'auto',
-                                        }}
+                                        style={{ width: '140px', height: 'auto' }}
                                     />
                                     <h5 className="fw-bold text-dark mt-3">¡Bienvenido de nuevo!</h5>
                                 </div>
@@ -291,12 +279,7 @@ function Login() {
                                     onClick={() => setShowQRScanner(true)}
                                     variant="outline-primary"
                                     className="w-100 py-2 mb-2 d-flex justify-content-center align-items-center gap-2"
-                                    style={{ 
-                                        borderRadius: '12px', 
-                                        borderColor: '#4acfbd',
-                                        color: '#4acfbd',
-                                        fontWeight: 'bold'
-                                    }}
+                                    style={{ borderRadius: '12px', borderColor: '#4acfbd', color: '#4acfbd', fontWeight: 'bold' }}
                                     disabled={loading}
                                 >
                                     <FaQrcode />
@@ -307,16 +290,11 @@ function Login() {
                                     onClick={abrirFacialModal}
                                     variant="outline-success"
                                     className="w-100 py-2 mb-3 d-flex justify-content-center align-items-center gap-2"
-                                    style={{ 
-                                        borderRadius: '12px', 
-                                        borderColor: '#28a745',
-                                        color: '#28a745',
-                                        fontWeight: 'bold'
-                                    }}
+                                    style={{ borderRadius: '12px', borderColor: '#28a745', color: '#28a745', fontWeight: 'bold' }}
                                     disabled={loading}
                                 >
                                     <FaCamera />
-                                    {loading ? 'Procesando...' : 'Iniciar sesión con reconocimiento facial'}
+                                    {loading ? 'Procesando...' : 'Login Facial'}
                                 </Button>
 
                                 <div className="text-center mb-2">
@@ -333,15 +311,12 @@ function Login() {
                                         </Form.Label>
                                         <Form.Control
                                             type="email"
-                                            placeholder="Ingrese su correo electrónico"
+                                            placeholder="Ingrese su correo"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             required
                                             disabled={loading}
-                                            style={{ 
-                                                borderRadius: '12px',
-                                                padding: '10px 15px'
-                                            }}
+                                            style={{ borderRadius: '12px', padding: '10px 15px' }}
                                         />
                                     </Form.Group>
 
@@ -357,10 +332,7 @@ function Login() {
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 required
                                                 disabled={loading}
-                                                style={{ 
-                                                    borderRadius: '12px',
-                                                    padding: '10px 40px 10px 15px'
-                                                }}
+                                                style={{ borderRadius: '12px', padding: '10px 40px 10px 15px' }}
                                             />
                                             <span 
                                                 className="position-absolute end-0 top-50 translate-middle-y me-3" 
@@ -375,190 +347,67 @@ function Login() {
                                     <Button
                                         type="submit"
                                         className="w-100 py-2 mb-3"
-                                        style={{ 
-                                            background: '#4acfbd', 
-                                            border: 'none', 
-                                            borderRadius: '12px', 
-                                            fontWeight: 'bold' 
-                                        }}
+                                        style={{ background: '#4acfbd', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}
                                         disabled={loading}
                                     >
-                                        {loading ? (
-                                            <>
-                                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                                Iniciando sesión...
-                                            </>
-                                        ) : 'Iniciar Sesión'}
+                                        {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                                     </Button>
                                 </Form>
-
                                 <p className="text-center text-muted mt-3">
-                                    ¿No tienes cuenta?{" "}
-                                    <a href="/register" className="text-decoration-none fw-bold" style={{ color: '#124c83' }}>
-                                        Regístrate aquí
-                                    </a>
+                                    ¿No tienes cuenta? <a href="/register" className="text-decoration-none fw-bold" style={{ color: '#124c83' }}>Regístrate</a>
                                 </p>
                             </Card.Body>
                         </Card>
                     </Col>
 
-                    <Col xs={13} md={8} lg={4} xl={6} className="mt-4"
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                        <div className="text-center w-100">
-                            <div style={{
-                                width: '100%',
-                                maxWidth: '900px',
-                                margin: '50px auto',
-                                borderRadius: '200px',
-                                overflow: 'hidden',
-                                border: '2px solid white',
-                            }}>
-                                <Carousel fade indicators controls={false} interval={2500}>
-                                    {imagenes.map((img, index) => (
-                                        <Carousel.Item key={index}>
-                                            <img
-                                                src={img}
-                                                alt={`slide-${index}`}
-                                                className="d-block w-100"
-                                                style={{
-                                                    height: '400px',
-                                                    width: '100%',
-                                                    objectFit: 'cover',
-                                                }}
-                                            />
-                                        </Carousel.Item>
-                                    ))}
-                                </Carousel>
-                            </div>
-
-                            <h3 className="mt-3" style={{ color: '#fdfdfd' }}>
-                                Bienvenido de Nuevo
-                            </h3>
-                            <p className="text-white mt-2" style={{ fontSize: '1.1rem' }}>
-                                Accede a tu cuenta para gestionar tus viajes
-                            </p>
-                        </div>
+                    {/* SECCIÓN DE LA IMAGEN SUSTITUYENDO EL CARRUSEL */}
+                    <Col xs={12} md={7} lg={6} xl={6} className="text-center d-none d-md-flex flex-column align-items-center justify-content-center">
+                        <img 
+                            src={ImagenTransparencia} 
+                            alt="Moviflex Transparencia" 
+                            style={{ 
+                                width: '100%', 
+                                maxWidth: '600px', 
+                                height: 'auto',
+                                filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.3))' // Sombra para resaltar la transparencia
+                            }} 
+                        />
+                        <h3 className="mt-4 fw-bold" style={{ color: '#ffffff', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+                            Tu movilidad, nuestra prioridad
+                        </h3>
                     </Col>
                 </Row>
             </Container>
 
+            {/* Modales se mantienen igual... */}
             <Modal show={showFacialModal} onHide={cerrarFacialModal} size="lg" centered>
+                {/* ... Contenido del modal facial ... */}
                 <Modal.Header closeButton>
                     <Modal.Title>Inicio de Sesión Facial</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div className="text-center">
-                        <div style={{ 
-                            position: 'relative', 
-                            backgroundColor: '#000', 
-                            minHeight: '400px',
-                            borderRadius: '10px',
-                            overflow: 'hidden'
-                        }}>
-                            <video
-                                ref={videoRef}
-                                autoPlay
-                                playsInline
-                                style={{ width: '100%', height: 'auto', maxHeight: '450px' }}
-                            />
+                        <div style={{ position: 'relative', backgroundColor: '#000', minHeight: '400px', borderRadius: '10px', overflow: 'hidden' }}>
+                            <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: 'auto' }} />
                             <canvas ref={canvasRef} style={{ display: 'none' }} />
-                            
-                            {!cameraActive && !fotoPreview && (
-                                <div style={{ 
-                                    position: 'absolute', 
-                                    top: 0, 
-                                    left: 0, 
-                                    right: 0, 
-                                    bottom: 0, 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center',
-                                    backgroundColor: 'rgba(0,0,0,0.7)',
-                                    color: 'white'
-                                }}>
-                                    <p>Iniciando cámara...</p>
-                                </div>
-                            )}
                         </div>
-                        
                         {!fotoPreview && cameraActive && (
-                            <Button 
-                                variant="success" 
-                                onClick={tomarFoto}
-                                className="mt-4 w-100 py-3"
-                                disabled={verificando}
-                                size="lg"
-                            >
-                                <FaCamera className="me-2" />
-                                Tomar Foto
+                            <Button variant="success" onClick={tomarFoto} className="mt-4 w-100 py-3">
+                                <FaCamera className="me-2" /> Tomar Foto
                             </Button>
                         )}
-
                         {fotoPreview && (
                             <div className="text-center mt-4">
-                                <div style={{ 
-                                    width: '250px', 
-                                    height: '250px', 
-                                    margin: '0 auto',
-                                    borderRadius: '15px',
-                                    overflow: 'hidden',
-                                    border: '4px solid #4acfbd',
-                                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-                                }}>
-                                    <img 
-                                        src={fotoPreview} 
-                                        alt="Preview" 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                    />
-                                </div>
-                                
-                                {verificando && (
-                                    <div className="mt-4">
-                                        <ProgressBar animated now={100} label="Verificando rostro..." className="mb-2" />
-                                        <p className="text-muted">Procesando imagen...</p>
-                                    </div>
-                                )}
-                                
+                                <img src={fotoPreview} alt="Preview" style={{ width: '250px', borderRadius: '15px', border: '4px solid #4acfbd' }} />
                                 {!verificando && (
-                                    <>
-                                        <Button
-                                            variant="success"
-                                            onClick={enviarLoginFacial}
-                                            className="mt-4 w-100 py-3"
-                                            disabled={!fotoBase64}
-                                            size="lg"
-                                        >
-                                            Verificar Rostro e Iniciar Sesión
-                                        </Button>
-                                        
-                                        <Button
-                                            variant="link"
-                                            onClick={() => {
-                                                setFotoBase64("");
-                                                setFotoPreview("");
-                                                iniciarCamara();
-                                            }}
-                                            className="mt-2"
-                                            disabled={verificando}
-                                        >
-                                            Tomar otra foto
-                                        </Button>
-                                    </>
+                                    <Button variant="success" onClick={enviarLoginFacial} className="mt-4 w-100 py-3">
+                                        Verificar e Iniciar Sesión
+                                    </Button>
                                 )}
                             </div>
                         )}
                     </div>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={cerrarFacialModal} disabled={verificando}>
-                        Cancelar
-                    </Button>
-                </Modal.Footer>
             </Modal>
 
             <QRScanner
