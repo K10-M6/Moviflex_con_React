@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill, BsListCheck, BsMenuButtonWideFill, BsChevronRight,
-  BsChevronLeft, BsQrCode
+  BsChevronLeft, BsQrCode, BsFileEarmarkTextFill
 } from "react-icons/bs";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../pages/context/AuthContext";
@@ -10,9 +10,10 @@ import QRModal from "../components/QRModal";
 function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { usuario, token } = useAuth();
+  const { usuario, token, logout } = useAuth();
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
+  
   
   const handleNavigation = (path) => {
     navigate(path);
@@ -43,7 +44,8 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
     { icon: <BsPeopleFill />, label: "Viajeros", path: "/admin/viajeros" },
     { icon: <BsFillGrid3X3GapFill />, label: "Conductores", path: "/admin/conductores" },
     { icon: <BsListCheck />, label: "Usuarios", path: "/admin/usuarios" },
-    { icon: <BsMenuButtonWideFill />, label: "Vehículos", path: "/admin/vehiculos" }
+    { icon: <BsMenuButtonWideFill />, label: "Vehículos", path: "/admin/vehiculos" },
+    { icon: <BsFileEarmarkTextFill />, label: "Documentos", path: "/admin/documentos" }
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -195,6 +197,33 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
             </li>
           ))}
         </ul>
+
+          <div className="p-3 border-top border-white border-opacity-25">
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="btn w-100 d-flex align-items-center justify-content-center p-3 rounded border-0"
+              style={{
+                background: 'rgba(220, 53, 69, 0.9)',
+                color: 'white',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = '#dc3545';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'rgba(220, 53, 69, 0.9)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              <i className="bi bi-box-arrow-right me-2"></i>
+              Cerrar sesión
+            </button>
+          </div>
+
       </aside>
 
       <QRModal

@@ -65,7 +65,6 @@ function Profile() {
   
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
-  
   const [estadisticas, setEstadisticas] = useState({
     totalViajes: 0,
     viajesCompletados: 0,
@@ -83,7 +82,6 @@ function Profile() {
 
   const backgroundImages = [img1, img2, img3];
 
-  // Obtener viajes del usuario
   useEffect(() => {
     const obtenerViajes = async () => {
       if (!token || !usuario?.idUsuarios) return;
@@ -324,27 +322,6 @@ function Profile() {
                           <label className="small text-muted text-uppercase mb-1">Correo Electrónico</label>
                           <p className="fw-bold mb-0 fs-5">{usuario?.email}</p>
                         </div>
-                      </Col>
-                    </Row>
-
-                    <h4 className="fw-bold mb-3 mt-4">Estadísticas de Viajes</h4>
-                    <Row className="g-3 mb-4">
-                      <Col sm={4}>
-                        <Card className="p-3 border-0 bg-light rounded-3 h-100 text-center">
-                          <h5 className="fw-bold mb-0" style={{ color: '#124c83', fontSize: '2rem' }}>
-                            {estadisticas.viajesCompletados}
-                          </h5>
-                          <small className="text-muted">Completados</small>
-                        </Card>
-                      </Col>
-                      <Col sm={4}>
-                        <Card className="p-3 border-0 bg-light rounded-3 h-100 text-center">
-                          <h5 className="fw-bold mb-0 d-flex align-items-center justify-content-center" style={{ color: '#ffc107', fontSize: '2rem' }}>
-                            <FaStar className="me-2" size={24} />
-                            {estadisticas.promedioCalificacion.toFixed(1)}
-                          </h5>
-                          <small className="text-muted">Calificación</small>
-                        </Card>
                       </Col>
                     </Row>
 

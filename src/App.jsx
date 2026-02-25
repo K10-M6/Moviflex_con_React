@@ -19,6 +19,7 @@ import Header from "./Dashboard/Header";
 import Sidebar from "./Dashboard/Sidebar";
 import DashboardLayout from "./Dashboard/DashboardLayout"
 import Documents from "./pages/Documents";
+import AdminDocumentos from "./pages/Admin/AdminDocuments";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
@@ -96,6 +97,12 @@ function App() {
               <AdminViajeros />
             </DashboardLayout>
           } />
+
+          <Route path="/admin/documentos" element={
+            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+              <AdminDocumentos />
+            </DashboardLayout>
+          } />  
 
           <Route path="/perfil" element={<Navigate to="/profile" replace />} />
           <Route path="/qr-activation" element={<Navigate to="/login" replace />} />
