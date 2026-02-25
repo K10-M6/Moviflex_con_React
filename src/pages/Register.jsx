@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Form, Button, Alert, Carousel, ProgressBar, Image, Modal, Badge } from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Button, Alert, ProgressBar, Image, Modal, Badge } from "react-bootstrap";
 import { FaUser, FaEnvelope, FaPhone, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown } from "react-icons/fa";
 import toast, { Toaster } from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import Logo from './Imagenes/TODO_MOVI.png';
+// Importar las mismas imágenes que usa Login
+import FondoPantalla from './Imagenes/AutoresContacto.png';
+import ImagenTransparencia from './Imagenes/TRANSPARENCIA MOVIFLEX.png';
 
 function Register() {
     const navigate = useNavigate();
@@ -32,12 +35,6 @@ function Register() {
     const [mensajeRostro, setMensajeRostro] = useState("");
     const [verificandoRostro, setVerificandoRostro] = useState(false);
     const [errorRostroBackend, setErrorRostroBackend] = useState("");
-
-    const imagenes = [
-        "https://st2.depositphotos.com/1757635/7119/i/950/depositphotos_71197259-stock-photo-man-driving-a-car.jpg",
-        "https://sp-ao.shortpixel.ai/client/to_webp,q_glossy,ret_img,w_790,h_395/https://alkilautos.com/blog/wp-content/uploads/2020/01/VIAJAR-TRIP-PERUCOM.jpg",
-        "https://periodicolafuente.com/wp-content/uploads/2018/09/%C2%BFPor-qu%C3%A9-viajar-en-carro-por-M%C3%A9xico-es-algo-que-debes-vivir_LA-FUENTE-QUERETARO-.jpg"
-    ];
 
     const verificarRostroAntesDeEnviar = async (base64Image) => {
         setVerificandoRostro(true);
@@ -297,7 +294,16 @@ function Register() {
     };
 
     return (
-        <div style={{ backgroundColor: '#124c83', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{
+            backgroundImage: `url(${FondoPantalla})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            minHeight: '100vh',
+            minWidth: '100vw',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             <Toaster 
                 position="top-right"
                 reverseOrder={false}
@@ -333,7 +339,11 @@ function Register() {
                 <Row className="justify-content-center align-items-center">
                     
                     <Col xs={12} md={6} lg={5}>
-                        <Card className="shadow-lg border-0" style={{ borderRadius: '25px', overflow: 'hidden' }}>
+                        <Card className="shadow-lg border-0" style={{ 
+                            borderRadius: '25px', 
+                            overflow: 'hidden',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}>
                             <Card.Body className="p-4 p-md-5">
                                 <div className="text-center mb-4">
                                     <img src={Logo} alt="Movi Logo" style={{ width: '140px' }} />
@@ -627,20 +637,24 @@ function Register() {
                         </Card>
                     </Col>
 
-                    <Col md={6} lg={6} className="d-none d-md-block ps-lg-5">
-                        <div style={{ borderRadius: '40px', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', border: '6px solid rgba(255,255,255,0.1)' }}>
-                            <Carousel fade indicators={false} controls={false} interval={3500}>
-                                {imagenes.map((img, idx) => (
-                                    <Carousel.Item key={idx}>
-                                        <img src={img} alt="Drive" className="d-block w-100" style={{ height: '500px', objectFit: 'cover' }} />
-                                    </Carousel.Item>
-                                ))}
-                            </Carousel>
-                        </div>
-                        <div className="text-white mt-4 text-center text-md-start">
-                            <h2 className="fw-bold display-6">Conduce con Movi</h2>
-                            <p className="lead opacity-75">Tu camino, tus reglas. Regístrate ahora y únete a nuestra familia de conductores.</p>
-                        </div>
+                    {/* SECCIÓN DE LA IMAGEN DE TRANSPARENCIA (REEMPLAZA EL CARRUSEL) */}
+                    <Col xs={12} md={6} lg={6} className="text-center d-none d-md-flex flex-column align-items-center justify-content-center">
+                        <img 
+                            src={ImagenTransparencia} 
+                            alt="Moviflex Transparencia" 
+                            style={{ 
+                                width: '100%', 
+                                maxWidth: '600px', 
+                                height: 'auto',
+                                filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.3))'
+                            }} 
+                        />
+                        <h3 className="mt-4 fw-bold" style={{ color: '#ffffff', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+                            Conduce con Movi, tu camino, tus reglas
+                        </h3>
+                        <p className="text-white mt-2" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+                            Regístrate ahora y únete a nuestra familia de conductores
+                        </p>
                     </Col>
 
                 </Row>
