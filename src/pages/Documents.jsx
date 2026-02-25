@@ -223,10 +223,6 @@ function Documents() {
         if (data.datosLicencia) {
           setDatosExtraidos(data.datosLicencia);
         }
-
-        setTimeout(() => {
-          navigate("/driver-profile");
-        }, 3000);
       } else {
         let mensajeError = data.error || data.message || 'Error al enviar la documentación';
 
@@ -506,19 +502,6 @@ function Documents() {
                 <p>Iniciando cámara...</p>
               </div>
             )}
-
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '90%',
-              height: '60%',
-              border: '3px solid rgba(74, 207, 189, 0.7)',
-              borderRadius: '10px',
-              pointerEvents: 'none',
-              boxShadow: '0 0 30px rgba(74, 207, 189, 0.5)'
-            }} />
 
             <div style={{
               position: 'absolute',

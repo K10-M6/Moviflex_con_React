@@ -285,7 +285,6 @@ const DriverHome = () => {
         }
     };
 
-    // --- LÓGICA DEL TUTORIAL ---
     const manejarSiguiente = () => {
         if (currentStep < 3) setCurrentStep(currentStep + 1);
         else {
@@ -406,15 +405,17 @@ const DriverHome = () => {
                                 )}
                                 
                                 {vehiculoPrincipal && (
-                                    <Button 
-                                        variant="link" 
-                                        className="mt-4 p-0 text-decoration-none fw-bold small shadow-none" 
+                                    <Button
+                                        variant="link"
+                                        className="mt-2 p-0 text-decoration-none fw-bold small shadow-none"
                                         style={{ color: darkBorder }}
-                                        onClick={() => navigate(`/driver-home`)}
-                                    >
-                                        GESTIONAR VEHÍCULO <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
+                                        onClick={() => navigate(`/vehiculos`)}
+                                    > Nuevo Vehículo
+                                        <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
                                     </Button>
                                 )}
+
+
                             </Card.Body>
                         </Card>
                     </Col>
