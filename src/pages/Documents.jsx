@@ -424,10 +424,6 @@ function Documents() {
                               <td>{formatearFecha(datosExtraidos.fechaExpedicion)}</td>
                             </tr>
                             <tr>
-                              <td><strong>Fecha Vencimiento:</strong></td>
-                              <td>{formatearFecha(datosExtraidos.fechaVencimiento)}</td>
-                            </tr>
-                            <tr>
                               <td><strong>Categoría:</strong></td>
                               <td><Badge bg="info">{datosExtraidos.categoria}</Badge></td>
                             </tr>
