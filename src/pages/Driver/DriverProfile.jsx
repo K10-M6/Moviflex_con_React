@@ -125,9 +125,17 @@ function DriverProfile() {
         
         if (respuesta.ok) {
           const data = await respuesta.json();
-          setCalificaciones(data);
+          console.log("⭐ Datos de calificación recibidos:", data);
           
-          if (Array.isArray(data) && data.length > 0) {
+          if (typeof data === 'number') {
+            setPromedioCalificacion(data);
+            setTotalCalificaciones(0);
+          } 
+          else if (data.promedio !== undefined) {
+            setPromedioCalificacion(data.promedio);
+            setTotalCalificaciones(data.total || 0);
+          }
+          else if (Array.isArray(data) && data.length > 0) {
             const suma = data.reduce((acc, cal) => acc + cal.puntuacion, 0);
             setPromedioCalificacion(suma / data.length);
             setTotalCalificaciones(data.length);
@@ -138,6 +146,10 @@ function DriverProfile() {
       }
     };
 
+    obtenerCalificaciones();
+  }, [token, usuario?.idUsuarios]);
+
+  useEffect(() => {
     const obtenerEstadisticasViajes = async () => {
       if (!token || !usuario?.idUsuarios) return;
       
@@ -169,7 +181,6 @@ function DriverProfile() {
         console.error("Error al obtener estadísticas:", error);
       }
     };
-
     const obtenerDocumentacion = async () => {
       if (!token || !usuario?.idUsuarios) return;
       
