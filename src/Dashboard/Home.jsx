@@ -171,7 +171,7 @@ function Home() {
           name: item.name,
           usuarios: item.usuarios,
           viajes: viajeData?.cantidad || 0,
-          ingresos: 0 // Placeholder for now or add actual logic if available
+          ingresos: 0
         }
       });
 
