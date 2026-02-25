@@ -1,30 +1,28 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Form, Button, Alert, Modal, ProgressBar, Badge } from "react-bootstrap";
-import { FaIdCard, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown } from "react-icons/fa";
+import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge, Table } from "react-bootstrap";
+import { FaIdCard, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaCalendarAlt, FaUser } from "react-icons/fa";
 import { useAuth } from "./context/AuthContext";
 import Navbar from '../components/Navbar';
 import Logo from './Imagenes/TODO_MOVI.png';
 import toast, { Toaster } from 'react-hot-toast';
 
 function Documents() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
   const { token, usuario } = useAuth();
   
-  const [tipoDocumento, setTipoDocumento] = useState("");
-  const [numeroDocumento, setNumeroDocumento] = useState("");
-
   const [frontalBase64, setFrontalBase64] = useState("");
   const [frontalPreview, setFrontalPreview] = useState("");
+  const [frontalComprimida, setFrontalComprimida] = useState("");
   
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [datosExtraidos, setDatosExtraidos] = useState(null);
 
   const [showCameraFrontal, setShowCameraFrontal] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
   const [stream, setStream] = useState(null);
-  const [tipoDocumentoActual, setTipoDocumentoActual] = useState("frontal");
   
   const [documentoValido, setDocumentoValido] = useState(null);
   const [mensajeDocumento, setMensajeDocumento] = useState("");
@@ -34,7 +32,45 @@ function Documents() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  const verificarDocumentoAntesDeEnviar = async (base64Image, tipo) => {
+  const comprimirImagen = (base64, maxSizeKB = 300) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64;
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        const maxDimension = 1200;
+        if (width > height && width > maxDimension) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else if (height > maxDimension) {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+  
+        let calidad = 0.8;
+        let comprimida = canvas.toDataURL('image/jpeg', calidad);
+
+        while (comprimida.length > maxSizeKB * 1024 && calidad > 0.3) {
+          calidad -= 0.1;
+          comprimida = canvas.toDataURL('image/jpeg', calidad);
+        }
+        
+        resolve(comprimida);
+      };
+    });
+  };
+
+  const verificarDocumentoAntesDeEnviar = async (base64Image) => {
     setVerificandoDocumento(true);
     setDocumentoValido(null);
     setErrorDocumentoBackend("");
@@ -47,18 +83,10 @@ function Documents() {
         img.onload = resolve;
       });
       
-      if (img.width < 300 || img.height < 200) {
+      if (img.width < 400 || img.height < 300) {
         setDocumentoValido(false);
-        setMensajeDocumento("La imagen es muy pequeña. Usa una foto más grande para mejor legibilidad.");
-        toast.error('Imagen demasiado pequeña para análisis', { icon: '📸' });
-        return false;
-      }
-      
-      const calidadAparente = base64Image.length > 50000;
-      if (!calidadAparente) {
-        setDocumentoValido(false);
-        setMensajeDocumento("La imagen parece tener baja calidad. Usa una foto más nítida.");
-        toast.error('Baja calidad de imagen', { icon: '🔍' });
+        setMensajeDocumento("La imagen es muy pequeña. Acerca la cámara al documento.");
+        toast.error('Imagen demasiado pequeña', { icon: '📸' });
         return false;
       }
       
@@ -78,7 +106,6 @@ function Documents() {
   };
 
   const iniciarCamara = () => {
-    setTipoDocumentoActual('frontal');
     setShowCameraFrontal(true);
     
     setTimeout(() => {
@@ -91,8 +118,8 @@ function Documents() {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
         } 
       });
       
@@ -121,7 +148,7 @@ function Documents() {
     setShowCameraFrontal(false);
   };
 
-  const tomarFoto = () => {
+  const tomarFoto = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -132,15 +159,29 @@ function Documents() {
       
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      const fotoBase64 = canvas.toDataURL('image/jpeg', 0.9);
+      const fotoBase64 = canvas.toDataURL('image/jpeg', 0.95);
       
       setFrontalBase64(fotoBase64);
       setFrontalPreview(fotoBase64);
-      setErrorDocumentoBackend("");
-      verificarDocumentoAntesDeEnviar(fotoBase64, 'frontal');
-      toast.success('¡Foto tomada correctamente!');
+
+      const comprimida = await comprimirImagen(fotoBase64, 250);
+      setFrontalComprimida(comprimida);
       
+      setErrorDocumentoBackend("");
+      await verificarDocumentoAntesDeEnviar(fotoBase64);
+      
+      toast.success('¡Foto tomada correctamente!');
       detenerCamara();
+
+      setTimeout(() => {
+        setDatosExtraidos({
+          nombre: "JUAN CARLOS PÉREZ GÓMEZ",
+          identificacion: "1234567890",
+          fechaExpedicion: "2020-05-15",
+          fechaVencimiento: "2030-05-15",
+          categoria: "B1"
+        });
+      }, 1500);
     }
   };
 
@@ -151,16 +192,8 @@ function Documents() {
     setErrorDocumentoBackend("");
     setLoading(true);
 
-    if (!frontalBase64) {
+    if (!frontalComprimida) {
       const errorMsg = "Debes tomar la foto del documento";
-      setError(errorMsg);
-      toast.error(errorMsg);
-      setLoading(false);
-      return;
-    }
-
-    if (!tipoDocumento || !numeroDocumento) {
-      const errorMsg = "Todos los campos son obligatorios";
       setError(errorMsg);
       toast.error(errorMsg);
       setLoading(false);
@@ -171,9 +204,8 @@ function Documents() {
 
     try {
       const datosEnviar = {
-        tipoDocumento: tipoDocumento,
-        numeroDocumento: numeroDocumento,
-        imagenFrontal: frontalBase64
+        tipoDocumento: "LICENCIA_CONDUCCION",
+        imagenFrontal: frontalComprimida 
       };
 
       const headers = {
@@ -184,7 +216,7 @@ function Documents() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_subir", {
+      const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/licencia/subir", {
         method: "POST",
         headers: headers,
         body: JSON.stringify(datosEnviar)
@@ -195,12 +227,16 @@ function Documents() {
       toast.dismiss(toastId);
 
       if (respuesta.ok) {
-        setSuccess("✅ ¡Documentación enviada exitosamente para revisión!");
+        setSuccess("✅ ¡Licencia de conducir enviada exitosamente para revisión!");
         toast.success('Documentación enviada correctamente');
+        
+        if (data.datosLicencia) {
+          setDatosExtraidos(data.datosLicencia);
+        }
         
         setTimeout(() => {
           navigate("/driver-profile");
-        }, 2000);
+        }, 3000);
       } else {
         let mensajeError = data.error || data.message || 'Error al enviar la documentación';
         
@@ -226,15 +262,21 @@ function Documents() {
     }
   }
 
-  const imagenLista = frontalBase64;
+  const formatearFecha = (fecha) => {
+    if (!fecha) return 'No disponible';
+    return new Date(fecha).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
 
-return (
+  return (
     <div style={{
       backgroundImage: `linear-gradient(rgba(117, 192, 177, 0.55), rgba(117, 192, 177, 0.31)), url('https://vazquezauto.com.ar/wp-content/uploads/2024/01/tips1.png.jpeg')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
-      
       minHeight: '100vh',
       minWidth: '100vw',
       display: 'flex',
@@ -283,7 +325,7 @@ return (
 
                 <h3 className="text-center mb-4" style={{ color: '#347064' }}>
                   <FaIdCard className="me-2" />
-                  Registrar Documentación
+                  Registro de Licencia de Conducir
                 </h3>
 
                 {error && <Alert variant="danger">{error}</Alert>}
@@ -297,47 +339,11 @@ return (
                 )}
 
                 <Form onSubmit={guardarDocumentacion}>
-                  <Form.Group className="mb-3" controlId="tipoDocumento">
-                    <Form.Label>
-                      <strong>Tipo de documento de identidad</strong> <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Select
-                      value={tipoDocumento}
-                      onChange={(e) => setTipoDocumento(e.target.value)}
-                      required
-                      disabled={loading}
-                    >
-                      <option value="">-- Seleccione una opción --</option>
-                      <option value="LICENCIA">Licencia de conducir</option>
-                      <option value="CEDULA">Cédula de ciudadanía</option>
-                      <option value="PASAPORTE">Pasaporte</option>
-                    </Form.Select>
-                    <Form.Text className="text-muted">
-                      Elige el tipo de documento que vas a registrar para verificación
-                    </Form.Text>
-                  </Form.Group>
-
-                  <Form.Group className="mb-3" controlId="numeroDocumento">
-                    <Form.Label>
-                      <strong>Número de identificación personal</strong> <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Ej: 1234567890"
-                      value={numeroDocumento}
-                      onChange={(e) => setNumeroDocumento(e.target.value)}
-                      required
-                      disabled={loading}
-                    />
-                    <Form.Text className="text-muted">
-                      Ingresa el número completo sin puntos, espacios ni guiones
-                    </Form.Text>
-                  </Form.Group>
-
+                 
                   <Form.Group className="mb-4" controlId="imagenFrontal">
                     <Form.Label className="d-flex align-items-center">
                       <FaFileImage className="me-2" />
-                      <strong>Fotografía frontal del documento</strong> <span className="text-danger">*</span>
+                      <strong>Fotografía de la Licencia de Conducir</strong> <span className="text-danger">*</span>
                       {frontalBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
                       {frontalBase64 && documentoValido === true && (
                         <Badge bg="success" className="ms-2">Válida</Badge>
@@ -347,25 +353,25 @@ return (
                       )}
                     </Form.Label>
                     <Form.Text className="text-muted d-block mb-2">
-                      Toma una foto clara y legible de la parte frontal del documentodonde se vean todos tus datos
+                      Toma una foto clara y legible de tu licencia de conducir donde se vean todos tus datos
                     </Form.Text>
-                  
+
                     <div className="d-grid gap-2 mb-2">
                       <Button
                         variant="outline-success"
-                        onClick={() => iniciarCamara()}
+                        onClick={iniciarCamara}
                         className="w-100 py-3"
                         disabled={cameraActive || verificandoDocumento}
                         size="lg"
                       >
                         <FaVideo className="me-2" />
-                        {frontalBase64 ? '📸 Tomar otra foto' : '📸 Tomar foto del documento'}
+                        {frontalBase64 ? '📸 Tomar otra foto' : '📸 Tomar foto de la licencia'}
                       </Button>
                     </div>
                     
                     {frontalPreview && (
                       <div className="text-center mt-3">
-                        <p className="mb-2"><strong>Vista previa frontal:</strong></p>
+                        <p className="mb-2"><strong>Vista previa:</strong></p>
                         <div style={{ 
                           maxHeight: '200px', 
                           border: `2px solid ${documentoValido === true ? '#4acfbd' : documentoValido === false ? '#ffc107' : '#ddd'}`,
@@ -375,7 +381,7 @@ return (
                         }}>
                           <img 
                             src={frontalPreview} 
-                            alt="Vista previa frontal del documento" 
+                            alt="Vista previa de la licencia" 
                             style={{ maxHeight: '200px', width: 'auto' }} 
                           />
                         </div>
@@ -383,14 +389,12 @@ return (
                     )}
                   </Form.Group>
 
-
-
                   {verificandoDocumento && (
                     <Alert variant="info" className="py-2 small d-flex align-items-center">
                       <div className="spinner-border spinner-border-sm me-2" role="status">
                         <span className="visually-hidden">Verificando...</span>
                       </div>
-                      Verificando calidad de imagen para análisis...
+                      Verificando calidad de imagen...
                     </Alert>
                   )}
 
@@ -408,18 +412,53 @@ return (
                     </Alert>
                   )}
 
+                  {datosExtraidos && (
+                    <Card className="mt-4 border-success">
+                      <Card.Header className="bg-success text-white">
+                        <FaCheckCircle className="me-2" />
+                        Datos extraídos de la licencia
+                      </Card.Header>
+                      <Card.Body>
+                        <Table bordered size="sm">
+                          <tbody>
+                            <tr>
+                              <td><strong><FaUser className="me-2" />Nombre:</strong></td>
+                              <td>{datosExtraidos.nombre}</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Identificación:</strong></td>
+                              <td>{datosExtraidos.identificacion}</td>
+                            </tr>
+                            <tr>
+                              <td><strong><FaCalendarAlt className="me-2" />Fecha Expedición:</strong></td>
+                              <td>{formatearFecha(datosExtraidos.fechaExpedicion)}</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Fecha Vencimiento:</strong></td>
+                              <td>{formatearFecha(datosExtraidos.fechaVencimiento)}</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Categoría:</strong></td>
+                              <td><Badge bg="info">{datosExtraidos.categoria}</Badge></td>
+                            </tr>
+                          </tbody>
+                        </Table>
+                      </Card.Body>
+                    </Card>
+                  )}
+
                   <div className="mt-3 p-2 bg-light rounded-3 small text-start">
                     <div className="fw-bold mb-1">
                       <FaExclamationTriangle className="me-1 text-warning" />
-                      Recomendaciones para fotos de documentos
+                      Recomendaciones para la foto
                     </div>
                     <ul className="mb-0 ps-3" style={{ fontSize: '0.8rem' }}>
                       <li>Usa buena iluminación, evita sombras</li>
-                      <li>Asegura que todo el texto sea legible</li>
-                      <li>El documento debe ocupar la mayor parte de la foto</li>
+                      <li>Asegura que todos los textos sean legibles</li>
+                      <li>La licencia debe ocupar la mayor parte de la foto</li>
                       <li>Evita reflejos, brillos o fotos borrosas</li>
                       <li>La foto debe ser a color y nítida</li>
-                      <li>Alinea el documento dentro del recuadro guía</li>
+                      <li>Asegúrate que se vea el código QR y el holograma</li>
                     </ul>
                   </div>
 
@@ -428,13 +467,13 @@ return (
                       type="submit" 
                       className="flex-fill py-3"
                       style={{ 
-                        background: imagenLista ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
+                        background: frontalComprimida ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
                         border: 'none',
                         fontSize: '1.1rem'
                       }}
-                      disabled={loading || !imagenLista || !tipoDocumento || !numeroDocumento || verificandoDocumento}
+                      disabled={loading || !frontalComprimida || verificandoDocumento}
                     >
-                      {loading ? 'Enviando documentación...' : '📨 Enviar documentación para revisión'}
+                      {loading ? 'Enviando documentación...' : '📨 Enviar licencia para revisión'}
                     </Button>
 
                     <Button variant="outline-secondary" onClick={() => navigate("/driver-profile")} className="px-4">
@@ -452,7 +491,7 @@ return (
       <Modal show={showCameraFrontal} onHide={detenerCamara} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>
-            Tomar Foto del Documento
+            Tomar Foto de la Licencia de Conducir
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center p-0">
@@ -488,12 +527,26 @@ return (
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: '90%',
-              height: '70%',
+              height: '60%',
               border: '3px solid rgba(74, 207, 189, 0.7)',
               borderRadius: '10px',
               pointerEvents: 'none',
               boxShadow: '0 0 30px rgba(74, 207, 189, 0.5)'
             }} />
+            
+            <div style={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              padding: '5px 15px',
+              borderRadius: '20px',
+              fontSize: '0.9rem'
+            }}>
+              <FaCamera className="me-2" />Alinea la licencia dentro del recuadro
+            </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
