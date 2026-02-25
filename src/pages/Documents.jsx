@@ -206,7 +206,7 @@
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentación_subir", {
+        const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_subir", {
           method: "POST",
           headers: headers,
           body: JSON.stringify(datosEnviar)
