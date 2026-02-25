@@ -5,9 +5,6 @@ import { FaQrcode, FaUserCircle, FaEnvelope, FaPhone, FaSave } from "react-icons
 import { useAuth } from "../../pages/context/AuthContext";
 import Navbar from "../../components/Navbar";
 import QRModal from "../../components/QRModal";
-import viajeEnCarro from "../../pages/Imagenes/viaje-en-carro1.jpg";
-import DNNYPYGT65C3JHMUEEZKEUM7AY from "../../pages/Imagenes/DNNYPYGT65C3JHMUEEZKEUM7AY.jpg";
-import salirACarreteraGonhergo from "../../pages/Imagenes/salir-a-carretera-gonhergo.jpg";
 
 function Profile() {
   const navigate = useNavigate();
@@ -17,18 +14,6 @@ function Profile() {
   const [imagenUrl, setImagenUrl] = useState(null);
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
-
-  const backgroundStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundImage: `linear-gradient(rgba(18, 76, 131, 0.85), rgba(18, 76, 131, 0.85)), url(${viajeEnCarro})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    zIndex: 0
-  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -59,8 +44,7 @@ function Profile() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative' }}>
-      <div style={backgroundStyle} />
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f3f1', position: 'relative' }}>
       
       <div style={{ position: 'relative', zIndex: 2 }}>
         <div style={{ background: '#124c83', width: '100%', position: 'relative', zIndex: 10 }}>
@@ -72,7 +56,7 @@ function Profile() {
             <Col lg={8}>
               <Card className="shadow-lg border-0 rounded-4 overflow-hidden">
                 <Card.Header className="bg-white border-0 p-4">
-                  <h2 className="fw-bold mb-0" style={{ color: '#124c83' }}>Mi Perfil</h2>
+                  <h2 className="fw-bold mb-0" style={{ color: '#0f0f0f' }}>Mi Perfil</h2>
                 </Card.Header>
                 
                 <Card.Body className="p-4">
@@ -88,10 +72,10 @@ function Profile() {
                               style={{ width: '150px', height: '150px', objectFit: 'cover' }}
                             />
                           ) : (
-                            <FaUserCircle size={150} color="#124c83" className="shadow-sm rounded-circle bg-white p-2" />
+                            <FaUserCircle size={150} color="#141414" className="shadow-sm rounded-circle bg-white p-2" />
                           )}
                           <Form.Group controlId="formFile" className="mt-3">
-                            <Form.Label className="btn btn-outline-primary btn-sm rounded-pill px-4">
+                            <Form.Label className="btn btn-outline-primary btn-sm rounded-pill px-4" style={{ borderColor: '#1f1f1f', color: '#0c0c0c' }}>
                               Cambiar Foto
                             </Form.Label>
                             <Form.Control type="file" onChange={handleImageChange} style={{ display: 'none' }} />
@@ -101,7 +85,7 @@ function Profile() {
                       
                       <Col md={8}>
                         <div className="bg-light p-4 rounded-3">
-                          <h5 className="fw-bold mb-3" style={{ color: '#124c83' }}>Información Personal</h5>
+                          <h5 className="fw-bold mb-3" style={{ color: '#242424' }}>Información Personal</h5>
                           <Row>
                             <Col md={6} className="mb-3">
                               <Form.Label className="small fw-bold">NOMBRE COMPLETO</Form.Label>
@@ -160,7 +144,7 @@ function Profile() {
                         onClick={generarQr}
                         variant="outline-primary"
                         className="flex-grow-1"
-                        style={{ borderColor: '#124c83', color: '#124c83' }}
+                        style={{ borderColor: '#111111', color: '#0e0e0e' }}
                       >
                         <FaQrcode className="me-2" />
                         Generar QR de acceso
@@ -169,7 +153,7 @@ function Profile() {
                       <Button 
                         type="submit" 
                         className="flex-grow-1 border-0"
-                        style={{ background: 'linear-gradient(135deg, #124c83, #1a6bb0)' }}
+                        style={{ background: '#000000', color: 'white' }}
                       >
                         <FaSave className="me-2" />
                         Guardar Cambios

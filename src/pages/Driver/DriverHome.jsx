@@ -9,36 +9,9 @@ const DriverHome = () => {
     const { usuario, token } = useAuth();
     const navigate = useNavigate();
 
-    // Paleta de colores elegante
-    const brandColor = "#56bca7";
-    const darkBorder = "#1a1a1a";
+    const brandColor = "#124c83";
+    const darkBorder = "#000000";
 
-    // --- LÓGICA DE FONDO OPTIMIZADA (CROSS-FADE REAL) ---
-    const backgroundImages = [
-        "https://images.unsplash.com/photo-1549923746-c502d488b3ea?auto=format&fit=crop&q=80&w=2070",
-        "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80&w=2070",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&q=80&w=2070"
-    ];
-
-    const [bgIndex, setBgIndex] = useState(0);
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setBgIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
-        }, 6000); // Cambia imagen cada 6 segundos
-        return () => clearInterval(timer);
-    }, []);
-
-    // Estilos de los contenedores elegantes
-    const cardStyle = {
-        background: "rgba(255, 255, 255, 0.95)", // Levemente traslúcido para integrarse con el fondo
-        borderRadius: '16px',
-        border: `1.5px solid ${darkBorder}`,
-        boxShadow: "4px 4px 0px rgba(0,0,0,0.08)", // Sombra plana minimalista
-        overflow: "hidden"
-    };
-
-    // --- ESTADO Y LÓGICA DE DATOS ---
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [vehiculos, setVehiculos] = useState([]);
@@ -82,7 +55,6 @@ const DriverHome = () => {
         obtenerVehiculos();
     }, [token]);
 
-    // --- LÓGICA DEL TUTORIAL ---
     const manejarSiguiente = () => {
         if (currentStep < 3) setCurrentStep(currentStep + 1);
         else {
@@ -96,7 +68,6 @@ const DriverHome = () => {
     const saltarTutorial = () => { localStorage.setItem("tutorial_conductor_visto", "true"); setShowTutorial(false); };
     const repetirTutorial = () => { setCurrentStep(1); setShowTutorial(true); };
 
-    // Estilos de los pasos del tutorial
     const stepCircleStyle = (stepNumber) => ({
         width: "40px",
         height: "40px",
@@ -120,39 +91,24 @@ const DriverHome = () => {
         zIndex: 1
     });
 
+    const cardStyle = {
+        background: "rgba(255, 255, 255, 0.95)",
+        borderRadius: '16px',
+        border: `1.5px solid ${darkBorder}`,
+        boxShadow: "4px 4px 0px rgba(0,0,0,0.08)",
+        overflow: "hidden"
+    };
+
     const vehiculoPrincipal = vehiculos.length > 0 ? vehiculos[0] : null;
 
     return (
-        <div style={{ minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
+        <div style={{ minHeight: '100vh', backgroundColor: '#f4f3f1', position: 'relative', overflowX: 'hidden' }}>
             
-            {/* CAPAS DE FONDO PARA EL CROSS-FADE */}
-            {backgroundImages.map((img, i) => (
-                <div
-                    key={i}
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundImage: `url(${img})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        zIndex: -1,
-                        opacity: bgIndex === i ? 0.35 : 0, // Ajusta 0.35 si quieres más o menos visibilidad del fondo
-                        transition: 'opacity 2s ease-in-out',
-                        backgroundColor: '#f4f4f4' // Fondo sólido detrás de las imágenes
-                    }}
-                />
-            ))}
-            
-            {/* NAVBAR */}
             <div style={{ backgroundColor: brandColor, borderBottom: `1.5px solid ${darkBorder}`, position: 'relative', zIndex: 10 }}>
                 <Navbar />
             </div>
             
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
-                {/* TARJETA DE BIENVENIDA */}
                 <Card className="mb-4" style={cardStyle}>
                     <Card.Body className="p-4 d-flex justify-content-between align-items-center">
                         <div>
@@ -177,7 +133,6 @@ const DriverHome = () => {
                 </Card>
 
                 <Row className="g-4">
-                    {/* TARJETA DE VEHÍCULO */}
                     <Col lg={7}>
                         <Card className="h-100" style={cardStyle}>
                             <Card.Body className="p-4">
@@ -236,7 +191,6 @@ const DriverHome = () => {
                         </Card>
                     </Col>
                     
-                    {/* TARJETA DE DOCUMENTACIÓN */}
                     <Col lg={5}>
                         <Card className="h-100" style={cardStyle}>
                             <Card.Body className="p-4 d-flex flex-column">
@@ -267,7 +221,6 @@ const DriverHome = () => {
                 </Row>
             </Container>
 
-            {/* MODAL DEL TUTORIAL INTERACTIVO */}
             <Modal show={showTutorial} onHide={saltarTutorial} centered size="lg" backdrop="static">
                 <Modal.Body className="p-5" style={{ border: `2px solid ${darkBorder}`, borderRadius: '15px' }}>
                     <div className="d-flex align-items-center justify-content-center mb-5">

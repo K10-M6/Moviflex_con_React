@@ -216,7 +216,7 @@ function Notificaciones() {
   return (
     <div className="position-relative" ref={dropdownRef}>
       <button 
-        className="btn btn-link position-relative p-2 text-white"
+        className="btn btn-link position-relative p-2 text-black"
         onClick={() => setMostrarDropdown(!mostrarDropdown)}
         style={{ 
           textDecoration: 'none',

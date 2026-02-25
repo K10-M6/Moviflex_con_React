@@ -85,10 +85,10 @@ export default function NavbarCustom() {
   const fotoAMostrar = fotoPerfil || usuario?.fotoPerfil || usuario?.foto;
 
   return (
-    <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top" style={{ backgroundColor: '#f3f3f3', borderBottom: '3px solid #adadad' }}>
+    <Navbar variant="dark" expand="lg" className="shadow-sm sticky-top py-1" style={{ backgroundColor: '#f3f3f3', borderBottom: '3px solid #adadad' }}>
       <Container>
         <Navbar.Brand as={Link} to={token ? homePath : "/"}>
-          <img src={Logo} height="50px" className="me-1" alt="Logo MoviFlexx" />
+          <img src={Logo} height="40px" className="me-1" alt="Logo MoviFlexx" />
         </Navbar.Brand>
         
         <Navbar.Toggle aria-controls="navbar-basico" />
@@ -97,16 +97,16 @@ export default function NavbarCustom() {
           <Nav className="ms-auto align-items-center">
             {!token ? (
               <>
-                <Nav.Link as={Link} to="/login" className="fw-bold text-black">
+                <Nav.Link as={Link} to="/login" className="fw-bold text-black py-0">
                   Iniciar Sesión
                 </Nav.Link>
-                <Nav.Link as={Link} to="/register" className="text-black fw-bold">
+                <Nav.Link as={Link} to="/register" className="text-black fw-bold py-0">
                   Registrarse
                 </Nav.Link>
               </>
             ) : (
               <>
-                <div className="me-3">
+                <div className="me-2">
                   <Notificaciones />
                 </div>
 
@@ -115,15 +115,15 @@ export default function NavbarCustom() {
                     variant="link" 
                     id="dropdown-user"
                     className="d-flex align-items-center text-decoration-none p-0 border-0"
-                    style={{ color: 'white' }}
+                    style={{ color: 'black' }}
                   >
-                    <span className="me-2 fw-bold d-none d-sm-inline">
+                    <span className="me-1 fw-bold d-none d-sm-inline small">
                       Hola, {getFirstName()}
                     </span>
                     
                     <div style={{ 
-                      width: '40px', 
-                      height: '40px', 
+                      width: '32px', 
+                      height: '32px', 
                       borderRadius: '50%', 
                       overflow: 'hidden', 
                       backgroundColor: '#f8f9fa',
@@ -146,28 +146,28 @@ export default function NavbarCustom() {
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.style.display = 'none';
-                            e.target.parentElement.innerHTML = '<svg class="MuiSvgIcon-root" focusable="false" aria-hidden="true" viewBox="0 0 24 24" style="width:36px;height:36px;color:#adb5bd"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>';
+                            e.target.parentElement.innerHTML = '<svg class="MuiSvgIcon-root" focusable="false" aria-hidden="true" viewBox="0 0 24 24" style="width:28px;height:28px;color:#adb5bd"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>';
                           }}
                         />
                       ) : (
-                        <FaUserCircle size={36} color="#adb5bd" />
+                        <FaUserCircle size={28} color="#adb5bd" />
                       )}
                     </div>
                   </Dropdown.Toggle>
 
-                  <Dropdown.Menu className="shadow border-0 mt-2">
-                    <div className="px-3 py-2 d-sm-none border-bottom">
+                  <Dropdown.Menu className="shadow border-0 mt-1">
+                    <div className="px-3 py-1 d-sm-none border-bottom">
                       <small className="text-muted">Conectado como:</small>
-                      <p className="mb-0 fw-bold">{usuario?.nombre}</p>
+                      <p className="mb-0 fw-bold small">{usuario?.nombre}</p>
                     </div>
-                    <Dropdown.Item as={Link} to={profilePath}>
+                    <Dropdown.Item as={Link} to={profilePath} className="py-1">
                       Editar Perfil
                     </Dropdown.Item>
-                    <Dropdown.Item as={Link} to="/profile/stats">Estadísticas</Dropdown.Item>
-                    <Dropdown.Item as={Link} to="/">Mis Viajes</Dropdown.Item>
+                    <Dropdown.Item as={Link} to="/profile/stats" className="py-1">Estadísticas</Dropdown.Item>
+                    <Dropdown.Item as={Link} to="/" className="py-1">Mis Viajes</Dropdown.Item>
                     
                     <Dropdown.Divider />
-                    <Dropdown.Item onClick={handleLogout} className="text-danger">
+                    <Dropdown.Item onClick={handleLogout} className="text-danger py-1">
                       Cerrar Sesión
                     </Dropdown.Item>
                   </Dropdown.Menu>
