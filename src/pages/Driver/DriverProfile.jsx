@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react";
-import img1 from "../Imagenes/DNNYPYGT65C3JHMUEEZKEUM7AY.jpg";
-import img2 from "../Imagenes/salir-a-carretera-gonhergo.jpg";
-import img3 from "../Imagenes/viaje-en-carro1.jpg";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap";
@@ -9,55 +6,6 @@ import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt } fr
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
-
-const BackgroundSlider = ({ images = [], interval = 2500, overlayColor = 'rgba(163,133,255,0.35)' }) => {
-  const [index, setIndex] = useState(0);
-  const [fade, setFade] = useState(true);
-
-  useEffect(() => {
-    if (!images || images.length === 0) return;
-    setFade(true);
-    const timeout = setTimeout(() => setFade(false), interval - 1000);
-    const t = setInterval(() => {
-      setFade(true);
-      setTimeout(() => {
-        setIndex(i => (i + 1) % images.length);
-        setFade(false);
-      }, 1000);
-    }, interval);
-    return () => {
-      clearInterval(t);
-      clearTimeout(timeout);
-    };
-  }, [images, interval]);
-
-  return (
-    <div aria-hidden="true">
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        {images.map((src, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundImage: `url(${src})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              opacity: i === index ? (fade ? 1 : 1) : 0,
-              transition: 'opacity 1s cubic-bezier(.4,0,.2,1)',
-              filter: 'grayscale(10%) contrast(95%) brightness(95%)',
-              zIndex: i === index ? 1 : 0,
-            }}
-          />
-        ))}
-        <div style={{ position: 'absolute', inset: 0, background: overlayColor, transition: 'background 300ms', pointerEvents: 'none' }} />
-      </div>
-    </div>
-  );
-};
 
 function DriverProfile() {
   const { usuario, token, setUsuario } = useAuth();
@@ -75,10 +23,11 @@ function DriverProfile() {
     total: 0
   });
   const [totalViajes, setTotalViajes] = useState(0);
-  const [licencia, setLicencia] = useState(null);
-  const [cargandoLicencia, setCargandoLicencia] = useState(false);
   
-  const backgroundImages = [img1, img2, img3];
+  // CORRECCIÓN: Estado para documentos usando array (como en DriverHome)
+  const [documentos, setDocumentos] = useState([]);
+  const [cargandoDocumentos, setCargandoDocumentos] = useState(false);
+  const [errorDocumentos, setErrorDocumentos] = useState("");
 
   useEffect(() => {
     const obtenerVehiculo = async () => {
@@ -126,7 +75,6 @@ function DriverProfile() {
           const data = await respuesta.json();
           console.log("⭐ Datos de calificación recibidos:", data);
           
-          // El backend ya devuelve el promedio calculado
           if (typeof data === 'number') {
             setDatosCalificacion({
               promedio: data,
@@ -181,34 +129,82 @@ function DriverProfile() {
     obtenerEstadisticasViajes();
   }, [token, usuario?.idUsuarios]);
 
-  useEffect(() => {
-    const obtenerLicencia = async () => {
-      if (!token || !usuario?.idUsuarios) return;
-      
-      try {
-        setCargandoLicencia(true);
-        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (respuesta.ok) {
-          const data = await respuesta.json();
-          setLicencia(data);
-        } else if (respuesta.status === 404) {
-          setLicencia(null);
+  // CORRECCIÓN: Función para obtener documentos (adaptada de DriverHome)
+  const obtenerDocumentos = async () => {
+    if (!token || !usuario?.idUsuarios) {
+      console.log("No hay token disponible para obtener documentos");
+      return;
+    }
+
+    try {
+      setCargandoDocumentos(true);
+      setErrorDocumentos("");
+
+      const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
         }
-      } catch (error) {
-        console.error("Error al obtener licencia:", error);
-      } finally {
-        setCargandoLicencia(false);
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error("No tienes permisos para ver documentos");
+        }
+        if (response.status === 404) {
+          console.log("No se encontraron documentos");
+          setDocumentos([]);
+          setCargandoDocumentos(false);
+          return;
+        }
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
-    };
-    
-    obtenerLicencia();
+
+      const data = await response.json();
+      console.log("📄 Documentos recibidos en DriverProfile:", data);
+
+      // MISMA LÓGICA FLEXIBLE QUE EN DRIVERHOME
+      let documentosArray = [];
+      
+      if (Array.isArray(data)) {
+        documentosArray = data; // Si es array directo
+      } else if (data && Array.isArray(data.documentos)) {
+        documentosArray = data.documentos; // Si viene con propiedad 'documentos'
+      } else if (data && typeof data === 'object') {
+        documentosArray = [data]; // Si es un objeto único, lo convertimos en array
+      }
+
+      setDocumentos(documentosArray);
+
+    } catch (error) {
+      console.error("Error al obtener documentos:", error);
+      setErrorDocumentos(error.message);
+      setDocumentos([]);
+    } finally {
+      setCargandoDocumentos(false);
+    }
+  };
+
+  useEffect(() => {
+    obtenerDocumentos();
   }, [token, usuario?.idUsuarios]);
+
+  // CORRECCIÓN: Función para obtener la licencia del array de documentos
+  const obtenerLicencia = () => {
+    if (!documentos || documentos.length === 0) return null;
+    
+    // Buscar el primer documento que sea licencia
+    const licencia = documentos.find(doc => 
+      doc.tipoDocumento?.toLowerCase().includes('licencia') || 
+      doc.tipoDocumento?.toLowerCase().includes('conducir') ||
+      !doc.tipoDocumento // Si no hay tipo, asumimos que es licencia
+    );
+    
+    return licencia || documentos[0]; // Si no encuentra por tipo, devuelve el primero
+  };
+
+  const licencia = obtenerLicencia();
 
   const formatearFecha = (fecha) => {
     if (!fecha) return 'Fecha no disponible';
@@ -329,7 +325,6 @@ function DriverProfile() {
         }}
       />
       
-      <BackgroundSlider images={backgroundImages} interval={2500} overlayColor={'rgba(163,133,255,0.35)'} />
       <div style={{ position: 'relative', zIndex: 2 }}>
         <div style={{ background: '#124c83', width: '100%', position: 'relative', zIndex: 10 }}>
           <Navbar />
@@ -436,8 +431,10 @@ function DriverProfile() {
                               <FaIdCard className="text-primary me-2" />
                               <span className="fw-bold small">LICENCIA DE CONDUCIR</span>
                             </div>
-                            {cargandoLicencia ? (
+                            {cargandoDocumentos ? (
                               <p className="mb-0 small text-muted">Cargando...</p>
+                            ) : errorDocumentos ? (
+                              <p className="mb-0 small text-danger">{errorDocumentos}</p>
                             ) : licencia ? (
                               <>
                                 <p className="mb-0 small">
@@ -451,11 +448,6 @@ function DriverProfile() {
                                     {licencia.estado || 'PENDIENTE'}
                                   </Badge>
                                 </p>
-                                {licencia.observaciones && (
-                                  <p className="mb-0 small text-muted mt-1">
-                                    Obs: {licencia.observaciones}
-                                  </p>
-                                )}
                               </>
                             ) : (
                               <p className="mb-0 small text-muted">No hay licencia registrada</p>

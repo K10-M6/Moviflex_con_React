@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Badge, ListGroup, Button, Spinner } from "react-bootstrap";
-import { FaBell, FaCheckCircle, FaExclamationCircle, FaClock, FaCar, FaMoneyBillWave, FaEnvelope, FaUser } from "react-icons/fa";
+import { FaBell, FaCheckCircle, FaExclamationCircle, FaClock, FaCar, FaMoneyBillWave, FaEnvelope } from "react-icons/fa";
 import { useAuth } from '../pages/context/AuthContext';
-import { useNavigate } from "react-router-dom";
 import toast from 'react-hot-toast';
 
 function Notificaciones() {
@@ -11,51 +10,22 @@ function Notificaciones() {
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
   const [cargando, setCargando] = useState(false);
   const { token, usuario } = useAuth();
-  const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (usuario?.idUsuarios && token) {
       obtenerNotificaciones();
-      obtenerContadorNoLeídas();
-
-      const intervalo = setInterval(obtenerNotificaciones, 30000);
-      return () => clearInterval(intervalo);
-      obtenerContadorNoLeídas();
     }
-  }, [usuario?.idUsuarios, token]);
 
-  const obtenerContadorNoLeídas = async () => {
-    if (!token || !usuario?.idUsuarios) return;
-    try {
-      const respuesta = await fetch(
-        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/usuario/${usuario.idUsuarios}/count`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (respuesta.ok) {
-        const data = await respuesta.json();
-        setNoLeidas(data.noLeidas || 0);
-      }
-    } catch (error) {
-      console.error("Error al obtener contador de notificaciones no leídas:", error);
-    }
-  };
-
-  useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setMostrarDropdown(false);
       }
     };
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [usuario?.idUsuarios, token]);
 
   const obtenerNotificaciones = async () => {
     if (!token || !usuario?.idUsuarios) return;
@@ -74,18 +44,25 @@ function Notificaciones() {
       
       if (respuesta.ok) {
         const data = await respuesta.json();
+        // Manejar diferentes formatos de respuesta
         const notificacionesData = data.notificaciones || data;
-        setNotificaciones(Array.isArray(notificacionesData) ? notificacionesData : []);
         
-        const noLeidasCount = (Array.isArray(notificacionesData) ? notificacionesData : [])
-          .filter(n => !n.leido).length;
-        setNoLeidas(noLeidasCount);
+        if (Array.isArray(notificacionesData)) {
+          setNotificaciones(notificacionesData);
+          
+          const noLeidasCount = notificacionesData.filter(n => !n.leido).length;
+          setNoLeidas(noLeidasCount);
+        } else {
+          setNotificaciones([]);
+          setNoLeidas(0);
+        }
       } else if (respuesta.status === 404) {
         setNotificaciones([]);
         setNoLeidas(0);
       }
     } catch (error) {
       console.error("Error al obtener notificaciones:", error);
+      toast.error("Error al cargar notificaciones");
     } finally {
       setCargando(false);
     }
@@ -109,12 +86,8 @@ function Notificaciones() {
           prev.map(n => n.idNotificacion === idNotificacion ? {...n, leido: true} : n)
         );
         setNoLeidas(prev => Math.max(0, prev - 1));
-        await obtenerContadorNoLeídas();
-
-        toast.success('Notificación marcada como leída', {
-          icon: '✓',
-          duration: 2000
-        });
+        
+        toast.success('Notificación marcada como leída', { duration: 2000 });
       }
     } catch (error) {
       console.error("Error al marcar notificación:", error);
@@ -137,7 +110,6 @@ function Notificaciones() {
       if (respuesta.ok) {
         setNotificaciones(prev => prev.map(n => ({...n, leido: true})));
         setNoLeidas(0);
-        await obtenerContadorNoLeídas();
         toast.success('Todas las notificaciones marcadas como leídas');
       }
     } catch (error) {
@@ -163,8 +135,13 @@ function Notificaciones() {
           }
         }
       );
+      
       if (respuesta.ok) {
         setNotificaciones(prev => prev.filter(n => n.idNotificacion !== idNotificacion));
+        const notificacionEliminada = notificaciones.find(n => n.idNotificacion === idNotificacion);
+        if (notificacionEliminada && !notificacionEliminada.leido) {
+          setNoLeidas(prev => Math.max(0, prev - 1));
+        }
         toast.success('Notificación eliminada');
       }
     } catch (error) {
@@ -216,7 +193,7 @@ function Notificaciones() {
   return (
     <div className="position-relative" ref={dropdownRef}>
       <button 
-        className="btn btn-link position-relative p-2 text-black"
+        className="btn btn-link position-relative p-2 text-white" // Cambiado a text-white para el header azul
         onClick={() => setMostrarDropdown(!mostrarDropdown)}
         style={{ 
           textDecoration: 'none',
@@ -224,7 +201,7 @@ function Notificaciones() {
         }}
         aria-label="Notificaciones"
       >
-        <FaBell size={20} color="black" />
+        <FaBell size={20} />
         {noLeidas > 0 && (
           <Badge 
             bg="danger" 
@@ -291,7 +268,7 @@ function Notificaciones() {
                     key={notif.idNotificacion}
                     action
                     onClick={() => marcarComoLeida(notif.idNotificacion)}
-                    className={`d-flex align-items-start gap-2 py-2 px-3 border-bottom ${
+                    className={`d-flex align-items-start gap-2 py-2 px-3 border-bottom position-relative ${
                       !notif.leido ? 'bg-light' : ''
                     }`}
                     style={{ 
@@ -341,12 +318,11 @@ function Notificaciones() {
                       size="sm"
                       onClick={(e) => eliminarNotificacion(notif.idNotificacion, e)}
                       className="position-absolute top-50 end-0 translate-middle-y text-danger p-2"
-                      style={{ fontSize: '0.8rem' }}
+                      style={{ fontSize: '0.8rem', zIndex: 10 }}
                       aria-label="Eliminar notificación"
                     >
-                      &times;
+                      ×
                     </Button>
-                    
                   </ListGroup.Item>
                 ))}
               </ListGroup>

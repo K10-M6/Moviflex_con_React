@@ -6,7 +6,6 @@ import Logo from '../pages/Imagenes/TODO_MOVI.png';
 import { useAuth } from '../pages/context/AuthContext';
 import Notificaciones from '../components/Notificaciones';
 
-// Recibimos la prop 'transparent'
 export default function NavbarCustom({ transparent }) {
   const { token, usuario, logout } = useAuth();
   const navigate = useNavigate();
@@ -54,7 +53,6 @@ export default function NavbarCustom({ transparent }) {
       expand="lg" 
       className="sticky-top py-2" 
       style={{ 
-        // AQUÍ ESTÁ EL "IF" PARA LA TRANSPARENCIA
         backgroundColor: transparent ? 'transparent' : '#f3f3f3', 
         borderBottom: transparent ? 'none' : '3px solid #adadad',
         transition: 'all 0.3s ease-in-out',
@@ -118,7 +116,6 @@ export default function NavbarCustom({ transparent }) {
 
                   <Dropdown.Menu className="shadow border-0 mt-2">
                     <Dropdown.Item as={Link} to={profilePath}>Editar Perfil</Dropdown.Item>
-                    <Dropdown.Item as={Link} to="/profile/stats">Estadísticas</Dropdown.Item>
                     <Dropdown.Divider />
                     <Dropdown.Item onClick={handleLogout} className="text-danger">
                       Cerrar Sesión

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner } from "react-bootstrap";
 import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
@@ -23,17 +23,8 @@ const DriverHome = () => {
         estaSemana: 0,
         esteMes: 0
     });
-
-    const [licencia, setLicencia] = useState({
-        tipoDocumento: '',
-        numeroDocumento: '',
-        fechaExpedicion: '',
-        imagenFrontalUrl: '',
-        estado: 'PENDIENTE',
-        fechaSubida: '',
-    });
-
-    const [cargarDocumentos, setCargarDocumentos] = useState(false);
+    const [documentos, setDocumentos] = useState([]);
+    const [cargandoDocumentos, setCargandoDocumentos] = useState(false);
     const [errorDocumentos, setErrorDocumentos] = useState("");
 
     const [viajesRecientes, setViajesRecientes] = useState([]);
@@ -54,7 +45,7 @@ const DriverHome = () => {
 
     useEffect(() => {
         const obtenerGanancias = async () => {
-            if (!token  || !usuario?.idUsuarios) {
+            if (!token || !usuario?.idUsuarios) {
                 console.log("No hay token disponible para obtener ganancias");
                 return;
             }
@@ -80,45 +71,66 @@ const DriverHome = () => {
             }
         };
         obtenerGanancias();
-        const instervaloGanancias = setInterval(obtenerGanancias, 60000);
-        return () => clearInterval(instervaloGanancias);
+        const intervaloGanancias = setInterval(obtenerGanancias, 60000);
+        return () => clearInterval(intervaloGanancias);
     }, [token, usuario?.idUsuarios]);
 
+    async function obtenerDocumentos() {
+        if (!token || !usuario?.idUsuarios) {
+            console.log("No hay token disponible para obtener documentos");
+            return;
+        }
+
+        try {
+            setCargandoDocumentos(true);
+            setErrorDocumentos("");
+
+            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 403) {
+                    throw new Error("No tienes permisos para ver documentos");
+                }
+                if (response.status === 404) {
+                    console.log("No se encontraron documentos");
+                    setDocumentos([]);
+                    setCargandoDocumentos(false);
+                    return;
+                }
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Documentos recibidos:", data);
+
+            let documentosArray = [];
+            
+            if (Array.isArray(data)) {
+                documentosArray = data;
+            } else if (data && Array.isArray(data.documentos)) {
+                documentosArray = data.documentos;
+            } else if (data && typeof data === 'object') {
+                documentosArray = [data];
+            }
+
+            setDocumentos(documentosArray);
+
+        } catch (error) {
+            console.error("Error al obtener documentos:", error);
+            setErrorDocumentos(error.message);
+            setDocumentos([]);
+        } finally {
+            setCargandoDocumentos(false);
+        }
+    }
+
     useEffect(() => {
-        const obtenerDocumentos = async () => {
-            if (!token || !usuario?.idUsuarios) {
-                console.log("No hay token disponible para obtener documentos");
-                return;
-            }
-            try {
-                setCargarDocumentos(true);
-                setErrorDocumentos("");
-                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                if (respuesta.ok) {
-                    const data = await respuesta.json();
-                    setLicencia({
-                        numeroDocumento: data.licencia?.numeroDocumento || '',
-                        fechaExpedicion: data.licencia?.fechaExpedicion || '',
-                        imagenFrontalUrl: data.licencia?.imagenFrontalUrl || '',
-                        estado: data.licencia?.estado || 'PENDIENTE',
-                        fechaSubida: data.licencia?.fechaSubida || '',
-                        observaciones: data.licencia?.observaciones || ''   
-                    });
-                } else if (respuesta.status === 404) {
-                    console.log("No se encontraron documentos para el usuario");
-                } 
-            } catch (error) {
-                console.error("Error de conexión al obtener documentos:", error);
-                setErrorDocumentos("Error al obtener documentos");
-            } finally {
-                setCargarDocumentos(false);
-            }
-        };
         obtenerDocumentos();
     }, [token, usuario?.idUsuarios]);
 
@@ -270,20 +282,29 @@ const DriverHome = () => {
 
     const getDocumentoBadge = (estado) => {
         switch (estado?.toUpperCase()) {
-            case 'VÁLIDO':
-            case 'VALIDO':
             case 'APROBADO':
-                return <Badge bg="success" className="rounded-pill">Válido</Badge>;
-            case 'VENCIDO':
+                return <Badge bg="success" className="rounded-pill">Aprobado</Badge>;
             case 'RECHAZADO':
-                return <Badge bg="danger" className="rounded-pill">Vencido</Badge>;
+                return <Badge bg="danger" className="rounded-pill">Rechazado</Badge>;
             case 'PENDIENTE':
-            case 'REVISION':
                 return <Badge bg="warning" className="rounded-pill">Pendiente</Badge>;
             default:
-                return <Badge bg="secondary" className="rounded-pill">No subido</Badge>;
+                return <Badge bg="secondary" className="rounded-pill">No disponible</Badge>;
         }
     };
+
+    const obtenerLicencia = () => {
+        if (!documentos || documentos.length === 0) return null;
+        const licencia = documentos.find(doc => 
+            doc.tipoDocumento?.toLowerCase().includes('licencia') || 
+            doc.tipoDocumento?.toLowerCase().includes('conducir') ||
+            !doc.tipoDocumento
+        );
+        
+        return licencia;
+    };
+
+    const licencia = obtenerLicencia();
 
     const manejarSiguiente = () => {
         if (currentStep < 3) setCurrentStep(currentStep + 1);
@@ -373,7 +394,7 @@ const DriverHome = () => {
                                 
                                 {cargandoVehiculo ? (
                                     <div className="text-center py-5">
-                                        <div className="spinner-border" style={{ color: brandColor }} />
+                                        <Spinner animation="border" style={{ color: brandColor }} />
                                     </div>
                                 ) : errorVehiculo ? (
                                     <div className="text-center py-4 border rounded-3" style={{ borderStyle: 'dashed !important' }}>
@@ -410,12 +431,11 @@ const DriverHome = () => {
                                         className="mt-2 p-0 text-decoration-none fw-bold small shadow-none"
                                         style={{ color: darkBorder }}
                                         onClick={() => navigate("/vehicle-registration")}
-                                    > Nuevo Vehículo
+                                    > 
+                                        Nuevo Vehículo
                                         <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
                                     </Button>
                                 )}
-
-
                             </Card.Body>
                         </Card>
                     </Col>
@@ -428,19 +448,18 @@ const DriverHome = () => {
                                     <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Licencia de Conducir</h5>
                                 </div>
                                 
-                                {cargarDocumentos ? (
+                                {cargandoDocumentos ? (
                                     <div className="text-center py-4">
-                                        <div className="spinner-border spinner-border-sm" style={{ color: brandColor }} />
+                                        <Spinner animation="border" size="sm" style={{ color: brandColor }} />
+                                        <p className="mt-2 text-muted">Cargando documentos...</p>
                                     </div>
                                 ) : errorDocumentos ? (
-                                    <p className="text-danger small">{errorDocumentos}</p>
-                                ) : (
+                                    <Alert variant="danger" className="py-2">
+                                        <small>{errorDocumentos}</small>
+                                    </Alert>
+                                ) : licencia ? (
                                     <div className="mb-auto">
                                         <ListGroup variant="flush">
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
-                                                <span className="text-muted">Tipo</span>
-                                                <span className="fw-medium">Licencia de Conducir</span>
-                                            </ListGroup.Item>
                                             <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
                                                 <span className="text-muted">Número</span>
                                                 <span className="fw-medium">{licencia.numeroDocumento || 'Sin número'}</span>
@@ -449,28 +468,38 @@ const DriverHome = () => {
                                                 <span className="text-muted">Expedición</span>
                                                 <span className="fw-medium">{formatearFechaDocumento(licencia.fechaExpedicion)}</span>
                                             </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                                <span className="text-muted">Subida</span>
+                                                <span className="fw-medium">{formatearFechaDocumento(licencia.fechaSubida)}</span>
+                                            </ListGroup.Item>
                                             <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent">
                                                 <span className="text-muted">Estado</span>
                                                 {getDocumentoBadge(licencia.estado)}
                                             </ListGroup.Item>
                                         </ListGroup>
-                                        
-                                        {licencia.observaciones && (
-                                            <div className="mt-3 p-2 bg-light rounded">
-                                                <small className="text-muted d-block">Observaciones:</small>
-                                                <small className="text-dark">{licencia.observaciones}</small>
-                                            </div>
-                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <p className="text-muted">No tienes una licencia registrada</p>
+                                        <Button 
+                                            className="mt-2 fw-bold py-2"
+                                            style={{ backgroundColor: brandColor, borderColor: darkBorder, color: 'white' }}
+                                            onClick={() => navigate("/documentacion")}
+                                        >
+                                            Subir licencia
+                                        </Button>
                                     </div>
                                 )}
                                 
-                                <Button 
-                                    className="w-100 mt-4 fw-bold py-2 shadow-sm" 
-                                    style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
-                                    onClick={() => navigate("/documentacion")}
-                                >
-                                    ACTUALIZAR LICENCIA
-                                </Button>
+                                {licencia && (
+                                    <Button 
+                                        className="w-100 mt-4 fw-bold py-2 shadow-sm" 
+                                        style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
+                                        onClick={() => navigate("/documentacion")}
+                                    >
+                                        ACTUALIZAR LICENCIA
+                                    </Button>
+                                )}
                             </Card.Body>
                         </Card>
                     </Col>
@@ -499,9 +528,7 @@ const DriverHome = () => {
                                 
                                 {cargandoViajes ? (
                                     <div className="text-center py-4">
-                                        <div className="spinner-border text-primary" role="status">
-                                            <span className="visually-hidden">Cargando...</span>
-                                        </div>
+                                        <Spinner animation="border" variant="primary" />
                                         <p className="mt-2 text-muted">Cargando viajes...</p>
                                     </div>
                                 ) : errorViajes ? (

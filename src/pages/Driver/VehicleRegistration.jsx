@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Form, Button, Alert, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge } from "react-bootstrap";
 import { FaCar, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaIdCard } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import Navbar from '../../components/Navbar';
@@ -9,13 +9,13 @@ import toast, { Toaster } from 'react-hot-toast';
 
 function VehicleRegistration() {
   const navigate = useNavigate();
-  const { token, usuario } = useAuth();
+  const { token } = useAuth();
 
+  // Campos exactamente como en el modelo
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
   const [capacidad, setCapacidad] = useState("");
-  const [color, setColor] = useState("");
 
   const [fotoBase64, setFotoBase64] = useState("");
   const [fotoPreview, setFotoPreview] = useState("");
@@ -32,6 +32,9 @@ function VehicleRegistration() {
   const [imagenValida, setImagenValida] = useState(null);
   const [mensajeImagen, setMensajeImagen] = useState("");
   const [verificandoImagen, setVerificandoImagen] = useState(false);
+  const [errorBackend, setErrorBackend] = useState("");
+
+  const [placaValidada, setPlacaValidada] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -74,9 +77,10 @@ function VehicleRegistration() {
     });
   };
 
-  const verificarImagen = async (base64Image) => {
+  const verificarImagenAntesDeEnviar = async (base64Image) => {
     setVerificandoImagen(true);
     setImagenValida(null);
+    setErrorBackend("");
 
     try {
       const img = document.createElement('img');
@@ -86,16 +90,16 @@ function VehicleRegistration() {
         img.onload = resolve;
       });
 
-      if (img.width < 400 || img.height < 300) {
+      if (img.width < 600 || img.height < 400) {
         setImagenValida(false);
         setMensajeImagen("La imagen es muy pequeña. Acerca la cámara al vehículo.");
-        toast.error('Imagen demasiado pequeña', { icon: '📸' });
+        toast.error('Imagen demasiado pequeña');
         return false;
       }
 
       setImagenValida(true);
       setMensajeImagen("La imagen tiene buena calidad");
-      toast.success('Imagen apta', { icon: '✅' });
+      toast.success('Imagen apta');
       return true;
 
     } catch (error) {
@@ -133,8 +137,6 @@ function VehicleRegistration() {
           videoRef.current.srcObject = mediaStream;
         }
       }, 100);
-
-      toast.success('Cámara activada correctamente');
     } catch (err) {
       console.error("Error al acceder a la cámara:", err);
       toast.error('No se pudo acceder a la cámara. Verifica los permisos.');
@@ -161,15 +163,17 @@ function VehicleRegistration() {
 
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const foto = canvas.toDataURL('image/jpeg', 0.95);
+      const fotoBase64 = canvas.toDataURL('image/jpeg', 0.95);
 
-      setFotoBase64(foto);
-      setFotoPreview(foto);
+      setFotoBase64(fotoBase64);
+      setFotoPreview(fotoBase64);
 
-      const comprimida = await comprimirImagen(foto, 250);
+      const comprimida = await comprimirImagen(fotoBase64, 250);
       setFotoComprimida(comprimida);
 
-      await verificarImagen(foto);
+      setErrorBackend("");
+      setPlacaValidada(false);
+      await verificarImagenAntesDeEnviar(fotoBase64);
 
       toast.success('¡Foto tomada correctamente!');
       detenerCamara();
@@ -185,8 +189,10 @@ function VehicleRegistration() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setErrorBackend("");
     setLoading(true);
 
+    // Validaciones
     if (!marca.trim()) {
       setError("La marca es requerida");
       toast.error("La marca es requerida");
@@ -223,8 +229,9 @@ function VehicleRegistration() {
     }
 
     if (!fotoComprimida) {
-      setError("Debes tomar una foto del vehículo");
-      toast.error("Debes tomar una foto del vehículo");
+      const errorMsg = "Debes tomar una foto del vehículo donde se vea la placa";
+      setError(errorMsg);
+      toast.error(errorMsg);
       setLoading(false);
       return;
     }
@@ -232,22 +239,19 @@ function VehicleRegistration() {
     const toastId = toast.loading('Registrando vehículo...');
 
     try {
+      // Datos exactamente como los espera el modelo
       const datosEnviar = {
         marca: marca.trim(),
         modelo: modelo.trim(),
         placa: placa.toUpperCase().trim(),
         capacidad: parseInt(capacidad),
-        color: color.trim() || null,
         fotoVehiculo: fotoComprimida
       };
 
       const headers = {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
 
       const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/", {
         method: "POST",
@@ -263,11 +267,16 @@ function VehicleRegistration() {
         setSuccess("✅ ¡Vehículo registrado exitosamente!");
         toast.success('Vehículo registrado correctamente');
 
+        // Si el backend devuelve que la placa fue validada
+        if (data.placaValidada) {
+          setPlacaValidada(true);
+        }
+
+        // Limpiar formulario
         setMarca("");
         setModelo("");
         setPlaca("");
         setCapacidad("");
-        setColor("");
         setFotoBase64("");
         setFotoPreview("");
         setFotoComprimida("");
@@ -279,8 +288,17 @@ function VehicleRegistration() {
         }, 3000);
       } else {
         let mensajeError = data.error || data.message || 'Error al registrar el vehículo';
-        setError(mensajeError);
-        toast.error(mensajeError);
+
+        if (mensajeError.toLowerCase().includes("placa") ||
+            mensajeError.toLowerCase().includes("ilegible") ||
+            mensajeError.toLowerCase().includes("calidad")) {
+          setImagenValida(false);
+          setErrorBackend(mensajeError);
+          toast.error('❌ ' + mensajeError);
+        } else {
+          setError(mensajeError);
+          toast.error(mensajeError);
+        }
       }
     } catch (error) {
       console.error("Error completo:", error);
@@ -305,7 +323,6 @@ function VehicleRegistration() {
     }}>
       <Toaster
         position="top-right"
-        reverseOrder={false}
         toastOptions={{
           duration: 4000,
           style: {
@@ -313,21 +330,14 @@ function VehicleRegistration() {
             color: '#fff',
             padding: '16px',
             borderRadius: '10px',
-            fontSize: '14px',
           },
           success: {
             duration: 3000,
-            iconTheme: {
-              primary: '#4acfbd',
-              secondary: '#fff',
-            },
+            iconTheme: { primary: '#4acfbd', secondary: '#fff' },
           },
           error: {
             duration: 4000,
-            iconTheme: {
-              primary: '#ff4b4b',
-              secondary: '#fff',
-            },
+            iconTheme: { primary: '#ff4b4b', secondary: '#fff' },
           },
         }}
       />
@@ -352,8 +362,21 @@ function VehicleRegistration() {
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
 
+                {errorBackend && (
+                  <Alert variant="danger" className="py-2 small">
+                    <FaExclamationTriangle className="me-2" />
+                    {errorBackend}
+                  </Alert>
+                )}
+
+                {placaValidada && (
+                  <Alert variant="success" className="py-2 small d-flex align-items-center">
+                    <FaCheckCircle className="me-2" />
+                    ¡Placa validada correctamente!
+                  </Alert>
+                )}
+
                 <Form onSubmit={guardarVehiculo}>
-                  {/* Campos del vehículo */}
                   <Row>
                     <Col md={6}>
                       <Form.Group className="mb-3">
@@ -362,7 +385,7 @@ function VehicleRegistration() {
                           type="text"
                           value={marca}
                           onChange={(e) => setMarca(e.target.value)}
-                          placeholder="Ej: Toyota, Renault, Chevrolet"
+                          placeholder="Ej: Toyota, Renault"
                           disabled={loading}
                         />
                       </Form.Group>
@@ -374,7 +397,7 @@ function VehicleRegistration() {
                           type="text"
                           value={modelo}
                           onChange={(e) => setModelo(e.target.value)}
-                          placeholder="Ej: Corolla, Logan, Spark"
+                          placeholder="Ej: Corolla, Logan"
                           disabled={loading}
                         />
                       </Form.Group>
@@ -397,13 +420,13 @@ function VehicleRegistration() {
                           disabled={loading}
                         />
                         <Form.Text className="text-muted">
-                          3 letras seguidas de 3 números (ej: ABC123)
+                          3 letras + 3 números (ej: ABC123)
                         </Form.Text>
                       </Form.Group>
                     </Col>
                     <Col md={6}>
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Capacidad (pasajeros) <span className="text-danger">*</span></Form.Label>
+                        <Form.Label className="fw-bold">Capacidad <span className="text-danger">*</span></Form.Label>
                         <Form.Control
                           type="number"
                           value={capacidad}
@@ -412,54 +435,41 @@ function VehicleRegistration() {
                           min="1"
                           disabled={loading}
                         />
+                        <Form.Text className="text-muted">Número de pasajeros</Form.Text>
                       </Form.Group>
                     </Col>
                   </Row>
 
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-bold">Color</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={color}
-                      onChange={(e) => setColor(e.target.value)}
-                      placeholder="Ej: Rojo, Azul, Blanco"
-                      disabled={loading}
-                    />
-                  </Form.Group>
-
-                  {/* Sección de foto del vehículo */}
+                  {/* Foto del vehículo (debe mostrar la placa) */}
                   <Form.Group className="mb-4">
                     <Form.Label className="d-flex align-items-center fw-bold">
                       <FaFileImage className="me-2" />
-                      Fotografía del Vehículo <span className="text-danger">*</span>
+                      Foto del Vehículo <span className="text-danger">*</span>
                       {fotoBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
                       {fotoBase64 && imagenValida === true && (
-                        <span className="badge bg-success ms-2">Válida</span>
+                        <Badge bg="success" className="ms-2">Válida</Badge>
                       )}
                       {fotoBase64 && imagenValida === false && (
-                        <span className="badge bg-warning ms-2">Revisar</span>
+                        <Badge bg="warning" className="ms-2">Revisar</Badge>
                       )}
                     </Form.Label>
                     <Form.Text className="text-muted d-block mb-2">
-                      Toma una foto clara del vehículo donde se vea la placa
+                      La foto debe mostrar el vehículo completo con la placa visible
                     </Form.Text>
 
-                    <div className="d-grid gap-2 mb-2">
-                      <Button
-                        variant="outline-success"
-                        onClick={iniciarCamara}
-                        className="w-100 py-3"
-                        disabled={cameraActive || verificandoImagen || loading}
-                        size="lg"
-                      >
-                        <FaVideo className="me-2" />
-                        {fotoBase64 ? '📸 Tomar otra foto' : '📸 Tomar foto del vehículo'}
-                      </Button>
-                    </div>
+                    <Button
+                      variant="outline-success"
+                      onClick={iniciarCamara}
+                      className="w-100 py-3 mb-3"
+                      disabled={cameraActive || verificandoImagen || loading}
+                      size="lg"
+                    >
+                      <FaVideo className="me-2" />
+                      {fotoBase64 ? 'Tomar otra foto' : 'Tomar foto del vehículo'}
+                    </Button>
 
                     {fotoPreview && (
                       <div className="text-center mt-3">
-                        <p className="mb-2"><strong>Vista previa:</strong></p>
                         <div style={{
                           maxHeight: '200px',
                           border: `2px solid ${imagenValida === true ? '#4acfbd' : imagenValida === false ? '#ffc107' : '#ddd'}`,
@@ -479,39 +489,36 @@ function VehicleRegistration() {
 
                   {verificandoImagen && (
                     <Alert variant="info" className="py-2 small d-flex align-items-center">
-                      <div className="spinner-border spinner-border-sm me-2" role="status">
-                        <span className="visually-hidden">Verificando...</span>
-                      </div>
+                      <div className="spinner-border spinner-border-sm me-2" />
                       Verificando calidad de imagen...
                     </Alert>
                   )}
 
                   {!verificandoImagen && imagenValida === true && (
                     <Alert variant="success" className="py-2 small d-flex align-items-center">
-                      <FaSmile className="me-2" size={18} />
+                      <FaSmile className="me-2" />
                       {mensajeImagen}
                     </Alert>
                   )}
 
                   {!verificandoImagen && imagenValida === false && (
                     <Alert variant="warning" className="py-2 small d-flex align-items-center">
-                      <FaFrown className="me-2" size={18} />
+                      <FaFrown className="me-2" />
                       {mensajeImagen}
                     </Alert>
                   )}
 
                   {/* Recomendaciones */}
-                  <div className="mt-3 p-2 bg-light rounded-3 small text-start">
+                  <div className="mt-3 p-2 bg-light rounded-3 small">
                     <div className="fw-bold mb-1">
                       <FaExclamationTriangle className="me-1 text-warning" />
-                      Recomendaciones para la foto
+                      Recomendaciones
                     </div>
-                    <ul className="mb-0 ps-3" style={{ fontSize: '0.8rem' }}>
-                      <li>Buena iluminación, sin sombras</li>
+                    <ul className="mb-0 ps-3">
                       <li>La placa debe ser claramente visible</li>
+                      <li>Buena iluminación, sin reflejos</li>
                       <li>El vehículo debe ocupar la mayor parte de la foto</li>
-                      <li>Evita reflejos y fotos borrosas</li>
-                      <li>Toma la foto de frente o en ángulo que muestre la placa</li>
+                      <li>Evita fotos borrosas o movidas</li>
                     </ul>
                   </div>
 
@@ -527,7 +534,7 @@ function VehicleRegistration() {
                       }}
                       disabled={loading || !fotoComprimida || verificandoImagen}
                     >
-                      {loading ? 'Registrando vehículo...' : '🚗 Registrar vehículo'}
+                      {loading ? 'Registrando...' : 'Registrar vehículo'}
                     </Button>
 
                     <Button variant="outline-secondary" onClick={() => navigate("/driver-profile")} className="px-4">
@@ -535,27 +542,24 @@ function VehicleRegistration() {
                     </Button>
                   </div>
                 </Form>
-
               </Card.Body>
             </Card>
           </Col>
         </Row>
       </Container>
 
-      {/* Modal de cámara */}
+      {/* Modal de cámara - sin recuadros que estorben */}
       <Modal show={showCamera} onHide={detenerCamara} size="lg" centered>
         <Modal.Header closeButton>
-          <Modal.Title>
-            Tomar Foto del Vehículo
-          </Modal.Title>
+          <Modal.Title>Tomar Foto del Vehículo</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center p-0">
-          <div style={{ position: 'relative', backgroundColor: '#000', minHeight: '450px' }}>
+          <div style={{ backgroundColor: '#000', minHeight: '450px' }}>
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              style={{ width: '100%', height: 'auto', maxHeight: '500px', objectFit: 'cover' }}
+              style={{ width: '100%', height: 'auto', maxHeight: '500px' }}
             />
             <canvas ref={canvasRef} style={{ display: 'none' }} />
 
@@ -575,20 +579,6 @@ function VehicleRegistration() {
                 <p>Iniciando cámara...</p>
               </div>
             )}
-
-            <div style={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              backgroundColor: 'rgba(0,0,0,0.7)',
-              color: 'white',
-              padding: '5px 15px',
-              borderRadius: '20px',
-              fontSize: '0.9rem'
-            }}>
-              <FaCamera className="me-2" />Asegúrate que se vea la placa
-            </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
