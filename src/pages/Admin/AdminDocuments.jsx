@@ -11,12 +11,12 @@ function AdminDocumentos() {
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState("");
     const [selectedDocumento, setSelectedDocumento] = useState(null);
-    
+
     useEffect(() => {
         traerUsuarios();
         traerDocumentos();
     }, []);
-    
+
     async function traerUsuarios() {
         try {
             const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
@@ -26,52 +26,52 @@ function AdminDocumentos() {
                     "Authorization": "Bearer " + token
                 }
             });
-            
+
             if (!response.ok) {
                 throw new Error(`Error ${response.status} al obtener usuarios`);
             }
-            
+
             const data = await response.json();
-            
+
             if (!Array.isArray(data)) {
                 throw new Error("La respuesta del servidor no es válida");
             }
-            
+
             setUsuarios(data);
         } catch (error) {
             console.error("Error al traer usuarios:", error);
             setError("Error al cargar la información de usuarios");
         }
     }
-    
+
     async function traerDocumentos() {
         try {
             setLoading(true);
             setError("");
-            
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/", {
+
+            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/todos", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token
                 }
             });
-            
+
             if (!response.ok) {
                 if (response.status === 403) {
                     throw new Error("Acceso denegado. No tienes permisos de administrador.");
                 }
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (!Array.isArray(data)) {
                 throw new Error("La respuesta del servidor no es válida");
             }
-            
+
             setDocumentos(data);
-            
+
         } catch (error) {
             console.error("Error al traer documentos:", error);
             setError(error.message);
@@ -84,7 +84,7 @@ function AdminDocumentos() {
     async function cambiarEstadoDocumento(id, estadoActual) {
         try {
             let nuevoEstado;
-            
+
             switch (estadoActual) {
                 case 'APROBADO':
                     nuevoEstado = 'RECHAZADO';
@@ -98,35 +98,36 @@ function AdminDocumentos() {
                 default:
                     nuevoEstado = 'PENDIENTE';
             }
-            
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/${id}/estado`, {
+
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_validate/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token
                 },
                 body: JSON.stringify({
-                    estado: nuevoEstado
+                    estado: nuevoEstado,
+                    observaciones: `Cambio de estado realizado por administrador`
                 })
             });
 
             if (!response.ok) {
                 throw new Error(`Error al cambiar estado: ${response.status}`);
             }
-            
+
             await traerDocumentos();
-            
+
         } catch (error) {
             console.error("Error al cambiar estado:", error);
             setError("Error al cambiar estado del documento");
         }
     }
-    
+
     function obtenerNombreUsuario(idUsuario) {
         if (!idUsuario) return "Sin usuario";
-        
+
         const usuario = usuarios.find(u => u.idUsuarios === idUsuario);
-        
+
         if (usuario) {
             return usuario.nombre;
         } else if (usuarios.length > 0) {
@@ -135,7 +136,7 @@ function AdminDocumentos() {
             return `Usuario #${idUsuario}`;
         }
     }
-    
+
     function getEstadoBadge(estado) {
         switch (estado) {
             case 'APROBADO':
@@ -201,9 +202,9 @@ function AdminDocumentos() {
 
     function getTipoDocumentoBadge(tipo) {
         if (!tipo) return null;
-        
+
         const tipoLower = tipo.toLowerCase();
-        
+
         if (tipoLower.includes('cedula') || tipoLower.includes('identidad')) {
             return <Badge bg="info" className="px-2">Cédula</Badge>;
         } else if (tipoLower.includes('licencia') || tipoLower.includes('conducir')) {
@@ -247,7 +248,7 @@ function AdminDocumentos() {
                     <Col>
                         <h1 className="display-5 fw-bold">Gestión de Documentos</h1>
                         <p className="text-muted">Revisa y administra los documentos subidos por los usuarios</p>
-                        
+
                         <div className="d-flex gap-3 mb-3 flex-wrap">
                             <Badge bg="primary" className="px-3 py-2">
                                 Total: {documentos.length}
@@ -264,7 +265,7 @@ function AdminDocumentos() {
                         </div>
                     </Col>
                 </Row>
-                
+
                 {error && (
                     <Row className="mb-3">
                         <Col>
@@ -274,7 +275,7 @@ function AdminDocumentos() {
                         </Col>
                     </Row>
                 )}
-                
+
                 <Row>
                     <Col>
                         <Card className="shadow-sm">
@@ -331,8 +332,8 @@ function AdminDocumentos() {
                                                                 <strong>N°:</strong> {documento.numeroDocumento || documento.numero || "-"}
                                                             </div>
                                                             <div className="d-flex align-items-center gap-2 mt-1">
-                                                                <Button 
-                                                                    variant="outline-primary" 
+                                                                <Button
+                                                                    variant="outline-primary"
                                                                     size="sm"
                                                                     onClick={() => handleVerImagen(documento)}
                                                                 >
@@ -379,7 +380,7 @@ function AdminDocumentos() {
                     <Modal.Title>
                         {selectedDocumento && (
                             <>
-                                Documento: {selectedDocumento.tipo || selectedDocumento.tipoDocumento} - 
+                                Documento: {selectedDocumento.tipo || selectedDocumento.tipoDocumento} -
                                 Usuario: {obtenerNombreUsuario(selectedDocumento.idUsuario)}
                             </>
                         )}
@@ -387,8 +388,8 @@ function AdminDocumentos() {
                 </Modal.Header>
                 <Modal.Body className="text-center">
                     {selectedImage ? (
-                        <Image 
-                            src={getImageUrl(selectedDocumento)} 
+                        <Image
+                            src={getImageUrl(selectedDocumento)}
                             alt="Documento"
                             fluid
                             style={{ maxHeight: '70vh' }}
