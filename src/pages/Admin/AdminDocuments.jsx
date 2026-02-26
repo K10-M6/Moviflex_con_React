@@ -222,7 +222,7 @@ function AdminDocumentos() {
 
     const handleVerImagen = (documento) => {
         setSelectedDocumento(documento);
-        setSelectedImage(documento.urlImagen || documento.rutaArchivo);
+        setSelectedImage(documento.imagenFrontalUrl || documento.urlImagen || documento.rutaArchivo);
         setShowImageModal(true);
     };
 
@@ -233,7 +233,7 @@ function AdminDocumentos() {
     };
 
     const getImageUrl = (documento) => {
-        return documento.urlImagen || documento.rutaArchivo || "https://via.placeholder.com/400x300?text=Sin+Imagen";
+        return documento.imagenFrontalUrl || documento.urlImagen || documento.rutaArchivo || "https://via.placeholder.com/400x300?text=Sin+Imagen";
     };
 
     return (
