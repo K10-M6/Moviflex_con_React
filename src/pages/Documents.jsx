@@ -223,6 +223,11 @@ function Documents() {
         if (data.datosLicencia) {
           setDatosExtraidos(data.datosLicencia);
         }
+
+        // Redirigir después de 2 segundos
+        setTimeout(() => {
+          navigate("/driver-profile");
+        }, 2000);
       } else {
         let mensajeError = data.error || data.message || 'Error al enviar la documentación';
 
@@ -250,11 +255,15 @@ function Documents() {
 
   const formatearFecha = (fecha) => {
     if (!fecha) return 'No disponible';
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    try {
+      return new Date(fecha).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return 'No disponible';
+    }
   };
 
   return (
@@ -407,22 +416,30 @@ function Documents() {
                       <Card.Body>
                         <Table bordered size="sm">
                           <tbody>
-                            <tr>
-                              <td><strong><FaUser className="me-2" />Nombre:</strong></td>
-                              <td>{datosExtraidos.nombre}</td>
-                            </tr>
-                            <tr>
-                              <td><strong>Identificación:</strong></td>
-                              <td>{datosExtraidos.identificacion}</td>
-                            </tr>
-                            <tr>
-                              <td><strong><FaCalendarAlt className="me-2" />Fecha Expedición:</strong></td>
-                              <td>{formatearFecha(datosExtraidos.fechaExpedicion)}</td>
-                            </tr>
-                            <tr>
-                              <td><strong>Categoría:</strong></td>
-                              <td><Badge bg="info">{datosExtraidos.categoria}</Badge></td>
-                            </tr>
+                            {datosExtraidos.nombre && (
+                              <tr>
+                                <td><strong><FaUser className="me-2" />Nombre:</strong></td>
+                                <td>{datosExtraidos.nombre}</td>
+                              </tr>
+                            )}
+                            {datosExtraidos.identificacion && (
+                              <tr>
+                                <td><strong>Identificación:</strong></td>
+                                <td>{datosExtraidos.identificacion}</td>
+                              </tr>
+                            )}
+                            {datosExtraidos.fechaExpedicion && (
+                              <tr>
+                                <td><strong><FaCalendarAlt className="me-2" />Fecha Expedición:</strong></td>
+                                <td>{formatearFecha(datosExtraidos.fechaExpedicion)}</td>
+                              </tr>
+                            )}
+                            {datosExtraidos.categoria && (
+                              <tr>
+                                <td><strong>Categoría:</strong></td>
+                                <td><Badge bg="info">{datosExtraidos.categoria}</Badge></td>
+                              </tr>
+                            )}
                           </tbody>
                         </Table>
                       </Card.Body>
