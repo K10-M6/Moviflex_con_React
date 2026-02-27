@@ -264,12 +264,13 @@ function VehicleRegistration() {
       toast.dismiss(toastId);
 
       if (respuesta.ok) {
-        setSuccess("✅ ¡Vehículo registrado exitosamente!");
-        toast.success('Vehículo registrado correctamente');
-
-        // Si el backend devuelve que la placa fue validada
         if (data.placaValidada) {
+          setSuccess("✅ ¡Vehículo registrado y placa validada automáticamente!");
+          toast.success('¡Vehículo y placa validados!', { duration: 5000 });
           setPlacaValidada(true);
+        } else {
+          setSuccess("✅ Vehículo registrado. La placa está pendiente de validación manual por un administrador.");
+          toast.success('Vehículo registrado. Placa en revisión.', { duration: 6000 });
         }
 
         // Limpiar formulario
@@ -290,8 +291,8 @@ function VehicleRegistration() {
         let mensajeError = data.error || data.message || 'Error al registrar el vehículo';
 
         if (mensajeError.toLowerCase().includes("placa") ||
-            mensajeError.toLowerCase().includes("ilegible") ||
-            mensajeError.toLowerCase().includes("calidad")) {
+          mensajeError.toLowerCase().includes("ilegible") ||
+          mensajeError.toLowerCase().includes("calidad")) {
           setImagenValida(false);
           setErrorBackend(mensajeError);
           toast.error('❌ ' + mensajeError);
