@@ -452,6 +452,7 @@ function VehicleRegistration() {
                           maxLength="6"
                           style={{ textTransform: 'uppercase' }}
                           disabled={loading}
+                          readOnly
                         />
                         <Form.Text className="text-muted">
                           3 letras + 3 números (ej: ABC123)
