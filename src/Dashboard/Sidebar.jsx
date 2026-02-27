@@ -6,6 +6,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../pages/context/AuthContext";
 import Logo from "../pages/Imagenes/TODO_MOVI.png";
 import QRModal from "../components/QRModal";
+// IMPORTACIÓN DEL FONDO (Para coherencia visual si fuera necesario)
+import fondo from "../pages/Imagenes/AutoresContacto.png";
 
 function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const navigate = useNavigate();
@@ -13,7 +15,6 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const { usuario, token, logout } = useAuth();
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
-  
   
   const handleNavigation = (path) => {
     navigate(path);
@@ -27,14 +28,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
         alert("No hay Token disponible. Inicia sesión nuevamente.");
         return;
     }
-    
-
     const qrData = `${token}|${usuario?.nombre || ''}`;
-    console.log("🔍 Generando QR con formato token|nombre");
-    console.log("🔍 Longitud total:", qrData.length, "caracteres");
-    console.log("🔍 Token:", token.substring(0, 30) + "...");
-    console.log("🔍 Nombre incluido:", usuario?.nombre || 'sin nombre');
-    
     setQrValue(qrData);
     setShowQRModal(true);
   };
@@ -52,178 +46,101 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
 
   return (
     <>
+      {/* Botón flotante para abrir Sidebar en móvil */}
       {!openSidebarToggle && (
         <button 
-          className="btn btn-primary position-fixed start-0 rounded-circle shadow-lg"
+          className="btn position-fixed start-0 rounded-circle shadow-sm"
           onClick={OpenSidebar}
           style={{ 
-            zIndex: 999,
-            width: '40px',
-            height: '40px',
-            top: '60px',
-            left: '20px',
-            marginLeft: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(20deg, #4acfbd, #59c2ffff)',
-            border: 'none'
+            zIndex: 999, width: '45px', height: '45px', top: '20px', left: '20px',
+            backgroundColor: '#54c7b8', border: 'none', display: 'flex',
+            alignItems: 'center', justifyContent: 'center'
           }}
         >
           <BsChevronRight className="text-white" />
         </button>
       )}
+
       {openSidebarToggle && (
         <div 
-          className="d-md-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
+          className="d-md-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-25"
           onClick={OpenSidebar}
-          style={{ zIndex: 999 }}
+          style={{ zIndex: 999, backdropFilter: 'blur(2px)' }}
         />
       )}
 
       <aside 
-        className={`position-fixed top-0 start-0 vh-100 overflow-y-auto shadow-lg
-          ${openSidebarToggle ? 'd-block' : ''} 
-          col-md-3 col-lg-2 p-0`}
+        className={`position-fixed top-0 start-0 vh-100 overflow-y-auto shadow-sm
+          ${openSidebarToggle ? 'd-block' : ''} col-md-3 col-lg-2 p-0`}
         style={{ 
           zIndex: 1000,
-          backgroundColor: '#124c83',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)', // Fondo blanco minimalista
           width: '280px',
           transition: 'transform 0.3s ease-in-out',
-          transform: openSidebarToggle ? 'translateX(0)' : 'translateX(-100%)'
+          transform: openSidebarToggle ? 'translateX(0)' : 'translateX(-100%)',
+          borderRight: '1px solid #eee'
         }}
       >
-        <div className="sidebar-header d-flex justify-content-between align-items-center p-4 border-bottom border-white border-opacity-25">
-          <div className="d-flex align-items-center">
-            <div className="text-center">
-              <img src={Logo} alt="Logo Moviflexx" 
-                style={{
-                  width: '160px',
-                  height: 'auto'
-                }}
-              />
-            </div>
-          </div>
-          <button 
-            className="btn btn-link text-white"
-            onClick={OpenSidebar}
-            style={{
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <BsChevronLeft className="fs-4" />
+        <div className="sidebar-header d-flex justify-content-between align-items-center p-4 border-bottom">
+          <img src={Logo} alt="Logo Moviflex" style={{ width: '140px', height: 'auto' }} />
+          <button className="btn btn-link text-muted p-0" onClick={OpenSidebar}>
+            <BsChevronLeft size={20} />
           </button>
         </div>
         
-        <div className="px-3 mt-3">
+        {/* BOTÓN REDONDO (PILL) - REGLA: Color sólido #54c7b8 */}
+        <div className="px-3 mt-4">
           <button
             onClick={generarQr}
-            className="btn w-100 d-flex align-items-center justify-content-start p-3 rounded border-0"
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 8px rgba(0, 0, 0, 0.2)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
-            }}
+            className="btn w-100 d-flex align-items-center justify-content-start p-3 rounded-pill border-0 shadow-sm"
+            style={{ backgroundColor: '#54c7b8', color: 'white' }}
           >
-            <span 
-              className="me-3 d-flex align-items-center justify-content-center rounded-circle"
-              style={{
-                width: '36px',
-                height: '36px',
-                background: 'rgba(255, 255, 255, 0.2)'
-              }}
-            >
-              <BsQrCode className="text-white" size={20} />
+            <span className="me-3 d-flex align-items-center justify-content-center rounded-circle bg-white bg-opacity-25" style={{ width: '32px', height: '32px' }}>
+              <BsQrCode size={18} />
             </span>
-            <span className="fw-medium">Generar QR de acceso</span>
+            <span className="fw-bold small">GENERAR QR</span>
           </button>
         </div>
 
-        <ul className="nav flex-column p-3">
+        <ul className="nav flex-column p-3 mt-2">
           {menuItems.map((item, index) => (
-            <li className="nav-item mb-2" key={index}>
+            <li className="nav-item mb-1" key={index}>
               <button
-                className={`nav-link d-flex align-items-center p-3 rounded border-0 w-100 text-start
-                  ${isActive(item.path) ? 'active' : ''}`}
+                className="nav-link d-flex align-items-center p-3 rounded-3 border-0 w-100 text-start"
                 onClick={() => handleNavigation(item.path)}
                 style={{
-                  background: isActive(item.path) 
-                    ? 'linear-gradient(20deg, #4acfbd, #59c2ffff)' 
-                    : 'transparent',
-                  color: isActive(item.path) ? 'white' : 'white', 
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  if (!isActive(item.path)) {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isActive(item.path)) {
-                    e.currentTarget.style.background = 'transparent';
-                  }
+                  background: isActive(item.path) ? 'rgba(84, 199, 184, 0.1)' : 'transparent',
+                  color: isActive(item.path) ? '#54c7b8' : '#666',
+                  transition: 'all 0.2s ease',
+                  borderLeft: isActive(item.path) ? '4px solid #54c7b8' : '4px solid transparent'
                 }}
               >
-                <span 
-                  className="me-3 d-flex align-items-center justify-content-center rounded-circle"
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    background: isActive(item.path) 
-                      ? 'rgba(255, 255, 255, 0.2)' 
-                      : 'rgba(255, 255, 255, 0.1)'
-                  }}
-                >
-                  {React.cloneElement(item.icon, { 
-                    className: isActive(item.path) ? 'text-white' : 'text-white'
-                  })}
+                <span className="me-3" style={{ fontSize: '1.2rem' }}>
+                  {item.icon}
                 </span>
-                <span className="fw-medium text-white">{item.label}</span>
+                <span className={`fw-medium ${isActive(item.path) ? 'fw-bold' : ''}`}>{item.label}</span>
               </button>
             </li>
           ))}
         </ul>
 
-          <div className="p-3 border-top border-white border-opacity-25">
-            <button
-              onClick={() => {
-                logout();
-                navigate('/login');
-              }}
-              className="btn w-100 d-flex align-items-center justify-content-center p-3 rounded border-0"
-              style={{
-                background: 'rgba(220, 53, 69, 0.9)',
-                color: 'white',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background = '#dc3545';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background = 'rgba(220, 53, 69, 0.9)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <i className="bi bi-box-arrow-right me-2"></i>
-              Cerrar sesión
-            </button>
-          </div>
-
+        {/* BOTÓN CUADRADO (RECTANGULAR) - REGLA: Blanco con borde de color */}
+        <div className="p-3 mt-auto border-top">
+          <button
+            onClick={() => { logout(); navigate('/login'); }}
+            className="btn w-100 d-flex align-items-center justify-content-center p-3 fw-bold"
+            style={{
+              backgroundColor: 'white',
+              color: '#dc3545',
+              border: '2px solid #dc3545', // Estilo outline minimalista
+              borderRadius: '8px',
+              fontSize: '0.9rem'
+            }}
+          >
+            <i className="bi bi-box-arrow-right me-2"></i>
+            CERRAR SESIÓN
+          </button>
+        </div>
       </aside>
 
       <QRModal
@@ -231,7 +148,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
         onHide={() => setShowQRModal(false)}
         qrValue={qrValue}
         usuario={usuario}
-        titulo="Tu QR de Acceso Rápido"
+        titulo="Tu QR de Acceso"
         mensajeExpiracion="Válido por 3 horas"
       />
     </>
