@@ -120,6 +120,31 @@ function AdminVehiculos() {
         }
     }
 
+    async function validarPlaca(id, actual) {
+        try {
+            setValidatingPlate(true);
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${id}/validar-placa`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    validada: !actual
+                })
+            });
+
+            if (!response.ok) throw new Error("Error al validar placa");
+
+            await traerVehiculos();
+        } catch (error) {
+            console.error("Error al validar placa:", error);
+            setError("Error al actualizar validación de placa");
+        } finally {
+            setValidatingPlate(false);
+        }
+    }
+
     function obtenerNombreUsuario(idUsuario) {
         if (!idUsuario) return "Sin propietario";
 
