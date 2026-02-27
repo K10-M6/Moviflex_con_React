@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../pages/context/AuthContext";
 import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import Logo from "../pages/Imagenes/TODO_MOVI.png";
+import Logo from "../pages/Imagenes/.png";
 import Notificaciones from "../components/Notificaciones";
 
 function Header() {
