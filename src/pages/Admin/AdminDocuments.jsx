@@ -85,18 +85,11 @@ function AdminDocumentos() {
         try {
             let nuevoEstado;
 
-            switch (estadoActual) {
-                case 'APROBADO':
-                    nuevoEstado = 'RECHAZADO';
-                    break;
-                case 'RECHAZADO':
-                    nuevoEstado = 'PENDIENTE';
-                    break;
-                case 'PENDIENTE':
-                    nuevoEstado = 'APROBADO';
-                    break;
-                default:
-                    nuevoEstado = 'PENDIENTE';
+            // El backend solo acepta APROBADO o RECHAZADO
+            if (estadoActual === 'APROBADO') {
+                nuevoEstado = 'RECHAZADO';
+            } else {
+                nuevoEstado = 'APROBADO';
             }
 
             const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_validate/${id}`, {
@@ -168,7 +161,7 @@ function AdminDocumentos() {
             case 'APROBADO':
                 return "Rechazar";
             case 'RECHAZADO':
-                return "Pendiente";
+                return "Aprobar";
             case 'PENDIENTE':
                 return "Aprobar";
             default:
@@ -309,22 +302,22 @@ function AdminDocumentos() {
                                                 </tr>
                                             ) : (
                                                 documentos.map((documento) => (
-                                                    <tr key={documento.idDocumento || documento.id}>
-                                                        <td className="fw-semibold">{documento.idDocumento || documento.id}</td>
+                                                    <tr key={documento.idDocumentacion}>
+                                                        <td className="fw-semibold">{documento.idDocumentacion}</td>
                                                         <td>
                                                             <div className="fw-medium">
                                                                 {obtenerNombreUsuario(documento.idUsuario)}
                                                             </div>
                                                             <small className="text-muted">
-                                                                ID: {documento.idUsuario}
+                                                                ID Usuario: {documento.idUsuario}
                                                             </small>
                                                         </td>
                                                         <td>
                                                             <div className="fw-medium">
-                                                                {documento.tipo || documento.tipoDocumento}
+                                                                {documento.tipoDocumento || documento.tipo}
                                                             </div>
                                                             <div className="mt-1">
-                                                                {getTipoDocumentoBadge(documento.tipo || documento.tipoDocumento)}
+                                                                {getTipoDocumentoBadge(documento.tipoDocumento || documento.tipo)}
                                                             </div>
                                                         </td>
                                                         <td>
@@ -355,7 +348,7 @@ function AdminDocumentos() {
                                                                 <Button
                                                                     variant={getBotonVariant(documento.estado)}
                                                                     size="sm"
-                                                                    onClick={() => cambiarEstadoDocumento(documento.idDocumento || documento.id, documento.estado)}
+                                                                    onClick={() => cambiarEstadoDocumento(documento.idDocumentacion, documento.estado)}
                                                                     className="w-100"
                                                                 >
                                                                     {getBotonTexto(documento.estado)}
