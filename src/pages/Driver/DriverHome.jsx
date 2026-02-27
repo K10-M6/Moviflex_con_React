@@ -4,12 +4,13 @@ import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArr
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import fondo from "../Imagenes/AutoresContacto.png";
 
 const DriverHome = () => {
     const { usuario, token } = useAuth();
     const navigate = useNavigate();
 
-    const brandColor = "#124c83";
+    const brandColor = "#54c7b8";
     const darkBorder = "#000000";
 
     const [showTutorial, setShowTutorial] = useState(false);
@@ -353,7 +354,7 @@ const DriverHome = () => {
     const vehiculoPrincipal = vehiculos.length > 0 ? vehiculos[0] : null;
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: '#f4f3f1', position: 'relative', overflowX: 'hidden' }}>
+        <div style={{ minHeight: '100vh', backgroundImage: `url(${fondo})`, position: 'relative', overflowX: 'hidden' }}>
 
             <div style={{ backgroundColor: brandColor, borderBottom: `1.5px solid ${darkBorder}`, position: 'relative', zIndex: 10 }}>
                 <Navbar />
@@ -492,13 +493,18 @@ const DriverHome = () => {
                                 )}
 
                                 {licencia && (
-                                    <Button
-                                        className="w-100 mt-4 fw-bold py-2 shadow-sm"
-                                        style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
-                                        onClick={() => navigate("/documentacion")}
-                                    >
-                                        ACTUALIZAR LICENCIA
-                                    </Button>
+                                        <Button
+                                            className="w-100 mt-4 fw-bold py-2 shadow-sm"
+                                            style={{ 
+                                                backgroundColor: '#54c7b8', // Tu nuevo color aquí
+                                                color: 'white',             // Mantiene las letras blancas
+                                                border: 'none', 
+                                                borderRadius: '8px' 
+                                            }}
+                                            onClick={() => navigate("/documentacion")}
+                                        >
+                                            ACTUALIZAR LICENCIA
+                                        </Button>
                                 )}
                             </Card.Body>
                         </Card>

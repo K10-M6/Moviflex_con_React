@@ -192,30 +192,34 @@ function Notificaciones() {
 
   return (
     <div className="position-relative" ref={dropdownRef}>
-      <button 
-        className="btn btn-link position-relative p-2 text-white" // Cambiado a text-white para el header azul
-        onClick={() => setMostrarDropdown(!mostrarDropdown)}
-        style={{ 
-          textDecoration: 'none',
-          transition: 'all 0.2s ease'
-        }}
-        aria-label="Notificaciones"
-      >
-        <FaBell size={20} />
-        {noLeidas > 0 && (
-          <Badge 
-            bg="danger" 
-            className="position-absolute top-0 start-100 translate-middle rounded-pill"
-            style={{ 
-              fontSize: '0.6rem',
-              padding: '0.25rem 0.4rem',
-              minWidth: '18px'
-            }}
-          >
-            {noLeidas > 9 ? '9+' : noLeidas}
-          </Badge>
-        )}
-      </button>
+<button 
+  className="btn btn-link position-relative p-2" // Quitamos text-white
+  onClick={() => setMostrarDropdown(!mostrarDropdown)}
+  style={{ 
+    textDecoration: 'none',
+    transition: 'all 0.2s ease',
+    color: '#54c7b8', // Tu color personalizado aplicado aquí
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }}
+  aria-label="Notificaciones"
+>
+  <FaBell size={20} />
+  {noLeidas > 0 && (
+    <Badge 
+      bg="danger" 
+      className="position-absolute top-0 start-100 translate-middle rounded-pill"
+      style={{ 
+        fontSize: '0.6rem',
+        padding: '0.25rem 0.4rem',
+        minWidth: '18px'
+      }}
+    >
+      {noLeidas > 9 ? '9+' : noLeidas}
+    </Badge>
+  )}
+</button>
 
       {mostrarDropdown && (
         <div 
