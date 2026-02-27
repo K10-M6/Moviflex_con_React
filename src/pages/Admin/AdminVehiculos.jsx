@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Image } from "react-bootstrap";
 import { FaCheckCircle, FaTimesCircle, FaEye, FaCar } from "react-icons/fa";
+import fondo from "../Imagenes/AutoresContacto.png";
 
 function AdminVehiculos() {
     const { token } = useAuth();
@@ -247,19 +248,36 @@ function AdminVehiculos() {
 
     return (
         <div style={{
-            background: 'linear-gradient(20deg, #b425e0ff, #00dfccff, #ecececff)',
-            minWidth: '100%',
-            minHeight: '100%',
-            padding: '24px'
+            minHeight: '100vh',
+            backgroundImage: `url(${fondo})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            position: 'relative'
         }}>
-            <Container fluid className="py-4">
+            {/* Capa de legibilidad */}
+            <div style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                backgroundColor: 'rgba(255, 255, 255, 0.92)', 
+                zIndex: 0 
+            }} />
+
+            <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <h1 className="display-5 fw-bold">Lista de Vehículos</h1>
-                        <p className="text-muted">Administra los vehículos registrados en la plataforma</p>
+                        <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
+                            <Card.Body className="p-4">
+                                <h1 className="display-5 fw-bold mb-0" style={{ color: '#333' }}>Lista de Vehículos</h1>
+                                <p className="text-muted mb-0 small">Administra los vehículos registrados en la plataforma</p>
+                            </Card.Body>
+                        </Card>
 
-                        <div className="d-flex gap-3 mb-3 flex-wrap">
-                            <Badge bg="primary" className="px-3 py-2">
+                        <div className="d-flex gap-3 mt-3 flex-wrap">
+                            <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
                                 Total: {vehiculos.length}
                             </Badge>
                             <Badge bg="success" className="px-3 py-2">
@@ -275,7 +293,7 @@ function AdminVehiculos() {
                 {error && (
                     <Row className="mb-3">
                         <Col>
-                            <Alert variant="danger" onClose={() => setError("")} dismissible>
+                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow-sm">
                                 <strong>Error:</strong> {error}
                             </Alert>
                         </Col>
@@ -284,14 +302,12 @@ function AdminVehiculos() {
 
                 <Row>
                     <Col>
-                        <Card className="shadow-sm">
+                        <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
                             <Card.Body>
                                 {loading ? (
                                     <div className="text-center py-5">
-                                        <Spinner animation="border" role="status">
-                                            <span className="visually-hidden">Cargando...</span>
-                                        </Spinner>
-                                        <p className="mt-3">Cargando vehículos...</p>
+                                        <Spinner animation="border" style={{ color: '#54c7b8' }} />
+                                        <p className="mt-3 text-muted">Cargando vehículos...</p>
                                     </div>
                                 ) : (
                                     <Table responsive hover className="align-middle">
@@ -309,7 +325,7 @@ function AdminVehiculos() {
                                         <tbody>
                                             {vehiculos.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan="8" className="text-center py-4">
+                                                    <td colSpan="7" className="text-center py-4">
                                                         No hay vehículos registrados
                                                     </td>
                                                 </tr>

@@ -3,6 +3,7 @@ import { useAuth } from "../pages/context/AuthContext";
 import { Container, Row, Col, Card, Alert, Spinner, Badge } from "react-bootstrap";
 import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill } from "react-icons/bs";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import fondo from "../pages/Imagenes/AutoresContacto.png";
 
 function Home() {
   const { token } = useAuth();
@@ -126,7 +127,6 @@ function Home() {
       console.error("Error al traer viajes", error);
       return [];
     }
-
   }
 
   async function traerDatosGraficos() {
@@ -189,109 +189,81 @@ function Home() {
     {
       title: "Total Usuarios",
       value: stats.totalUsuarios,
-      icon: <BsPeopleFill className="text-white fs-4" />,
-      cardColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      iconBg: "rgba(255, 255, 255, 0.2)"
+      icon: <BsPeopleFill className="fs-5" />
     },
     {
       title: "Viajeros",
       value: stats.totalViajeros,
-      icon: <BsPersonCircle className="text-white fs-4" />,
-      cardColor: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      iconBg: "rgba(255, 255, 255, 0.2)"
+      icon: <BsPersonCircle className="fs-5" />
     },
     {
       title: "Conductores",
       value: stats.totalConductores,
-      icon: <BsTruck className="text-white fs-4" />,
-      cardColor: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      iconBg: "rgba(255, 255, 255, 0.2)"
+      icon: <BsTruck className="fs-5" />
     },
     {
       title: "Vehículos",
       value: stats.totalVehiculos,
-      icon: <BsCarFrontFill className="text-white fs-4" />,
-      cardColor: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-      iconBg: "rgba(255, 255, 255, 0.2)"
+      icon: <BsCarFrontFill className="fs-5" />
     }
   ];
 
   return (
     <div style={{
-      background: '#124c83',
       minHeight: '100vh',
-      padding: '20px'
+      backgroundImage: `url(${fondo})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      position: 'relative'
     }}>
-      <Container fluid>
+      {/* Capa de legibilidad minimalista */}
+      <div style={{ 
+        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
+        backgroundColor: 'rgba(255, 255, 255, 0.88)', 
+        zIndex: 0 
+      }} />
+
+      <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
         <Row className="mb-4">
           <Col>
-            <Card
-              className="border-0 shadow"
-              style={{
-                background: 'linear-gradient(20deg, #4acfbd, #59c2ffff)',
-                borderRadius: '15px'
-              }}
-            >
+            <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
               <Card.Body className="p-4">
-                <Row className="align-items-center">
-                  <Col xs={9}>
-                    <h1 className="fw-bold mb-2 text-white">Bienvenido al panel de Administración</h1>
-                    <p className="text-white text-opacity-75 mb-0">Aquí podrás tener el control de la página y observar las estadísticas de Moviflex</p>
-                  </Col>
-                </Row>
+                <h2 className="fw-bold mb-0" style={{ color: '#333' }}>Dashboard Administrativo</h2>
+                <p className="text-muted mb-0 small">Estadísticas generales de la plataforma</p>
               </Card.Body>
             </Card>
-
-            {error && (
-              <Alert variant="danger" className="mt-3 border-0 shadow" style={{ borderRadius: '10px' }}>
-                {error}
-              </Alert>
-            )}
           </Col>
         </Row>
 
+        {error && (
+          <Alert variant="danger" className="mt-3 border-0 shadow-sm">
+            {error}
+          </Alert>
+        )}
+
         {loading ? (
-          <Row className="justify-content-center py-5">
-            <Col xs="auto" className="text-center">
-              <Spinner animation="border" variant="light" />
-              <p className="mt-3 text-white">Cargando estadísticas...</p>
-            </Col>
-          </Row>
+          <div className="text-center py-5">
+            <Spinner animation="border" style={{ color: '#54c7b8' }} />
+            <p className="mt-3 text-muted">Cargando estadísticas...</p>
+          </div>
         ) : (
           <>
-            <Row className="g-4 mb-5">
+            <Row className="g-4 mb-4">
               {statCards.map((stat, index) => (
                 <Col key={index} xs={12} sm={6} lg={3}>
-                  <Card
-                    className="shadow border-0 h-100"
-                    style={{
-                      background: stat.cardColor,
-                      borderRadius: '15px',
-                      overflow: 'hidden',
-                      transition: 'transform 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                  >
-                    <Card.Body className="p-4">
-                      <Row className="align-items-center">
-                        <Col xs={8}>
-                          <h6 className="text-white text-opacity-75 mb-2">{stat.title}</h6>
-                          <h2 className="fw-bold mb-0 text-white">{stat.value}</h2>
-                        </Col>
-                        <Col xs={4} className="text-end">
-                          <div
-                            className="rounded-circle d-inline-flex align-items-center justify-content-center"
-                            style={{
-                              width: '60px',
-                              height: '60px',
-                              background: stat.iconBg
-                            }}
-                          >
-                            {stat.icon}
-                          </div>
-                        </Col>
-                      </Row>
+                  <Card className="shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '12px' }}>
+                    <Card.Body className="d-flex align-items-center">
+                      <div 
+                        className="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                        style={{ width: '50px', height: '50px', backgroundColor: '#54c7b8', color: 'white' }}
+                      >
+                        {stat.icon}
+                      </div>
+                      <div>
+                        <h6 className="text-muted mb-0 small">{stat.title}</h6>
+                        <h3 className="fw-bold mb-0" style={{ color: '#333' }}>{stat.value}</h3>
+                      </div>
                     </Card.Body>
                   </Card>
                 </Col>
@@ -300,37 +272,24 @@ function Home() {
 
             <Row className="g-4">
               <Col lg={6}>
-                <Card className="shadow border-0 h-100" style={{ borderRadius: '15px', background: 'white' }}>
-                  <Card.Body>
-                    <Card.Title className="mb-4" style={{ color: '#333', fontWeight: 'bold' }}>
+                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
+                  <Card.Body className="p-4">
+                    <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
                       Actividad Semanal
                     </Card.Title>
                     <div style={{ height: '300px' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip
-                            contentStyle={{
-                              borderRadius: '10px',
-                              border: 'none',
-                              boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
-                            }}
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
+                          <Tooltip 
+                            cursor={{fill: 'rgba(84, 199, 184, 0.05)'}} 
+                            contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} 
                           />
                           <Legend />
-                          <Bar
-                            dataKey="usuarios"
-                            fill="#8884d8"
-                            name="Usuarios Registrados"
-                            radius={[5, 5, 0, 0]}
-                          />
-                          <Bar
-                            dataKey="viajes"
-                            fill="#82ca9d"
-                            name="Viajes Realizados"
-                            radius={[5, 5, 0, 0]}
-                          />
+                          <Bar dataKey="usuarios" fill="#8884d8" name="Usuarios" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="viajes" fill="#82ca9d" name="Viajes" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -339,23 +298,20 @@ function Home() {
               </Col>
 
               <Col lg={6}>
-                <Card className="shadow border-0 h-100" style={{ borderRadius: '15px', background: 'white' }}>
-                  <Card.Body>
-                    <Card.Title className="mb-4" style={{ color: '#333', fontWeight: 'bold' }}>
+                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
+                  <Card.Body className="p-4">
+                    <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
                       Ingresos Semanales
                     </Card.Title>
                     <div style={{ height: '300px' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip
-                            contentStyle={{
-                              borderRadius: '10px',
-                              border: 'none',
-                              boxShadow: '0 5px 15px rgba(0,0,0,0.1)'
-                            }}
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
+                          <Tooltip 
+                            cursor={{fill: 'rgba(84, 199, 184, 0.05)'}} 
+                            contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
                             formatter={(value) => [`$${value}`, 'Ingresos']}
                           />
                           <Legend />
@@ -365,17 +321,17 @@ function Home() {
                             stroke="#8884d8"
                             name="Ingresos ($)"
                             strokeWidth={3}
-                            dot={{ r: 5 }}
-                            activeDot={{ r: 8 }}
+                            dot={{ r: 4, fill: '#8884d8' }}
+                            activeDot={{ r: 6 }}
                           />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
                     <div className="mt-3 text-center">
-                      <Badge bg="success" className="px-3 py-2 me-2">
+                      <Badge bg="success" className="px-3 py-2 me-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
                         <small>Total Semanal: ${chartData.reduce((sum, item) => sum + (item.ingresos || 0), 0).toLocaleString()}</small>
                       </Badge>
-                      <Badge bg="info" className="px-3 py-2">
+                      <Badge bg="info" className="px-3 py-2" style={{ backgroundColor: '#8884d8', border: 'none' }}>
                         <small>Promedio Diario: ${Math.round(chartData.reduce((sum, item) => sum + (item.ingresos || 0), 0) / (chartData.length || 1)).toLocaleString()}</small>
                       </Badge>
                     </div>

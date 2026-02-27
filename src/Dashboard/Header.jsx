@@ -77,7 +77,7 @@ function Header() {
 
   return (
     <header className="py-3" style={{
-      backgroundColor: '#124c83',
+      backgroundColor: '#ffffff',
       boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
     }}>
       <div className="container-fluid px-4">
@@ -113,8 +113,8 @@ function Header() {
                 id="dropdown-user"
               >
                 <div className="text-end me-3 d-none d-md-block">
-                  <p className="mb-0 text-white fw-medium">{getFullName()}</p>
-                  <small className="text-white opacity-75">{getUserEmail()}</small>
+                  <p className="mb-0 text-black fw-medium">{getFullName()}</p>
+                  <small className="text-black opacity-75">{getUserEmail()}</small>
                 </div>
 
                 <div

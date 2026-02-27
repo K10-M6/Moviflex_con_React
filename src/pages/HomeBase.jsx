@@ -6,14 +6,22 @@ import imagenAbajo from '../pages/Imagenes/Mapa.png';
 import ImagenFondoPaisaje from '../pages/Imagenes/Paisaje-tranquilo-con-plantas-verdes.png'; 
 import ImagenHomebase from '../pages/Imagenes/HomeBaseImage.png'; 
 
+// IMPORTACIONES DE LAS IMÁGENES DE AUTORES
+import Arlys from './Autores/Arlys.PNG';
+import Carlos from './Autores/Carlos.PNG';
+import Janier from './Autores/Janier.PNG';
+import JuanCeron from './Autores/JuanCeron.PNG';
+import JuanOcampo from './Autores/JuanOcampo.PNG';
+import Kevin from './Autores/Kevin.PNG';
+
 function HomeBase() {
   const autores = [
-    { id: 1, nombre: "Autor 1", rol: "Desarrollador", img: "https://ui-avatars.com/api/?name=A+1&background=random" },
-    { id: 2, nombre: "Autor 2", rol: "Diseñador", img: "https://ui-avatars.com/api/?name=A+2&background=random" },
-    { id: 3, nombre: "Autor 3", rol: "Logística", img: "https://ui-avatars.com/api/?name=A+3&background=random" },
-    { id: 4, nombre: "Autor 4", rol: "Marketing", img: "https://ui-avatars.com/api/?name=A+4&background=random" },
-    { id: 5, nombre: "Autor 5", rol: "Soporte", img: "https://ui-avatars.com/api/?name=A+5&background=random" },
-    { id: 6, nombre: "Autor 6", rol: "QA Tester", img: "https://ui-avatars.com/api/?name=A+6&background=random" },
+    { id: 1, nombre: "Arlys", rol: "Backend", img: Arlys },
+    { id: 2, nombre: "Carlos", rol: "Desarrollador Móvil", img: Carlos },
+    { id: 3, nombre: "Janier", rol: "Frontend ", img: Janier },
+    { id: 4, nombre: "Juan Cerón", rol: "Frontend Diseño", img: JuanCeron },
+    { id: 5, nombre: "Juan Ocampo", rol: "Tester", img: JuanOcampo },
+    { id: 6, nombre: "Kevin", rol: "Documentación", img: Kevin },
   ];
 
   const slidesFunciona = [
@@ -55,26 +63,77 @@ function HomeBase() {
       </div>
 
       {/* SECCIÓN ¿CÓMO FUNCIONA? */}
-      <Container className="py-5">
-        <Row className="text-center mb-4">
-          <Col><h2 className="fw-bold">¿Cómo Funciona?</h2></Col>
+<Container className="py-5">
+  <Row className="text-center mb-5">
+    <Col>
+      <h2 className="fw-bold" style={{ fontSize: '2.5rem', color: '#333' }}>¿Cómo Funciona?</h2>
+      <p className="text-muted">Tres simples pasos para comenzar tu experiencia</p>
+    </Col>
+  </Row>
+  
+  <Carousel 
+    interval={4000} 
+    indicators={true} 
+    variant="dark"
+    nextIcon={<span aria-hidden="true" className="carousel-control-next-icon bg-dark rounded-circle p-3"/>}
+    prevIcon={<span aria-hidden="true" className="carousel-control-prev-icon bg-dark rounded-circle p-3"/>}
+  >
+    {slidesFunciona.map((item) => (
+      <Carousel.Item key={item.id}>
+        <Row className="justify-content-center">
+          <Col md={8} lg={6}>
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '30px',
+              padding: '40px 30px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.05)',
+              transition: 'transform 0.3s ease',
+              textAlign: 'center'
+            }}>
+              {/* Icono circular con color de fondo */}
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                backgroundColor: item.color,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 25px',
+                boxShadow: `0 10px 20px ${item.color}40`
+              }}>
+                <span style={{ fontSize: '3.5rem', lineHeight: 1 }}>
+                  {item.icono}
+                </span>
+              </div>
+              
+              {/* Número de paso con diseño circular pequeño */}
+             
+              
+              {/* Contenido de la carta */}
+              <h3 className="fw-bold mb-3" style={{ fontSize: '1.8rem', color: '#333' }}>
+                {item.titulo}
+              </h3>
+              
+              <p style={{ 
+                fontSize: '1.1rem', 
+                lineHeight: '1.6', 
+                color: '#666',
+                marginBottom: '30px',
+                padding: '0 15px'
+              }}>
+                {item.desc}
+              </p>
+              
+              
+            </div>
+          </Col>
         </Row>
-        <Carousel interval={4000} indicators={true} variant="dark">
-          {slidesFunciona.map((item) => (
-            <Carousel.Item key={item.id}>
-              <Row className="align-items-center p-4">
-                <Col md={6} className="text-center">
-                  <Image src={item.img} fluid rounded className="shadow-sm" style={{ maxHeight: '250px' }} />
-                </Col>
-                <Col md={6}>
-                  <h3 className="fw-bold">{item.id}. {item.titulo}</h3>
-                  <p>{item.desc}</p>
-                </Col>
-              </Row>
-            </Carousel.Item>
-          ))}
-        </Carousel>
-      </Container>
+      </Carousel.Item>
+    ))}
+  </Carousel>
+</Container>
 
       {/* --- NUEVO ORDEN --- */}
 
@@ -82,11 +141,10 @@ function HomeBase() {
       <Container className="text-center py-5">
           <h2 className="fw-bold mb-4">Explora nuestra red de rutas</h2>
           <Row className="justify-content-center">
-            <Col lg={8}> {/* Tamaño mediano ajustado */}
+            <Col lg={10}> {/* Tamaño mediano ajustado */}
               <div style={{ 
                 borderRadius: '20px', overflow: 'hidden', 
-                boxShadow: '0 10px 30px rgba(0,0,0,0.1)', 
-                border: '2px solid #ddd' 
+                
               }}>
                 <Image src={imagenAbajo} fluid style={{ width: '100%', height: 'auto' }}/>
               </div>
@@ -103,7 +161,7 @@ function HomeBase() {
               backgroundImage: `url(${imagencontacto})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
-              borderRadius: '30px',
+              borderRadius: '40px',
               overflow: 'hidden',
               boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
               position: 'relative'
@@ -111,15 +169,20 @@ function HomeBase() {
               {/* Overlay oscuro para que se vea bien el texto de los autores */}
               <div style={{ backgroundColor: 'rgba(0, 0, 0, 0)', padding: '60px 20px' }}>
                 <div className="text-center mb-5">
-                  <h2 className="fw-bold text-white">Equipo MoviFlex</h2>
+                  <h2 className="fw-bold"style={{color: '#56bca7'}}>Equipo MoviFlex</h2>
                   <p className="text-white-50">Los creadores de tu nueva forma de viajar</p>
                 </div>
                 <Row className="justify-content-center">
                   {autores.map((autor) => (
                     <Col key={autor.id} xs={6} md={4} lg={2} className="text-center mb-4">
-                      <Image src={autor.img} roundedCircle className="mb-2 border border-2 border-white shadow" style={{ width: '65px', height: '65px' }} />
-                      <h6 className="text-white fw-bold mb-0 small">{autor.nombre}</h6>
-                      <p className="text-white-50" style={{ fontSize: '10px' }}>{autor.rol}</p>
+                      <Image 
+                        src={autor.img} 
+                        roundedCircle 
+                        className="mb-2 border border-2 border-white shadow" 
+                        style={{ width: '80px', height: '80px', objectFit: 'cover' }} 
+                      />
+                      <h6 className="fw-bold mb-0 small" style={{color: '#56bca7'}}>{autor.nombre}</h6>
+                      <p className="-50" style={{ fontSize: '10px', color: '#56bca7' }}>{autor.rol}</p>
                     </Col>
                   ))}
                 </Row>
