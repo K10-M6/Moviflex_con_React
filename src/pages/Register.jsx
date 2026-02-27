@@ -35,6 +35,137 @@ function Register() {
     const [mensajeRostro, setMensajeRostro] = useState("");
     const [verificandoRostro, setVerificandoRostro] = useState(false);
     const [errorRostroBackend, setErrorRostroBackend] = useState("");
+    // Estado para aceptación de términos y condiciones
+    const [terminosAceptados, setTerminosAceptados] = useState(false);
+
+    // Texto completo de los términos y condiciones (contrato marco) que debe leer el usuario
+    const termsText = `CONTRATO MARCO DE LICENCIA DE USO DE SOFTWARE, INTERMEDIACIÓN
+TECNOLÓGICA Y ESTATUTO DE TÉRMINOS Y CONDICIONES GLOBALES DE LA
+PLATAFORMA "MOVIFLEX"
+VERSIÓN: 1.0 (2024) DOMICILIO LEGAL: POPAYÁN, CAUCA, COLOMBIA.
+EMPRESA: MOVIFLEX S.A.S. (NIT EN TRÁMITE).
+PREÁMBULO: DECLARACIÓN DE VOLUNTAD Y NATURALEZA JURÍDICA
+El presente documento constituye un acuerdo legal vinculante y obligatorio (en
+adelante, el "CONTRATO") entre MOVIFLEX S.A.S., una sociedad comercial
+colombiana debidamente constituida, con domicilio principal en la Oficina
+Fábrica de Software Alto del Cauca SENA de la ciudad de Popayán (en adelante,
+"LA COMPAÑÍA" o "MOVIFLEX") y cualquier persona natural o jurídica que, de
+forma libre y espontánea, decida registrarse, descargar o utilizar el ecosistema
+digital (en adelante, el "USUARIO" o el "CONDUCTOR", y colectivamente
+denominados las "PARTES").
+CAPÍTULO I: DE LA NATURALEZA DEL OBJETO SOCIAL Y LA ACTIVIDAD
+TECNOLÓGICA
+ARTÍCULO 1: DEFINICIÓN DE LA ACTIVIDAD
+MOVIFLEX S.A.S. declara, y las PARTES aceptan, que su objeto social no es la
+prestación del servicio de transporte público ni privado. MOVIFLEX es una
+Empresa de Base Tecnológica (EBT) dedicada exclusivamente al desarrollo,
+mantenimiento y licenciamiento de una plataforma de software. La función de la
+App es la de un CORREDOR TECNOLÓGICO (Art. 1340 del Código de Comercio
+Colombiano), que simplemente facilita el contacto entre dos partes
+independientes: quien demanda un servicio de movilidad y quien ofrece su
+capacidad de transporte autónomo.
+ARTÍCULO 2: AUSENCIA DE HABILITACIÓN DE TRANSPORTE
+Las PARTES reconocen que MOVIFLEX no ostenta, ni requiere, habilitación por
+parte del Ministerio de Transporte como empresa transportadora, toda vez que no
+posee flota de vehículos, no ejerce el control de la operación, no despacha
+vehículos y no recibe remuneración por concepto de flete, sino por concepto de
+"Tarifa de Licencia de Uso de Software".
+CAPÍTULO II: RÉGIMEN DE CONTRATACIÓN DEL CONDUCTOR (BLINDAJE
+LABORAL)
+ARTÍCULO 3: DECLARACIÓN EXPRESA DE INDEPENDENCIA (ART. 23 C.S.T.)
+El Conductor declara bajo la gravedad de juramento que su relación con
+MOVIFLEX es de naturaleza civil y comercial, regida por las normas del Corretaje
+y Mandato (Código de Comercio). En consecuencia, se deja constancia de la
+inexistencia de los elementos del contrato de trabajo:
+1. NO SUBORDINACIÓN: El Conductor no está sujeto a reglamentos de
+trabajo, órdenes, ni jerarquías. Conserva la potestad de aceptar o rechazar
+cualquier solicitud de viaje.
+2. NO PRESTACIÓN PERSONAL EXCLUSIVA: El Conductor puede utilizar
+otras plataformas o dedicarse a otras actividades económicas sin
+restricción alguna.
+3. NO REMUNERACIÓN SALARIAL: Los ingresos percibidos por el Conductor
+son pagos directos del Usuario Pasajero. MOVIFLEX no paga nómina,
+prestaciones, primas ni vacaciones.
+ARTÍCULO 4: ASUNCIÓN DE CARGAS PRESTACIONALES Y PARAFISCALES
+De conformidad con la Ley 1562 de 2012 y el Decreto 1072 de 2015, el Conductor,
+como trabajador independiente y contratista autónomo, es el único responsable
+de su afiliación y pago al Sistema de Seguridad Social Integral (Salud, Pensión y
+ARL). El Conductor mantendrá indemne a MOVIFLEX ante cualquier reclamación
+de la UGPP o entidades de seguridad social.
+CAPÍTULO III: MODELOS ECONÓMICOS Y PACTOS DE ESTABILIDAD
+ARTÍCULO 5: ESQUEMAS DE CONTRAPRESTACIÓN
+El Conductor podrá optar por dos modalidades de licenciamiento:
+• PLAN ESTÁNDAR: Comisión del siete por ciento (7%) por cada
+intermediación exitosa. Este valor se deduce de la tarifa sugerida por la
+plataforma.
+• PLAN PRO CONDUCTOR FUNDADOR: Pago de una suscripción mensual
+de TREINTA MIL PESOS M/CTE ($30.000 COP).
+ o Párrafo Primero (Estabilidad): Los Conductores que se vinculen
+ bajo esta modalidad durante la etapa de lanzamiento en Popayán
+gozarán de un Pacto de Estabilidad de Precio, manteniendo esta
+tarifa mensual de por vida, siempre que no interrumpan su
+suscripción por más de 30 días.
+ o Párrafo Segundo: MOVIFLEX se reserva el derecho de ajustar el
+valor de este plan para futuros usuarios según la inflación o el IPC,
+sin afectar a los "Conductores Fundadores".
+CAPÍTULO IV: EXONERACIÓN ABSOLUTA DE RESPONSABILIDAD (BLINDAJE
+CIVIL Y PENAL)
+ARTÍCULO 6: CLÁUSULA DE INDEMNIDAD POR RIESGO OPERATIVO
+Dado que el transporte es una actividad peligrosa (Art. 2356 del Código Civil), el
+Conductor y el Usuario Pasajero asumen el riesgo total de la operación.
+MOVIFLEX no responderá solidaria ni directamente por:
+1. Accidentes de Tránsito: Todo siniestro se rige por el SOAT del vehículo y la
+responsabilidad civil del propietario.
+2. Responsabilidad Penal: En caso de delitos cometidos dentro del vehículo
+(hurto, acoso, lesiones, homicidio), la responsabilidad será estrictamente
+individual del autor. MOVIFLEX no garantiza la idoneidad moral de los
+usuarios, limitándose a la verificación documental estándar.
+3. Contenidos y Objetos: Se prohíbe el transporte de armas, drogas o
+sustancias explosivas. El Conductor debe inspeccionar su vehículo;
+MOVIFLEX no custodia ni conoce el contenido de lo transportado.
+CAPÍTULO V: SEGURIDAD, PRUEBAS JUDICIALES Y TECNOLOGÍA
+ARTÍCULO 7: CONSENTIMIENTO PARA EL USO DE MEDIOS AUDIOVISUALES
+En virtud de la Ley 906 de 2004 (Código de Procedimiento Penal), las PARTES
+otorgan su consentimiento expreso para que la plataforma grabe audio y video
+durante los trayectos.
+• Finalidad: Estas grabaciones serán custodiadas bajo estándares de
+seguridad informática y solo serán reveladas ante orden judicial o para
+dirimir conflictos internos de la plataforma.
+• Valor Probatorio: Las PARTES aceptan que estas grabaciones constituyen
+prueba plena en procesos civiles o denuncias ante la Fiscalía General de la
+Nación.
+CAPÍTULO VI: POLÍTICA DE DATOS PERSONALES (HABEAS DATA)
+ARTÍCULO 8: CUMPLIMIENTO LEY 1581 DE 2012
+MOVIFLEX S.A.S., como Responsable del Tratamiento, recolectará datos
+sensibles (biometría, ubicación GPS, registros de voz). El titular autoriza el
+tratamiento de estos datos para:
+1. Geolocalización en tiempo real del servicio.
+2. Verificación de identidad mediante reconocimiento facial.
+3. Fines comerciales y de marketing de MOVIFLEX.
+CAPÍTULO VII: RÉGIMEN DISCIPLINARIO Y PENALIDADES
+ARTÍCULO 9: MULTAS POR CANCELACIÓN (CLÁUSULA PENAL)
+Para proteger la confianza del consumidor, se establecen multas por cancelación
+injustificada:
+• A partir de la 3ra cancelación: $2.000 COP.
+• A partir de la 5ta cancelación: $5.000 COP. Estas multas se consideran una
+estimación anticipada de perjuicios por lucro cesante y daño a la imagen
+de la plataforma.
+CAPÍTULO VIII: RESOLUCIÓN DE CONFLICTOS Y CLÁUSULA COMPROMISORIA
+ARTÍCULO 10: PROCEDIMIENTO DE LEY
+Toda controversia se resolverá bajo los principios de economía y celeridad
+procesal:
+1. Etapa de Arreglo Directo: 15 días hábiles mediante comunicación escrita
+a somosmoviflex@gmail.com.
+2. Conciliación Obligatoria: En caso de fracaso, se acudirá a un Centro de
+Conciliación en Popayán, conforme a la Ley 640 de 2001.
+3. Jurisdicción Ordinaria: Los jueces civiles del circuito de Popayán serán los
+competentes para conocer cualquier demanda.
+DECLARACIÓN DE ACEPTACIÓN: El Usuario y/o Conductor manifiesta que ha
+leído este documento de 25 Capítulos y 120 Artículos (representados en este
+estatuto marco), que entiende las implicaciones de la ausencia de relación laboral
+y la exoneración de responsabilidad de MOVIFLEX, y que acepta cada cláusula
+como ley para las partes.
+`;
 
     const verificarRostroAntesDeEnviar = async (base64Image) => {
         setVerificandoRostro(true);
@@ -108,6 +239,13 @@ function Register() {
         e.preventDefault();
         setError("");
         setErrorRostroBackend("");
+        // verificar aceptación de términos antes de enviar
+        if (!terminosAceptados) {
+            const msg = "Debes aceptar los términos y condiciones para continuar.";
+            setError(msg);
+            toast.error(msg);
+            return;
+        }
         setLoading(true);
 
         const loadingToast = toast.loading('Registrando usuario...');
@@ -243,6 +381,10 @@ function Register() {
     const handleNextStep = () => {
         setError("");
         setErrorRostroBackend("");
+        if (step === 3) {
+            // al avanzar a revisión aseguramos que el checkbox se resetee
+            setTerminosAceptados(false);
+        }
         
         if (step === 1) {
             if (!nombre || !email || !telefono) {
@@ -286,6 +428,10 @@ function Register() {
     const handlePrevStep = () => {
         setError("");
         setErrorRostroBackend("");
+        // si retrocede desde la revisión, limpiamos aceptación
+        if (step === 4) {
+            setTerminosAceptados(false);
+        }
         setStep(step - 1);
         
         if (step === 3 && cameraActive) {
@@ -352,11 +498,11 @@ function Register() {
                                 </div>
 
                                 <div className="mb-4">
-                                    <ProgressBar now={(step / 3) * 100} variant="info" style={{ height: '7px' }} />
+                                    <ProgressBar now={(step / 4) * 100} variant="info" style={{ height: '7px' }} />
                                     <div className="d-flex justify-content-between mt-2">
-                                        <span className="small fw-bold text-primary">Paso {step} de 3</span>
+                                        <span className="small fw-bold text-primary">Paso {step} de 4</span>
                                         <span className="small text-muted">
-                                            {step === 1 ? "Contacto" : step === 2 ? "Foto de Perfil" : step === 3 ? "Seguridad" : "Finalizar"}
+                                            {step === 1 ? "Contacto" : step === 2 ? "Foto de Perfil" : step === 3 ? "Seguridad" : step === 4 ? "Revisión" : "Finalizar"}
                                         </span>
                                     </div>
                                 </div>
@@ -611,7 +757,21 @@ function Register() {
                                                 <div><strong>Perfil:</strong> Conductor Movi</div>
                                             </div>
 
-                                            <div className="d-flex gap-2">
+                                            {/* términos y condiciones */}
+                                    <div className="mb-3 text-start">
+                                        <div className="terms-container" style={{ maxHeight: '180px', overflowY: 'auto', border: '1px solid #ccc', padding: '10px', background: '#f9f9f9', fontSize: '0.8rem', whiteSpace: 'pre-wrap' }}>
+                                            {termsText}
+                                        </div>
+                                        <Form.Check 
+                                            type="checkbox"
+                                            id="acceptTerms"
+                                            label="He leído y acepto los términos y condiciones"
+                                            checked={terminosAceptados}
+                                            onChange={(e) => setTerminosAceptados(e.target.checked)}
+                                            className="mt-2"
+                                        />
+                                    </div>
+                                    <div className="d-flex gap-2">
                                                 <Button 
                                                     variant="light" 
                                                     onClick={handlePrevStep} 
@@ -625,7 +785,7 @@ function Register() {
                                                     type="submit" 
                                                     className="w-50 py-3" 
                                                     style={{ background: '#124c83', border: 'none', borderRadius: '12px', fontWeight: 'bold' }} 
-                                                    disabled={loading || !!errorRostroBackend}
+                                                    disabled={loading || !!errorRostroBackend || !terminosAceptados}
                                                 >
                                                     {loading ? "Registrando..." : "Finalizar"}
                                                 </Button>
@@ -637,7 +797,6 @@ function Register() {
                         </Card>
                     </Col>
 
-                    {/* SECCIÓN DE LA IMAGEN DE TRANSPARENCIA (REEMPLAZA EL CARRUSEL) */}
                     <Col xs={12} md={6} lg={6} className="text-center d-none d-md-flex flex-column align-items-center justify-content-center">
                         <img 
                             src={ImagenTransparencia} 
