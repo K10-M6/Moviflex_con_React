@@ -33,6 +33,7 @@ function VehicleRegistration() {
   const [mensajeImagen, setMensajeImagen] = useState("");
   const [verificandoImagen, setVerificandoImagen] = useState(false);
   const [errorBackend, setErrorBackend] = useState("");
+  const [buscandoPlaca, setBuscandoPlaca] = useState(false);
 
   const [placaValidada, setPlacaValidada] = useState(false);
 
@@ -177,6 +178,38 @@ function VehicleRegistration() {
 
       toast.success('¡Foto tomada correctamente!');
       detenerCamara();
+
+      // EXTRAER PLACA AUTOMÁTICAMENTE
+      extraerPlacaDeFoto(comprimida);
+    }
+  };
+
+  const extraerPlacaDeFoto = async (base64) => {
+    setBuscandoPlaca(true);
+    const toastId = toast.loading("Analizando placa...");
+    try {
+      const resp = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/extraer-placa", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ fotoVehiculo: base64 })
+      });
+
+      const data = await resp.json();
+      if (data.plate_text) {
+        setPlaca(data.plate_text);
+        setFotoComprimida(base64); // Por si acaso
+        toast.success(`Placa detectada: ${data.plate_text}`, { id: toastId });
+      } else {
+        toast.error("No se pudo leer la placa automáticamente. Por favor ingrésala manual.", { id: toastId });
+      }
+    } catch (err) {
+      console.error("Error extraiendo placa:", err);
+      toast.error("Error al conectar con el servicio de reconocimiento", { id: toastId });
+    } finally {
+      setBuscandoPlaca(false);
     }
   };
 
