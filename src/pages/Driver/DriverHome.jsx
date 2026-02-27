@@ -110,7 +110,7 @@ const DriverHome = () => {
             console.log("Documentos recibidos:", data);
 
             let documentosArray = [];
-            
+
             if (Array.isArray(data)) {
                 documentosArray = data;
             } else if (data && Array.isArray(data.documentos)) {
@@ -140,32 +140,32 @@ const DriverHome = () => {
                 console.log("No hay token disponible para obtener viajes");
                 return;
             }
-            
+
             try {
                 setCargandoViajes(true);
                 setErrorViajes("");
-                
+
                 const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 if (respuesta.ok) {
                     const data = await respuesta.json();
                     console.log("Viajes recibidos:", data);
-                    
+
                     const viajesData = Array.isArray(data) ? data : [];
                     setTodosLosViajes(viajesData);
-                    setViajesRecientes(viajesData.slice(0, 3)); 
-                    
+                    setViajesRecientes(viajesData.slice(0, 3));
+
                     const completados = viajesData.filter(v => v.estado === 'FINALIZADO').length;
                     const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
                     const enCurso = viajesData.filter(v => v.estado === 'EN_CURSO').length;
-                    
+
                     setEstadisticasViajes({ completados, cancelados, enCurso });
-                    
+
                 } else if (respuesta.status === 404) {
                     console.log("No se encontraron viajes");
                     setViajesRecientes([]);
@@ -184,10 +184,10 @@ const DriverHome = () => {
         };
 
         obtenerViajes();
-        
+
         const intervaloViajes = setInterval(obtenerViajes, 60000);
         return () => clearInterval(intervaloViajes);
-        
+
     }, [token, usuario?.idUsuarios]);
 
     useEffect(() => {
@@ -202,7 +202,7 @@ const DriverHome = () => {
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 if (respuesta.ok) {
                     const data = await respuesta.json();
                     if (Array.isArray(data)) setVehiculos(data);
@@ -223,7 +223,7 @@ const DriverHome = () => {
     }, [token]);
 
     const getEstadoColor = (estado) => {
-        switch(estado) {
+        switch (estado) {
             case 'FINALIZADO': return 'success';
             case 'CANCELADO': return 'danger';
             case 'EN_CURSO': return 'warning';
@@ -234,7 +234,7 @@ const DriverHome = () => {
     };
 
     const getEstadoTexto = (estado) => {
-        switch(estado) {
+        switch (estado) {
             case 'FINALIZADO': return 'Completado';
             case 'CANCELADO': return 'Cancelado';
             case 'EN_CURSO': return 'En curso';
@@ -250,14 +250,14 @@ const DriverHome = () => {
         const hoy = new Date();
         const ayer = new Date(hoy);
         ayer.setDate(ayer.getDate() - 1);
-        
+
         if (date.toDateString() === hoy.toDateString()) {
             return `Hoy, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
         } else if (date.toDateString() === ayer.toDateString()) {
             return `Ayer, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
         } else {
-            return date.toLocaleString('es-ES', { 
-                day: '2-digit', 
+            return date.toLocaleString('es-ES', {
+                day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
                 hour: '2-digit',
@@ -295,12 +295,12 @@ const DriverHome = () => {
 
     const obtenerLicencia = () => {
         if (!documentos || documentos.length === 0) return null;
-        const licencia = documentos.find(doc => 
-            doc.tipoDocumento?.toLowerCase().includes('licencia') || 
+        const licencia = documentos.find(doc =>
+            doc.tipoDocumento?.toLowerCase().includes('licencia') ||
             doc.tipoDocumento?.toLowerCase().includes('conducir') ||
             !doc.tipoDocumento
         );
-        
+
         return licencia;
     };
 
@@ -311,7 +311,7 @@ const DriverHome = () => {
         else {
             localStorage.setItem("tutorial_conductor_visto", "true");
             setShowTutorial(false);
-            navigate("/documentacion"); 
+            navigate("/documentacion");
         }
     };
 
@@ -354,19 +354,19 @@ const DriverHome = () => {
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f4f3f1', position: 'relative', overflowX: 'hidden' }}>
-            
+
             <div style={{ backgroundColor: brandColor, borderBottom: `1.5px solid ${darkBorder}`, position: 'relative', zIndex: 10 }}>
                 <Navbar />
             </div>
-            
+
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 <Card className="mb-4" style={cardStyle}>
                     <Card.Body className="p-4 d-flex justify-content-between align-items-center">
                         <div>
                             <div className="d-flex align-items-center gap-2">
                                 <h2 className="fw-bold mb-0" style={{ color: darkBorder }}>Panel de Conductor</h2>
-                                <Button 
-                                    variant="link" 
+                                <Button
+                                    variant="link"
                                     className="p-0 ms-2 fw-bold text-decoration-none shadow-none"
                                     onClick={repetirTutorial}
                                     style={{ color: brandColor }}
@@ -391,7 +391,7 @@ const DriverHome = () => {
                                     <FaCar size={22} style={{ color: brandColor }} className="me-2" />
                                     <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Vehículo Activo</h5>
                                 </div>
-                                
+
                                 {cargandoVehiculo ? (
                                     <div className="text-center py-5">
                                         <Spinner animation="border" style={{ color: brandColor }} />
@@ -415,23 +415,23 @@ const DriverHome = () => {
                                 ) : (
                                     <div className="text-center py-4 border rounded-3" style={{ borderStyle: 'dashed !important' }}>
                                         <p className="text-muted small">No tienes un vehículo registrado</p>
-                                        <Button 
-                                            style={{ backgroundColor: brandColor, borderColor: darkBorder, color: 'white' }} 
-                                            className="fw-bold px-4" 
+                                        <Button
+                                            style={{ backgroundColor: brandColor, borderColor: darkBorder, color: 'white' }}
+                                            className="fw-bold px-4"
                                             onClick={() => navigate("/registrar-vehiculo")}
                                         >
                                             Registrar ahora
                                         </Button>
                                     </div>
                                 )}
-                                
+
                                 {vehiculoPrincipal && (
                                     <Button
                                         variant="link"
                                         className="mt-2 p-0 text-decoration-none fw-bold small shadow-none"
                                         style={{ color: darkBorder }}
                                         onClick={() => navigate("/vehicle-registration")}
-                                    > 
+                                    >
                                         Nuevo Vehículo
                                         <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
                                     </Button>
@@ -439,7 +439,7 @@ const DriverHome = () => {
                             </Card.Body>
                         </Card>
                     </Col>
-                    
+
                     <Col lg={5}>
                         <Card className="h-100" style={cardStyle}>
                             <Card.Body className="p-4 d-flex flex-column">
@@ -447,7 +447,7 @@ const DriverHome = () => {
                                     <FaIdCard size={22} style={{ color: brandColor }} className="me-2" />
                                     <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Licencia de Conducir</h5>
                                 </div>
-                                
+
                                 {cargandoDocumentos ? (
                                     <div className="text-center py-4">
                                         <Spinner animation="border" size="sm" style={{ color: brandColor }} />
@@ -481,7 +481,7 @@ const DriverHome = () => {
                                 ) : (
                                     <div className="text-center py-4">
                                         <p className="text-muted">No tienes una licencia registrada</p>
-                                        <Button 
+                                        <Button
                                             className="mt-2 fw-bold py-2"
                                             style={{ backgroundColor: brandColor, borderColor: darkBorder, color: 'white' }}
                                             onClick={() => navigate("/documentacion")}
@@ -490,10 +490,10 @@ const DriverHome = () => {
                                         </Button>
                                     </div>
                                 )}
-                                
+
                                 {licencia && (
-                                    <Button 
-                                        className="w-100 mt-4 fw-bold py-2 shadow-sm" 
+                                    <Button
+                                        className="w-100 mt-4 fw-bold py-2 shadow-sm"
                                         style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
                                         onClick={() => navigate("/documentacion")}
                                     >
@@ -507,6 +507,24 @@ const DriverHome = () => {
 
                 <Row className="mt-4">
                     <Col lg={12}>
+                        {documentos && documentos.some(d => d.estado === 'RECHAZADO') && (
+                            <Alert variant="danger" className="shadow-sm border-0 mb-4" style={{ borderRadius: '15px' }}>
+                                <div className="d-flex align-items-center">
+                                    <FaInfoCircle size={24} className="me-3" />
+                                    <div>
+                                        <h5 className="mb-1 fw-bold">Documentación Rechazada</h5>
+                                        <p className="mb-0">Tu documentación no ha sido aprobada. No podrás publicar nuevos viajes hasta que actualices tus documentos y sean aprobados por un administrador.</p>
+                                    </div>
+                                    <Button
+                                        variant="danger"
+                                        className="ms-auto rounded-pill px-4 fw-bold"
+                                        onClick={() => navigate("/documentacion")}
+                                    >
+                                        ACTUALIZAR
+                                    </Button>
+                                </div>
+                            </Alert>
+                        )}
                         <Card className="shadow border-0" style={{ borderRadius: '15px' }}>
                             <Card.Body className="p-4">
                                 <div className="d-flex align-items-center justify-content-between mb-3">
@@ -525,7 +543,7 @@ const DriverHome = () => {
                                         )}
                                     </div>
                                 </div>
-                                
+
                                 {cargandoViajes ? (
                                     <div className="text-center py-4">
                                         <Spinner animation="border" variant="primary" />
@@ -534,8 +552,8 @@ const DriverHome = () => {
                                 ) : errorViajes ? (
                                     <div className="text-center py-4">
                                         <p className="text-danger">{errorViajes}</p>
-                                        <Button 
-                                            variant="outline-primary" 
+                                        <Button
+                                            variant="outline-primary"
                                             size="sm"
                                             onClick={() => window.location.reload()}
                                         >
@@ -576,7 +594,7 @@ const DriverHome = () => {
                                                 </ListGroup.Item>
                                             ))}
                                         </ListGroup>
-                                        
+
                                         {todosLosViajes.length > 3 && (
                                             <div className="text-center mt-3">
                                                 <Button
@@ -637,8 +655,8 @@ const DriverHome = () => {
                     )}
                 </Modal.Body>
                 <Modal.Footer style={{ borderTop: `2px solid ${darkBorder}` }}>
-                    <Button 
-                        variant="outline-dark" 
+                    <Button
+                        variant="outline-dark"
                         onClick={() => setShowHistorialCompleto(false)}
                         className="rounded-pill px-4"
                     >
@@ -684,16 +702,16 @@ const DriverHome = () => {
                     <div className="mt-4 d-flex flex-column align-items-center">
                         <div className="d-flex gap-3 w-100 justify-content-center">
                             {currentStep > 1 && (
-                                <Button 
-                                    variant="outline-dark" 
-                                    onClick={manejarAtras} 
+                                <Button
+                                    variant="outline-dark"
+                                    onClick={manejarAtras}
                                     className="rounded-pill px-4"
                                     style={{ border: `1.5px solid ${darkBorder}` }}
                                 >
                                     Atrás
                                 </Button>
                             )}
-                            <Button 
+                            <Button
                                 style={{ backgroundColor: brandColor, borderColor: darkBorder, color: 'white', border: `1.5px solid ${darkBorder}` }}
                                 className="px-5 fw-bold rounded-pill"
                                 onClick={manejarSiguiente}
