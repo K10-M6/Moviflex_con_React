@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Image } from "react-bootstrap";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaDoorOpen, FaKey } from "react-icons/fa";
 import Logo from '../pages/Imagenes/TODO_MOVI.png';
 import { useAuth } from '../pages/context/AuthContext';
 import Notificaciones from '../components/Notificaciones';
@@ -69,14 +69,49 @@ export default function NavbarCustom({ transparent }) {
         <Navbar.Collapse id="navbar-basico">
           <Nav className="ms-auto align-items-center">
             {!token ? (
-              <>
-                <Nav.Link as={Link} to="/login" className="fw-bold text-black px-3">
+              <div style={{
+                display: 'flex',
+                gap: '24px',
+                alignItems: 'center',
+                background: 'transparent',
+                padding: 0,
+                boxShadow: 'none',
+              }}>
+                <Nav.Link
+                  as={Link}
+                  to="/login"
+                  className="fw-bold px-3 d-flex align-items-center"
+                  style={{
+                    color: 'white',
+                    background: '#56bca7',
+                    border: '2px solid #fff',
+                    borderRadius: '8px',
+                    minWidth: '140px',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                  }}
+                >
+                  <FaDoorOpen style={{ marginRight: 8 }} color="#fff" size={18} />
                   Iniciar Sesión
                 </Nav.Link>
-                <Nav.Link as={Link} to="/register" className="text-black fw-bold px-3">
+                <Nav.Link
+                  as={Link}
+                  to="/register"
+                  className="fw-bold px-3 d-flex align-items-center"
+                  style={{
+                    color: 'white',
+                    background: '#56bca7',
+                    border: '2px solid #fff',
+                    borderRadius: '8px',
+                    minWidth: '140px',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                  }}
+                >
+                  <FaKey style={{ marginRight: 8 }} color="#fff" size={18} />
                   Registrarse
                 </Nav.Link>
-              </>
+              </div>
             ) : (
               <>
                 <div className="me-3">

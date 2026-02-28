@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Image } from "react-bootstrap";
 import { FaCheckCircle, FaTimesCircle, FaEye, FaCar } from "react-icons/fa";
@@ -14,12 +14,7 @@ function AdminVehiculos() {
     const [selectedPhoto, setSelectedPhoto] = useState("");
     const [validatingPlate, setValidatingPlate] = useState(false);
 
-    useEffect(() => {
-        traerUsuarios();
-        traerVehiculos();
-    }, []);
-
-    async function traerUsuarios() {
+    const traerUsuarios = useCallback(async () => {
         try {
             const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
                 method: "GET",
@@ -44,9 +39,9 @@ function AdminVehiculos() {
             console.error("Error al traer usuarios:", error);
             setError("Error al cargar la información de propietarios");
         }
-    }
+    }, [token]);
 
-    async function traerVehiculos() {
+    const traerVehiculos = useCallback(async () => {
         try {
             setLoading(true);
             setError("");
@@ -81,7 +76,12 @@ function AdminVehiculos() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [token]);
+
+    useEffect(() => {
+        traerUsuarios();
+        traerVehiculos();
+    }, [traerUsuarios, traerVehiculos]);
 
     async function cambiarEstadoVehiculo(id, estadoActual) {
         try {
@@ -213,15 +213,6 @@ function AdminVehiculos() {
         }
 
         return capacidad;
-    }
-
-    function formatearFecha(fecha) {
-        if (!fecha) return "-";
-        return new Date(fecha).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
     }
 
     function getTipoVehiculoBadge(tipo) {
