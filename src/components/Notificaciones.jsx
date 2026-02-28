@@ -1,6 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Badge, ListGroup, Button, Spinner } from "react-bootstrap";
-import { FaBell, FaCheckCircle, FaExclamationCircle, FaClock, FaCar, FaMoneyBillWave, FaEnvelope } from "react-icons/fa";
+import { Badge, ListGroup, Button, Spinner, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { 
+  FaBell, 
+  FaExclamationCircle, 
+  FaCar, 
+  FaMoneyBillWave, 
+  FaEnvelope,
+  FaTrash,
+  FaCheckDouble,
+  FaClock,
+  FaBan
+} from "react-icons/fa";
 import { useAuth } from '../pages/context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -9,8 +19,11 @@ function Notificaciones() {
   const [noLeidas, setNoLeidas] = useState(0);
   const [mostrarDropdown, setMostrarDropdown] = useState(false);
   const [cargando, setCargando] = useState(false);
+  const [notificacionAEliminar, setNotificacionAEliminar] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { token, usuario } = useAuth();
   const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
 
   useEffect(() => {
     if (usuario?.idUsuarios && token) {
@@ -18,7 +31,8 @@ function Notificaciones() {
     }
 
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && 
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
         setMostrarDropdown(false);
       }
     };
@@ -44,12 +58,10 @@ function Notificaciones() {
       
       if (respuesta.ok) {
         const data = await respuesta.json();
-        // Manejar diferentes formatos de respuesta
         const notificacionesData = data.notificaciones || data;
         
         if (Array.isArray(notificacionesData)) {
           setNotificaciones(notificacionesData);
-          
           const noLeidasCount = notificacionesData.filter(n => !n.leido).length;
           setNoLeidas(noLeidasCount);
         } else {
@@ -86,8 +98,10 @@ function Notificaciones() {
           prev.map(n => n.idNotificacion === idNotificacion ? {...n, leido: true} : n)
         );
         setNoLeidas(prev => Math.max(0, prev - 1));
-        
-        toast.success('Notificación marcada como leída', { duration: 2000 });
+        toast.success('Notificación marcada como leída', { 
+          duration: 2000,
+          icon: '👁️'
+        });
       }
     } catch (error) {
       console.error("Error al marcar notificación:", error);
@@ -110,23 +124,28 @@ function Notificaciones() {
       if (respuesta.ok) {
         setNotificaciones(prev => prev.map(n => ({...n, leido: true})));
         setNoLeidas(0);
-        toast.success('Todas las notificaciones marcadas como leídas');
+        toast.success('Todas las notificaciones marcadas como leídas', {
+          icon: '✅'
+        });
+        setMostrarDropdown(false);
       }
     } catch (error) {
       console.error("Error al marcar todas:", error);
     }
   };
 
-  const eliminarNotificacion = async (idNotificacion, event) => {
+  const confirmarEliminacion = (idNotificacion, event) => {
     event.stopPropagation();
+    setNotificacionAEliminar(idNotificacion);
+    setShowDeleteModal(true);
+  };
 
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
-      return;
-    }
+  const eliminarNotificacion = async () => {
+    if (!notificacionAEliminar) return;
 
     try {
       const respuesta = await fetch(
-        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/${idNotificacion}`,
+        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/${notificacionAEliminar}`,
         {
           method: 'DELETE',
           headers: {
@@ -137,30 +156,35 @@ function Notificaciones() {
       );
       
       if (respuesta.ok) {
-        setNotificaciones(prev => prev.filter(n => n.idNotificacion !== idNotificacion));
-        const notificacionEliminada = notificaciones.find(n => n.idNotificacion === idNotificacion);
+        setNotificaciones(prev => prev.filter(n => n.idNotificacion !== notificacionAEliminar));
+        const notificacionEliminada = notificaciones.find(n => n.idNotificacion === notificacionAEliminar);
         if (notificacionEliminada && !notificacionEliminada.leido) {
           setNoLeidas(prev => Math.max(0, prev - 1));
         }
-        toast.success('Notificación eliminada');
+        toast.success('Notificación eliminada', {
+          icon: '🗑️'
+        });
+        setShowDeleteModal(false);
+        setNotificacionAEliminar(null);
       }
     } catch (error) {
       console.error("Error al eliminar notificación:", error);
+      toast.error('Error al eliminar la notificación');
     }
   };
 
   const getIcono = (tipo) => {
     switch(tipo?.toUpperCase()) {
       case 'SISTEMA':
-        return <FaExclamationCircle className="text-info" size={16} />;
+        return <FaExclamationCircle className="text-info" size={18} />;
       case 'VIAJE':
-        return <FaCar className="text-success" size={16} />;
+        return <FaCar className="text-success" size={18} />;
       case 'PAGO':
-        return <FaMoneyBillWave className="text-warning" size={16} />;
+        return <FaMoneyBillWave className="text-warning" size={18} />;
       case 'MENSAJE':
-        return <FaEnvelope className="text-primary" size={16} />;
+        return <FaEnvelope className="text-primary" size={18} />;
       default:
-        return <FaBell className="text-secondary" size={16} />;
+        return <FaBell className="text-secondary" size={18} />;
     }
   };
 
@@ -169,15 +193,11 @@ function Notificaciones() {
     
     const ahora = new Date();
     const notifDate = new Date(fecha);
-    const diffMs = ahora - notifDate;
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHoras = Math.floor(diffMs / 3600000);
-    const diffDias = Math.floor(diffMs / 86400000);
+    const diffMin = Math.floor((ahora - notifDate) / 60000);
 
     if (diffMin < 1) return 'Ahora mismo';
     if (diffMin < 60) return `Hace ${diffMin} ${diffMin === 1 ? 'minuto' : 'minutos'}`;
-    if (diffHoras < 24) return `Hace ${diffHoras} ${diffHoras === 1 ? 'hora' : 'horas'}`;
-    if (diffDias < 7) return `Hace ${diffDias} ${diffDias === 1 ? 'día' : 'días'}`;
+    if (diffMin < 1440) return `Hace ${Math.floor(diffMin / 60)} ${Math.floor(diffMin / 60) === 1 ? 'hora' : 'horas'}`;
     return formatDate(fecha);
   };
 
@@ -185,85 +205,125 @@ function Notificaciones() {
     const date = new Date(fecha);
     return date.toLocaleDateString('es-ES', { 
       day: '2-digit', 
-      month: '2-digit',
-      year: 'numeric'
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
   return (
-    <div className="position-relative" ref={dropdownRef}>
-<button 
-  className="btn btn-link position-relative p-2" // Quitamos text-white
-  onClick={() => setMostrarDropdown(!mostrarDropdown)}
-  style={{ 
-    textDecoration: 'none',
-    transition: 'all 0.2s ease',
-    color: '#54c7b8', // Tu color personalizado aplicado aquí
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  }}
-  aria-label="Notificaciones"
->
-  <FaBell size={20} />
-  {noLeidas > 0 && (
-    <Badge 
-      bg="danger" 
-      className="position-absolute top-0 start-100 translate-middle rounded-pill"
-      style={{ 
-        fontSize: '0.6rem',
-        padding: '0.25rem 0.4rem',
-        minWidth: '18px'
-      }}
-    >
-      {noLeidas > 9 ? '9+' : noLeidas}
-    </Badge>
-  )}
-</button>
+    <div className="position-relative">
+
+      <button 
+        ref={buttonRef}
+        className="btn btn-link position-relative p-2 rounded-circle"
+        onClick={() => setMostrarDropdown(!mostrarDropdown)}
+        style={{ 
+          color: '#54c7b8',
+          backgroundColor: mostrarDropdown ? 'rgba(84, 199, 184, 0.1)' : 'transparent',
+          width: '40px',
+          height: '40px',
+          transition: 'all 0.3s ease'
+        }}
+      >
+        <FaBell size={20} />
+        {noLeidas > 0 && (
+          <Badge 
+            bg="danger" 
+            className="position-absolute top-0 start-100 translate-middle rounded-pill"
+            style={{ 
+              fontSize: '0.65rem',
+              padding: '0.25rem 0.45rem',
+              minWidth: '20px',
+              boxShadow: '0 2px 5px rgba(220, 53, 69, 0.3)'
+            }}
+          >
+            {noLeidas > 9 ? '9+' : noLeidas}
+          </Badge>
+        )}
+      </button>
+
+      <Modal 
+        show={showDeleteModal} 
+        onHide={() => setShowDeleteModal(false)}
+        centered
+      >
+        <Modal.Header closeButton className="border-0 pb-0">
+          <Modal.Title className="d-flex align-items-center">
+            <div className="bg-danger bg-opacity-10 p-2 rounded-circle me-2">
+              <FaExclamationCircle className="text-danger" size={24} />
+            </div>
+            <span>Confirmar eliminación</span>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-3">
+          <p className="mb-2">¿Estás seguro de que quieres eliminar esta notificación?</p>
+          <p className="text-muted small mb-0">
+            <FaBan className="me-1" size={12} />
+            Esta acción no se puede deshacer.
+          </p>
+        </Modal.Body>
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="outline-secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={eliminarNotificacion}>
+            <FaTrash size={14} className="me-2" />
+            Eliminar
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {mostrarDropdown && (
         <div 
-          className="position-absolute end-0 mt-2 bg-white shadow-lg rounded-3"
+          ref={dropdownRef}
+          className="position-absolute end-0 mt-2 bg-white shadow-lg border-0"
           style={{ 
-            width: '350px', 
-            maxHeight: '450px', 
-            overflow: 'hidden',
+            width: '380px',
+            maxHeight: '480px',
             zIndex: 9999,
-            border: '1px solid rgba(0,0,0,0.1)',
-            boxShadow: '0 5px 20px rgba(0,0,0,0.2)'
+            borderRadius: '12px',
+            overflow: 'hidden',
+            animation: 'slideDown 0.2s ease'
           }}
         >
-          <div className="p-3 border-bottom d-flex justify-content-between align-items-center" style={{ backgroundColor: '#f8f9fa' }}>
+          <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
             <div>
-              <h6 className="mb-0 fw-bold">Notificaciones</h6>
+              <h6 className="mb-0 fw-bold d-flex align-items-center gap-2">
+                <FaBell className="text-primary" size={16} />
+                Notificaciones
+              </h6>
               <small className="text-muted">
                 {noLeidas === 0 ? 'No hay nuevas' : `${noLeidas} no leídas`}
               </small>
             </div>
             {noLeidas > 0 && (
-              <Button 
-                variant="link" 
-                size="sm" 
-                onClick={marcarTodasLeidas}
-                className="text-decoration-none p-0"
-                style={{ fontSize: '0.8rem' }}
-              >
-                <FaCheckCircle className="me-1" />
-                Marcar todas
-              </Button>
+              <OverlayTrigger placement="bottom" overlay={<Tooltip>Marcar todas como leídas</Tooltip>}>
+                <Button 
+                  variant="light" 
+                  size="sm" 
+                  onClick={marcarTodasLeidas}
+                  className="rounded-circle p-2"
+                  style={{ width: '36px', height: '36px' }}
+                >
+                  <FaCheckDouble className="text-primary" size={16} />
+                </Button>
+              </OverlayTrigger>
             )}
           </div>
 
-          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
             {cargando && notificaciones.length === 0 ? (
-              <div className="text-center py-4">
-                <Spinner animation="border" size="sm" variant="primary" />
-                <p className="text-muted small mt-2">Cargando...</p>
+              <div className="text-center py-5">
+                <Spinner animation="border" variant="primary" size="sm" />
+                <p className="text-muted small mt-3">Cargando...</p>
               </div>
             ) : notificaciones.length === 0 ? (
-              <div className="text-center py-4">
-                <FaBell size={30} className="text-muted mb-2 opacity-50" />
-                <p className="text-muted small mb-0">No tienes notificaciones</p>
+              <div className="text-center py-5">
+                <div className="bg-light rounded-circle d-inline-flex p-3 mb-3">
+                  <FaBell size={30} className="text-muted opacity-50" />
+                </div>
+                <p className="text-muted small mb-1">No tienes notificaciones</p>
               </div>
             ) : (
               <ListGroup variant="flush">
@@ -272,61 +332,60 @@ function Notificaciones() {
                     key={notif.idNotificacion}
                     action
                     onClick={() => marcarComoLeida(notif.idNotificacion)}
-                    className={`d-flex align-items-start gap-2 py-2 px-3 border-bottom position-relative ${
+                    className={`border-0 border-bottom py-3 px-3 position-relative ${
                       !notif.leido ? 'bg-light' : ''
                     }`}
                     style={{ 
-                      cursor: 'pointer',
-                      transition: 'background-color 0.2s ease',
-                      borderLeft: !notif.leido ? '3px solid #124c83' : 'none',
-                      paddingRight: '40px'
+                      borderLeft: !notif.leido ? '4px solid #0d6efd' : '4px solid transparent',
+                      paddingRight: '45px'
                     }}
                   >
-                    <div className="mt-1" style={{ minWidth: '20px' }}>
-                      {getIcono(notif.tipo)}
-                    </div>
-                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                      <div className="d-flex justify-content-between align-items-start">
-                        <strong className="small" style={{ fontSize: '0.85rem' }}>
-                          {notif.titulo || 'Notificación'}
-                        </strong>
-                        {!notif.leido && (
-                          <Badge 
-                            bg="primary" 
-                            className="ms-2 rounded-pill"
-                            style={{ fontSize: '0.5rem', padding: '0.2rem 0.4rem' }}
-                          >
-                            Nuevo
-                          </Badge>
-                        )}
+                    <div className="d-flex gap-3">
+                      <div className={`rounded-circle p-2 ${
+                        !notif.leido ? 'bg-primary bg-opacity-10' : 'bg-secondary bg-opacity-10'
+                      }`}>
+                        {getIcono(notif.tipo)}
                       </div>
-                      <p className="small text-muted mb-1" style={{ 
-                        fontSize: '0.75rem',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden'
-                      }}>
-                        {notif.mensaje || 'Sin mensaje'}
-                      </p>
-                      <div className="d-flex align-items-center">
-                        <FaClock className="text-muted me-1" size={8} />
-                        <small className="text-muted" style={{ fontSize: '0.65rem' }}>
-                          {getTimeAgo(notif.fechaCreacion)}
-                        </small>
-                      </div>
-                    </div>
+                       <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                        <div className="d-flex justify-content-between align-items-start mb-1">
+                          <strong className="small">{notif.titulo || 'Notificación'}</strong>
+                          {!notif.leido && (
+                            <Badge bg="primary" className="ms-2 rounded-pill" style={{ fontSize: '0.6rem' }}>
+                              Nuevo
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <p className="small text-muted mb-2" style={{ 
+                          fontSize: '0.8rem',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden'
+                        }}>
+                          {notif.mensaje || 'Sin mensaje'}
+                        </p>
 
-                    <Button 
-                      variant="link" 
-                      size="sm"
-                      onClick={(e) => eliminarNotificacion(notif.idNotificacion, e)}
-                      className="position-absolute top-50 end-0 translate-middle-y text-danger p-2"
-                      style={{ fontSize: '0.8rem', zIndex: 10 }}
-                      aria-label="Eliminar notificación"
-                    >
-                      ×
-                    </Button>
+                        <div className="d-flex align-items-center text-muted">
+                          <FaClock size={10} className="me-1" />
+                          <small style={{ fontSize: '0.65rem' }}>
+                            {getTimeAgo(notif.fechaCreacion)}
+                          </small>
+                        </div>
+                      </div>
+
+                      <OverlayTrigger placement="left" overlay={<Tooltip>Eliminar</Tooltip>}>
+                        <Button 
+                          variant="link" 
+                          size="sm"
+                          onClick={(e) => confirmarEliminacion(notif.idNotificacion, e)}
+                          className="p-1 text-danger position-absolute"
+                          style={{ top: '12px', right: '12px' }}
+                        >
+                          <FaTrash size={14} />
+                        </Button>
+                      </OverlayTrigger>
+                    </div>
                   </ListGroup.Item>
                 ))}
               </ListGroup>

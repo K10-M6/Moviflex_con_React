@@ -4,7 +4,6 @@ import { FaUser, FaRoute, FaWallet, FaHistory, FaStar, FaCalendarAlt, FaArrowRig
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-// Importamos la imagen de fondo de autores
 import imagencontacto from "../Imagenes/AutoresContacto.png";
 
 const UserHome = () => {
@@ -14,7 +13,7 @@ const UserHome = () => {
     const darkBorder = "#1a1a1a";
 
     const cardStyle = {
-        background: "rgba(255, 255, 255, 0.85)", // Aumenté un poco la opacidad para que se lea mejor sobre el fondo
+        background: "rgba(255, 255, 255, 0.85)",
         borderRadius: '16px',
         border: `1.5px solid ${darkBorder}`,
         boxShadow: "4px 4px 0px rgba(0,0,0,0.08)",
@@ -41,34 +40,71 @@ const UserHome = () => {
 
     useEffect(() => {
         const obtenerViajes = async () => {
-            if (!token || !usuario?.idUsuarios) return;
+            if (!token || !usuario?.idUsuarios) {
+                console.log("No hay token o usuario disponible");
+                return;
+            }
+            
             try {
                 setCargandoViajes(true);
+                setErrorViajes("");
+                
+                console.log("Obteniendo viajes para usuario:", usuario.idUsuarios);
+                
                 const respuesta = await fetch(
-                    `https://backendmovi-production-c657.up.railway.app/api/usuario-viajes/mis-viajes?limit=5`, 
-                    { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+                    `https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, 
+                    { 
+                        headers: { 
+                            'Authorization': `Bearer ${token}`, 
+                            'Content-Type': 'application/json' 
+                        } 
+                    }
                 );
+                
+                console.log("Respuesta status:", respuesta.status);
+                
                 if (respuesta.ok) {
                     const data = await respuesta.json();
+                    console.log("Viajes recibidos:", data);
+                    
                     const viajesData = Array.isArray(data) ? data : [];
                     setViajesRecientes(viajesData.slice(0, 3));
+                    
                     const completados = viajesData.filter(v => v.estado === 'COMPLETADO').length;
                     const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
                     const totalGastado = viajesData.reduce((sum, v) => sum + (v.precioFinal || 0), 0);
+                    
                     setEstadisticas({
                         totalViajes: viajesData.length,
                         viajesCompletados: completados,
                         viajesCancelados: cancelados,
                         totalGastado: totalGastado
                     });
+                    
+                } else if (respuesta.status === 404) {
+                    console.log("No se encontraron viajes");
+                    setViajesRecientes([]);
+                    setEstadisticas({
+                        totalViajes: 0,
+                        viajesCompletados: 0,
+                        viajesCancelados: 0,
+                        totalGastado: 0
+                    });
+                } else {
+                    const errorText = await respuesta.text();
+                    console.log("Error response:", errorText);
+                    setErrorViajes(`Error ${respuesta.status}: No se pudieron cargar los viajes`);
                 }
             } catch (error) {
+                console.error("Error al obtener viajes:", error);
                 setErrorViajes("Error al cargar viajes");
             } finally {
                 setCargandoViajes(false);
             }
         };
+        
         obtenerViajes();
+        
     }, [token, usuario?.idUsuarios]);
 
     useEffect(() => {
@@ -94,7 +130,6 @@ const UserHome = () => {
         obtenerPagos();
     }, [token, usuario?.idUsuarios]);
 
-    // Funciones de formato (se mantienen igual)
     const getEstadoColor = (estado) => {
         switch(estado) {
             case 'COMPLETADO': return 'success';
@@ -136,12 +171,10 @@ const UserHome = () => {
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-            {/* Navbar fijo arriba */}
+        
             <div style={{ backgroundColor: brandColor, borderBottom: `1.5px solid ${darkBorder}`, zIndex: 10 }}>
                 <Navbar />
             </div>
-
-            {/* SECCIÓN DEL CONTENEDOR CON IMAGEN DE FONDO */}
             <div style={{
                 flex: 1,
                 backgroundImage: `url(${imagencontacto})`,
@@ -151,18 +184,17 @@ const UserHome = () => {
                 position: 'relative',
                 padding: '40px 0'
             }}>
-                {/* Overlay para mejorar la legibilidad del contenido sobre la imagen */}
+               
                 <div style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: 'rgba(255, 255, 255, 0.6)', // Capa clara para ver la imagen pero no perder el texto
+                    backgroundColor: 'rgba(255, 255, 255, 0.6)',
                     zIndex: 1
                 }} />
 
-                {/* Contenido Real */}
                 <Container style={{ position: 'relative', zIndex: 2 }}>
                     <Card className="mb-4" style={cardStyle}>
                         <Card.Body className="p-4 d-flex justify-content-between align-items-center">
@@ -264,7 +296,6 @@ const UserHome = () => {
                                             <h5 className="mb-0 fw-bold">Viajes Recientes</h5>
                                         </div>
                                     </div>
-                                    {/* ... contenido de viajes ... */}
                                     <ListGroup variant="flush">
                                         {viajesRecientes.map((viaje) => (
                                             <ListGroup.Item key={viaje.idViajes} className="px-0 bg-transparent">
