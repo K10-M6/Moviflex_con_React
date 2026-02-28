@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Image } from "react-bootstrap";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaDoorOpen, FaKey } from "react-icons/fa"; 
 import Logo from '../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import { useAuth } from '../pages/context/AuthContext';
 import Notificaciones from '../components/Notificaciones';
