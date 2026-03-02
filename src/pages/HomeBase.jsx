@@ -162,7 +162,7 @@ function HomeBase() {
 
 
 
-      <footer className="py-5 text-white text-center mt-auto" style={{ background: '#56bca7' }}>
+      <footer className="py-5 text-white text-center mt-auto" style={{ background: '#3c3c3c' }}>
         <Container>
           <h2 className="mb-4">Únete a nuestra comunidad</h2>
           <Button as={Link} to="/register" variant="light" className="px-5 fw-bold">Registrarse Ahora</Button>

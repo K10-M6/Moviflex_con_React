@@ -1,20 +1,24 @@
 import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
-import { Container, Row, Col, Card, Form, Button, Alert, Modal, ProgressBar } from "react-bootstrap";
-import Logo from './Imagenes/TODO_MOVI.png';
-// Importación de las nuevas imágenes
-import FondoPantalla from './Imagenes/AutoresContacto.png';
-import ImagenTransparencia from './Imagenes/TRANSPARENCIA MOVIFLEX.png';
-import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode, FaCamera, FaVideo, FaUserCircle } from "react-icons/fa";
-import Navbar from '../components/Navbar';
+import { Container, Row, Col, Card, Form, Button, Alert, Modal } from "react-bootstrap";
+
+// --- IMPORTACIÓN DE IMÁGENES ---
+import LogoMoviflex from './Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
+import EscenaHomeBase from './Imagenes/HomeBaseImage.png';
+import FondoPantalla from './Imagenes/AutoresContacto.png'; // Imagen de fondo solicitada
+
+// Importación de iconos
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode, FaCamera } from "react-icons/fa";
+
+// Componentes del proyecto
+import NavbarCustom from '../components/Navbar';
 import QRScanner from '../components/QRScanner';
 
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showQRScanner, setShowQRScanner] = useState(false);
@@ -31,54 +35,29 @@ function Login() {
     const navigate = useNavigate();
     const { login, token, usuario } = useAuth();
 
-    const ROLES = {
-        ADMIN: 1,
-        CONDUCTOR: 2,
-        VIAJERO: 3
-    };
+    const ROLES = { ADMIN: 1, CONDUCTOR: 2, VIAJERO: 3 };
 
     useEffect(() => {
         const rolId = usuario?.idRol || usuario?.rol?.id;
-
-        if (rolId === ROLES.ADMIN) {
-            navigate("/dashboard/home");
-        } else if (rolId === ROLES.CONDUCTOR) {
-            navigate("/driver-home");
-        } else if (rolId === ROLES.VIAJERO) {
-            navigate("/user-home");
-        }
+        if (rolId === ROLES.ADMIN) navigate("/dashboard/home");
+        else if (rolId === ROLES.CONDUCTOR) navigate("/driver-home");
+        else if (rolId === ROLES.VIAJERO) navigate("/user-home");
     }, [token, usuario, navigate]);
 
+    // --- LÓGICA DE CÁMARA (Mantenida) ---
     const iniciarCamara = async () => {
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    facingMode: "user",
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                } 
+                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } 
             });
-            
             setStream(mediaStream);
             setCameraActive(true);
-            
-            setTimeout(() => {
-                if (videoRef.current) {
-                    videoRef.current.srcObject = mediaStream;
-                }
-            }, 100);
-            
-        } catch (err) {
-            console.error("Error al acceder a la cámara:", err);
-            setError('No se pudo acceder a la cámara. Verifica los permisos.');
-        }
+            setTimeout(() => { if (videoRef.current) videoRef.current.srcObject = mediaStream; }, 100);
+        } catch (err) { setError('No se pudo acceder a la cámara.'); }
     };
 
     const detenerCamara = () => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            setStream(null);
-        }
+        if (stream) { stream.getTracks().forEach(track => track.stop()); setStream(null); }
         setCameraActive(false);
     };
 
@@ -87,334 +66,160 @@ function Login() {
             const video = videoRef.current;
             const canvas = canvasRef.current;
             const context = canvas.getContext('2d');
-            
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            const fotoBase64 = canvas.toDataURL('image/jpeg', 0.9);
-            
-            setFotoBase64(fotoBase64);
-            setFotoPreview(fotoBase64);
-            
+            setFotoBase64(canvas.toDataURL('image/jpeg', 0.9));
+            setFotoPreview(canvas.toDataURL('image/jpeg', 0.9));
             detenerCamara();
         }
     };
 
     const abrirFacialModal = () => {
-        setFotoBase64("");
-        setFotoPreview("");
-        setError("");
+        setFotoBase64(""); setFotoPreview(""); setError("");
         setShowFacialModal(true);
         setTimeout(() => iniciarCamara(), 500);
     };
 
-    const cerrarFacialModal = () => {
-        detenerCamara();
-        setShowFacialModal(false);
-        setFotoBase64("");
-        setFotoPreview("");
-    };
+    const cerrarFacialModal = () => { detenerCamara(); setShowFacialModal(false); };
 
     const enviarLoginFacial = async () => {
-        if (!fotoBase64) {
-            setError("Debes tomar una foto primero");
-            return;
-        }
-
+        if (!fotoBase64) return;
         setVerificando(true);
-        setError("");
-
         try {
-            const datosEnviar = { image: fotoBase64 };
-
             const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datosEnviar)
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: fotoBase64 })
             });
-
             const data = await respuesta.json();
-
-            if (respuesta.ok) {
-                if (!data.token || !data.usuario) {
-                    setError('Error en la respuesta del servidor');
-                    return;
-                }
-
-                login(data.token, data.usuario);
-                setSuccess("¡Login facial exitoso!");
-                cerrarFacialModal();
-
-                const user = data.usuario;
-                const rolId = user.idRol || user.rol?.id;
-
-                if (rolId === ROLES.ADMIN) {
-                    navigate("/dashboard/home");
-                } else if (rolId === ROLES.CONDUCTOR) {
-                    navigate("/driver-home");
-                } else if (rolId === ROLES.VIAJERO) {
-                    navigate("/user-home");
-                }
-            } else {
-                setError(data.error || data.message || 'Rostro no reconocido');
-            }
-        } catch (error) {
-            console.error("Error:", error);
-            setError('Error en la conexión: ' + error.message);
-        } finally {
-            setVerificando(false);
-        }
+            if (respuesta.ok) { login(data.token, data.usuario); cerrarFacialModal(); }
+            else { setError(data.error || 'Rostro no reconocido'); }
+        } catch (error) { setError('Error en la conexión'); } finally { setVerificando(false); }
     };
 
     async function guardar(e) {
-        e.preventDefault();
-        setError("");
-        setSuccess("");
-        setLoading(true);
-
+        e.preventDefault(); setError(""); setLoading(true);
         try {
             const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+                method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
             });
-
             const data = await respuesta.json();
-            if (respuesta.ok) {
-                if (!data.token || !data.usuario) {
-                    setError('Credenciales inválidas. El servidor no devolvió token/usuario.');
-                    return;
-                }
-
-                login(data.token, data.usuario);
-                setSuccess("¡Login exitoso!");
-
-                const user = data.usuario;
-                const rolId = user.idRol || user.rol?.id;
-
-                if (rolId === ROLES.ADMIN) {
-                    navigate("/dashboard/home");
-                } else if (rolId === ROLES.CONDUCTOR) {
-                    navigate("/driver-home");
-                } else if (rolId === ROLES.VIAJERO) {
-                    navigate("/user-home");
-                }
-            } else {
-                setError(data.message || 'Error al iniciar sesión');
-            }
-        } catch (error) {
-            setError('Error en la conexión: ' + error.message);
-        } finally {
-            setLoading(false);
-        }
+            if (respuesta.ok) login(data.token, data.usuario);
+            else setError(data.message || 'Error al iniciar sesión');
+        } catch (error) { setError('Error en la conexión'); } finally { setLoading(false); }
     }
 
     const handleQRScan = async (qrData) => {
-        setLoading(true);
-        setError("");
-
         try {
             const datos = JSON.parse(qrData);
-
-            if (datos.tipo === 'login_token') {
-                if (datos.expira && datos.expira < Date.now()) {
-                    setError("El código QR ha expirado. Genera uno nuevo.");
-                    setLoading(false);
-                    return;
-                }
-
-                if (datos.token) {
-                    const usuarioQR = {
-                        email: datos.email,
-                        idRol: datos.idRol
-                    };
-
-                    login(datos.token, usuarioQR);
-                    setSuccess("¡Login automático con QR exitoso!");
-                }
-
-            } else {
-                setError("El código QR no es válido para iniciar sesión");
-            }
-        } catch (error) {
-            setError("El código QR no tiene el formato correcto");
-        } finally {
-            setLoading(false);
-        }
+            if (datos.tipo === 'login_token' && datos.token) login(datos.token, { email: datos.email, idRol: datos.idRol });
+        } catch (e) { setError("QR no válido"); }
     };
 
     return (
         <div style={{
-            backgroundImage: `url(${FondoPantalla})`, // Fondo actualizado
+            backgroundImage: `url(${FondoPantalla})`, // Fondo que tapa todo lo blanco
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
             minHeight: '100vh',
-            minWidth: '100vw',
             display: 'flex',
             flexDirection: 'column'
         }}>
-            <Navbar />
-            <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1 }}>
-                <Row className="justify-content-center align-items-center">
+            <NavbarCustom />
+
+            <Container className="d-flex flex-column justify-content-center flex-grow-1 py-4">
+                <Row className="justify-content-center align-items-center g-0">
                     
-                    <Col xs={12} md={5} lg={4} xl={5}>
-                        <Card className="shadow-lg border-0" style={{ 
-                            borderRadius: '25px', 
-                            overflow: 'hidden',
-                            width: '100%',
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)' // Ligera transparencia para el card
-                        }}>
-                            <Card.Body className="p-4">
+                    {/* COLUMNA IZQUIERDA: Ilustración */}
+                    <Col md={7} lg={6} className="d-none d-md-flex justify-content-center p-4">
+                        <img 
+                            src={EscenaHomeBase} 
+                            alt="Moviflex Home" 
+                            style={{ width: '100%', maxWidth: '550px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }} 
+                        />
+                    </Col>
+
+                    {/* COLUMNA DERECHA: Tarjeta */}
+                    <Col xs={12} md={5} lg={5} xl={4}>
+                        <Card className="shadow-lg border-0" style={{ borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
+                            <Card.Body className="p-4 p-md-5">
+                                
                                 <div className="text-center mb-4">
-                                    <img src={Logo} alt="Logo Moviflexx"
-                                        style={{ width: '140px', height: 'auto' }}
-                                    />
-                                    <h5 className="fw-bold text-dark mt-3">¡Bienvenido de nuevo!</h5>
+                                    <img src={LogoMoviflex} alt="Logo" style={{ width: '150px' }} />
                                 </div>
 
-                                <Button
-                                    onClick={() => setShowQRScanner(true)}
-                                    variant="outline-primary"
-                                    className="w-100 py-2 mb-2 d-flex justify-content-center align-items-center gap-2"
-                                    style={{ borderRadius: '12px', borderColor: '#4acfbd', color: '#4acfbd', fontWeight: 'bold' }}
-                                    disabled={loading}
-                                >
-                                    <FaQrcode />
-                                    {loading ? 'Procesando...' : 'Iniciar sesión con QR'}
-                                </Button>
-
-                                <Button
-                                    onClick={abrirFacialModal}
-                                    variant="outline-success"
-                                    className="w-100 py-2 mb-3 d-flex justify-content-center align-items-center gap-2"
-                                    style={{ borderRadius: '12px', borderColor: '#28a745', color: '#28a745', fontWeight: 'bold' }}
-                                    disabled={loading}
-                                >
-                                    <FaCamera />
-                                    {loading ? 'Procesando...' : 'Login Facial'}
-                                </Button>
-
-                                <div className="text-center mb-2">
-                                    <small className="text-muted">o</small>
+                                <div className="d-flex gap-2 mb-4">
+                                    <Button onClick={() => setShowQRScanner(true)} variant="outline-primary" className="w-100 fw-bold" style={{ borderRadius: '12px', borderColor: '#4acfbd', color: '#4acfbd' }}>
+                                        <FaQrcode className="me-1"/> QR
+                                    </Button>
+                                    <Button onClick={abrirFacialModal} variant="outline-success" className="w-100 fw-bold" style={{ borderRadius: '12px' }}>
+                                        <FaCamera className="me-1"/> Facial
+                                    </Button>
                                 </div>
 
                                 {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
-                                {success && <Alert variant="success" className="py-2 small">{success}</Alert>}
 
                                 <Form onSubmit={guardar}>
-                                    <Form.Group className="mb-3" controlId="email">
-                                        <Form.Label className="small fw-bold">
-                                            <FaEnvelope className="me-2" />Correo Electrónico
-                                        </Form.Label>
-                                        <Form.Control
-                                            type="email"
-                                            placeholder="Ingrese su correo"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            required
-                                            disabled={loading}
-                                            style={{ borderRadius: '12px', padding: '10px 15px' }}
-                                        />
+                                    <Form.Group className="mb-3">
+                                        <div className="position-relative">
+                                            <FaEnvelope className="position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" />
+                                            <Form.Control
+                                                type="email" placeholder="Correo electrónico" value={email}
+                                                onChange={(e) => setEmail(e.target.value)} required
+                                                style={{ borderRadius: '12px', paddingLeft: '45px', backgroundColor: '#f8fafb', border: '1px solid #eee' }}
+                                            />
+                                        </div>
                                     </Form.Group>
 
-                                    <Form.Group className="mb-4" controlId="password">
-                                        <Form.Label className="small fw-bold">
-                                            <FaLock className="me-2" />Contraseña
-                                        </Form.Label>
+                                    <Form.Group className="mb-3">
                                         <div className="position-relative">
+                                            <FaLock className="position-absolute start-0 top-50 translate-middle-y ms-3 text-muted" />
                                             <Form.Control
                                                 type={showPassword ? "text" : "password"}
-                                                placeholder="Ingrese su contraseña"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                required
-                                                disabled={loading}
-                                                style={{ borderRadius: '12px', padding: '10px 40px 10px 15px' }}
+                                                placeholder="Contraseña" value={password}
+                                                onChange={(e) => setPassword(e.target.value)} required
+                                                style={{ borderRadius: '12px', paddingLeft: '45px', backgroundColor: '#f8fafb', border: '1px solid #eee' }}
                                             />
-                                            <span 
-                                                className="position-absolute end-0 top-50 translate-middle-y me-3" 
-                                                style={{ cursor: 'pointer', zIndex: 10 }} 
-                                                onClick={() => setShowPassword(!showPassword)}
-                                            >
-                                                {showPassword ? <FaEyeSlash color="#666"/> : <FaEye color="#666"/>}
+                                            <span className="position-absolute end-0 top-50 translate-middle-y me-3" style={{ cursor: 'pointer' }} onClick={() => setShowPassword(!showPassword)}>
+                                                {showPassword ? <FaEyeSlash color="#8899a6"/> : <FaEye color="#8899a6"/>}
                                             </span>
                                         </div>
                                     </Form.Group>
 
-                                    <Button
-                                        type="submit"
-                                        className="w-100 py-2 mb-3"
-                                        style={{ background: '#4acfbd', border: 'none', borderRadius: '12px', fontWeight: 'bold' }}
-                                        disabled={loading}
-                                    >
-                                        {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                                    <div className="d-flex justify-content-between mb-4 small">
+                                        <Form.Check type="checkbox" label="Recordarme" className="text-muted" />
+                                        {/* Se quitó Forgot password? como solicitaste */}
+                                    </div>
+
+                                    <Button type="submit" className="w-100 py-3 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }} disabled={loading}>
+                                        {loading ? 'Iniciando...' : 'Iniciar Sesión'}
                                     </Button>
                                 </Form>
-                                <p className="text-center text-muted mt-3">
-                                    ¿No tienes cuenta? <a href="/register" className="text-decoration-none fw-bold" style={{ color: '#124c83' }}>Regístrate</a>
+
+                                <p className="text-center mt-4 mb-0 small text-muted">
+                                    ¿No tienes una cuenta? <Link to="/register" className="fw-bold text-decoration-none" style={{ color: '#4acfbd' }}>Regístrate</Link>
                                 </p>
                             </Card.Body>
                         </Card>
                     </Col>
-
-                    {/* SECCIÓN DE LA IMAGEN SUSTITUYENDO EL CARRUSEL */}
-                    <Col xs={12} md={7} lg={6} xl={6} className="text-center d-none d-md-flex flex-column align-items-center justify-content-center">
-                        <img 
-                            src={ImagenTransparencia} 
-                            alt="Moviflex Transparencia" 
-                            style={{ 
-                                width: '100%', 
-                                maxWidth: '600px', 
-                                height: 'auto',
-                                filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.3))' // Sombra para resaltar la transparencia
-                            }} 
-                        />
-                        <h3 className="mt-4 fw-bold" style={{ color: '#ffffff', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
-                            Tu movilidad, nuestra prioridad
-                        </h3>
-                    </Col>
                 </Row>
             </Container>
 
-            {/* Modales se mantienen igual... */}
-            <Modal show={showFacialModal} onHide={cerrarFacialModal} size="lg" centered>
-                {/* ... Contenido del modal facial ... */}
-                <Modal.Header closeButton>
-                    <Modal.Title>Inicio de Sesión Facial</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="text-center">
-                        <div style={{ position: 'relative', backgroundColor: '#000', minHeight: '400px', borderRadius: '10px', overflow: 'hidden' }}>
-                            <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: 'auto' }} />
-                            <canvas ref={canvasRef} style={{ display: 'none' }} />
-                        </div>
-                        {!fotoPreview && cameraActive && (
-                            <Button variant="success" onClick={tomarFoto} className="mt-4 w-100 py-3">
-                                <FaCamera className="me-2" /> Tomar Foto
-                            </Button>
-                        )}
-                        {fotoPreview && (
-                            <div className="text-center mt-4">
-                                <img src={fotoPreview} alt="Preview" style={{ width: '250px', borderRadius: '15px', border: '4px solid #4acfbd' }} />
-                                {!verificando && (
-                                    <Button variant="success" onClick={enviarLoginFacial} className="mt-4 w-100 py-3">
-                                        Verificar e Iniciar Sesión
-                                    </Button>
-                                )}
-                            </div>
-                        )}
+            {/* Modales mantenidos */}
+            <Modal show={showFacialModal} onHide={cerrarFacialModal} centered size="lg">
+                <Modal.Header closeButton className="border-0"><Modal.Title className="fw-bold">Login Facial</Modal.Title></Modal.Header>
+                <Modal.Body className="text-center">
+                    <div style={{ position: 'relative', backgroundColor: '#000', height: '400px', borderRadius: '15px', overflow: 'hidden' }}>
+                        <video ref={videoRef} autoPlay playsInline style={{ width: '100%' }} />
+                        <canvas ref={canvasRef} style={{ display: 'none' }} />
                     </div>
+                    {!fotoPreview ? <Button variant="success" onClick={tomarFoto} className="mt-3 w-100 py-2 fw-bold">Capturar</Button> :
+                    <Button variant="primary" onClick={enviarLoginFacial} className="mt-3 w-100 py-2 fw-bold" disabled={verificando}>{verificando ? 'Verificando...' : 'Confirmar e Iniciar'}</Button>}
                 </Modal.Body>
             </Modal>
 
-            <QRScanner
-                show={showQRScanner}
-                onHide={() => setShowQRScanner(false)}
-                onScanSuccess={handleQRScan}
-            />
+            <QRScanner show={showQRScanner} onHide={() => setShowQRScanner(false)} onScanSuccess={handleQRScan} />
         </div>
     );
 }

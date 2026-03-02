@@ -51,7 +51,7 @@ export default function NavbarCustom({ transparent }) {
     <Navbar 
       variant={transparent ? "light" : "dark"} 
       expand="lg" 
-      className="sticky-top py-2" 
+      className="sticky-top py-1" // Reducido de py-2 a py-1 para balancear el logo más grande
       style={{ 
         backgroundColor: transparent ? 'transparent' : '#f3f3f3', 
         borderBottom: transparent ? 'none' : '0px solid #adadad',
@@ -61,7 +61,14 @@ export default function NavbarCustom({ transparent }) {
     >
       <Container>
         <Navbar.Brand as={Link} to={token ? homePath : "/"}>
-          <img src={Logo} height="40px" className="me-1" alt="Logo MoviFlexx" />
+          {/* LOGO AGRANDADO: Cambiado de 40px a 65px */}
+          <img 
+            src={Logo} 
+            height="65px" 
+            style={{ width: 'auto', objectFit: 'contain' }} 
+            className="me-1" 
+            alt="Logo MoviFlexx" 
+          />
         </Navbar.Brand>
         
         <Navbar.Toggle aria-controls="navbar-basico" />
