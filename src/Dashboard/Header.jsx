@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../pages/context/AuthContext";
 import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import Logo from "../pages/Imagenes/TODO_MOVI.png";
+import Logo from "../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png";
 import Notificaciones from "../components/Notificaciones";
 
 function Header() {
@@ -28,14 +28,12 @@ function Header() {
         
         if (response.ok) {
           const data = await response.json();
-          console.log("📬 Notificaciones recibidas en Header:", data); // Para debug
+          console.log("📬 Notificaciones recibidas en Header:", data);
           
-          // La API podría devolver un array directo o un objeto con propiedad 'notificaciones'
           const notificacionesArray = Array.isArray(data) ? data : (data.notificaciones || []);
           
           setNotificaciones(notificacionesArray);
           
-          // CORREGIDO: Usar 'leido' (con 'o') como en el modelo Prisma
           const noLeidasCount = notificacionesArray.filter(n => !n.leido).length;
           setNoLeidas(noLeidasCount);
           
@@ -49,8 +47,6 @@ function Header() {
     };
 
     fetchNotificaciones();
-    
-    // Actualizar cada 30 segundos
     const intervalId = setInterval(fetchNotificaciones, 30000);
     return () => clearInterval(intervalId);
   }, [usuario, token]);
@@ -80,15 +76,17 @@ function Header() {
       backgroundColor: '#ffffff',
       boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
     }}>
-      <div className="container-fluid px-4">
+      <div className="container-fluid px-4" style={{
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+      }}>
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
-            <div className="text-center mb-4">
+            <div className="text-center mb-2">
               <img 
                 src={Logo} 
                 alt="Logo Moviflexx"
                 style={{
-                  width: '150px',
+                  width: '100px',
                   height: 'auto',
                   marginLeft: '20px'
                 }}
@@ -97,7 +95,6 @@ function Header() {
           </div>
 
           <div className="d-flex align-items-center gap-3">
-            {/* Componente de notificaciones */}
             <Notificaciones />
 
             <Dropdown align="end">

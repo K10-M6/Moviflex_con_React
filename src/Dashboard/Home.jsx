@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../pages/context/AuthContext";
-import { Container, Row, Col, Card, Alert, Spinner, Badge } from "react-bootstrap";
+import { Container, Row, Col, Card, Alert, Spinner } from "react-bootstrap";
 import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill } from "react-icons/bs";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import fondo from "../pages/Imagenes/AutoresContacto.png";
 
 function Home() {
-  const { token } = useAuth();
+  const { token, usuario } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
@@ -16,12 +16,28 @@ function Home() {
     totalVehiculos: 0
   });
   const [chartData, setChartData] = useState([]);
+  const [donutData, setDonutData] = useState([
+    { name: 'Activos', value: 0, color: '#54c7b8' },
+    { name: 'Inactivos', value: 0, color: '#ff6b6b' },
+    { name: 'Suspendidos', value: 0, color: '#f59e0b' }
+  ]);
 
   useEffect(() => {
     traerUsuarios();
     traerVehiculos();
     traerDatosGraficos();
   }, []);
+
+  const calcularEstadoUsuarios = (usuarios) => {
+    if (!Array.isArray(usuarios)) return { activos: 0, inactivos: 0, suspendidos: 0, total: 0 };
+
+    const activos = usuarios.filter(u => u.estado === 'ACTIVO').length;
+    const inactivos = usuarios.filter(u => u.estado === 'INACTIVO').length;
+    const suspendidos = usuarios.filter(u => u.estado === 'SUSPENDIDO').length;
+    const total = usuarios.length;
+    
+    return { activos, inactivos, suspendidos, total };
+  };
 
   async function traerUsuarios() {
     try {
@@ -40,6 +56,7 @@ function Home() {
       }
 
       const usuarios = await response.json();
+      console.log("Usuarios recibidos:", usuarios);
 
       if (Array.isArray(usuarios)) {
         const conductores = usuarios.filter(u =>
@@ -50,12 +67,20 @@ function Home() {
           u.idRol === 3 || u.rol?.nombre?.toUpperCase() === 'VIAJERO' || u.rol?.nombre?.toUpperCase() === 'PASAJERO'
         ).length;
 
+        const { activos, inactivos, suspendidos } = calcularEstadoUsuarios(usuarios);
+
         setStats(prev => ({
           ...prev,
           totalUsuarios: usuarios.length,
           totalConductores: conductores,
           totalViajeros: viajeros
         }));
+
+        setDonutData([
+          { name: 'Activos', value: activos, color: '#54c7b8' },
+          { name: 'Inactivos', value: inactivos, color: '#ff6b6b' },
+          { name: 'Suspendidos', value: suspendidos, color: '#f59e0b' }
+        ]);
       }
     } catch (error) {
       console.error("Error al traer estadísticas:", error);
@@ -170,8 +195,7 @@ function Home() {
         return {
           name: item.name,
           usuarios: item.usuarios,
-          viajes: viajeData?.cantidad || 0,
-          ingresos: 0
+          viajes: viajeData?.cantidad || 0
         }
       });
 
@@ -208,6 +232,11 @@ function Home() {
     }
   ];
 
+  const getNombreUsuario = () => {
+    if (!usuario?.nombre) return "Administrador";
+    return usuario.nombre.split(' ')[0]; 
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -217,7 +246,7 @@ function Home() {
       backgroundAttachment: 'fixed',
       position: 'relative'
     }}>
-      {/* Capa de legibilidad minimalista */}
+
       <div style={{ 
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
         backgroundColor: 'rgba(255, 255, 255, 0.88)', 
@@ -229,8 +258,12 @@ function Home() {
           <Col>
             <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
               <Card.Body className="p-4">
-                <h2 className="fw-bold mb-0" style={{ color: '#333' }}>Dashboard Administrativo</h2>
-                <p className="text-muted mb-0 small">Estadísticas generales de la plataforma</p>
+                <h2 className="fw-bold mb-2" style={{ color: '#333' }}>
+                  Hola, {getNombreUsuario()}
+                </h2>
+                <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>
+                  Este es el Dashboard administrativo. Aquí podrás ver las estadísticas generales de la aplicación.
+                </p>
               </Card.Body>
             </Card>
           </Col>
@@ -271,7 +304,7 @@ function Home() {
             </Row>
 
             <Row className="g-4">
-              <Col lg={6}>
+              <Col lg={8}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
                   <Card.Body className="p-4">
                     <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
@@ -288,8 +321,8 @@ function Home() {
                             contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} 
                           />
                           <Legend />
-                          <Bar dataKey="usuarios" fill="#8884d8" name="Usuarios" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="viajes" fill="#82ca9d" name="Viajes" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="usuarios" fill="#68bdc4" name="Usuarios" radius={[4, 4, 0, 0]} barSize={28}/>
+                          <Bar dataKey="viajes" fill="#43d699" name="Viajes" radius={[4, 4, 0, 0]} barSize={28} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -297,43 +330,77 @@ function Home() {
                 </Card>
               </Col>
 
-              <Col lg={6}>
+              <Col lg={4}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
+                  <Card.Body className="p-4 d-flex flex-column">
                     <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
-                      Ingresos Semanales
+                      Estado de Usuarios
                     </Card.Title>
-                    <div style={{ height: '300px' }}>
+                    
+                    <div style={{ height: '250px', position: 'relative' }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
-                          <YAxis axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
+                        <PieChart>
+                          <Pie
+                            data={donutData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={70}
+                            outerRadius={90}
+                            paddingAngle={2}
+                            dataKey="value"
+                            startAngle={90}
+                            endAngle={-270}
+                          >
+                            {donutData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
                           <Tooltip 
-                            cursor={{fill: 'rgba(84, 199, 184, 0.05)'}} 
+                            formatter={(value, name, props) => {
+                              const total = donutData.reduce((sum, item) => sum + item.value, 0);
+                              const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                              return [`${value} usuarios (${porcentaje}%)`, name];
+                            }}
                             contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                            formatter={(value) => [`$${value}`, 'Ingresos']}
                           />
-                          <Legend />
-                          <Line
-                            type="monotone"
-                            dataKey="ingresos"
-                            stroke="#8884d8"
-                            name="Ingresos ($)"
-                            strokeWidth={3}
-                            dot={{ r: 4, fill: '#8884d8' }}
-                            activeDot={{ r: 6 }}
-                          />
-                        </LineChart>
+                        </PieChart>
                       </ResponsiveContainer>
+  
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        textAlign: 'center',
+                        pointerEvents: 'none'
+                      }}>
+                        <h3 className="fw-bold mb-0" style={{ color: '#333', fontSize: '1.8rem' }}>
+                          {donutData.reduce((sum, item) => sum + item.value, 0)}
+                        </h3>
+                        <small className="text-muted">Total</small>
+                      </div>
                     </div>
-                    <div className="mt-3 text-center">
-                      <Badge bg="success" className="px-3 py-2 me-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
-                        <small>Total Semanal: ${chartData.reduce((sum, item) => sum + (item.ingresos || 0), 0).toLocaleString()}</small>
-                      </Badge>
-                      <Badge bg="info" className="px-3 py-2" style={{ backgroundColor: '#8884d8', border: 'none' }}>
-                        <small>Promedio Diario: ${Math.round(chartData.reduce((sum, item) => sum + (item.ingresos || 0), 0) / (chartData.length || 1)).toLocaleString()}</small>
-                      </Badge>
+                    
+                    <div className="d-flex justify-content-center gap-4 mt-3 flex-wrap">
+                      {donutData.map((item, index) => {
+                        const total = donutData.reduce((sum, item) => sum + item.value, 0) || 1;
+                        const porcentaje = Math.round((item.value / total) * 100);
+                        return (
+                          <div key={index} className="d-flex align-items-center">
+                            <div style={{
+                              width: '12px',
+                              height: '12px',
+                              backgroundColor: item.color,
+                              borderRadius: '4px',
+                              marginRight: '8px'
+                            }} />
+                            <div>
+                              <small className="text-muted d-block">{item.name}</small>
+                              <strong>{item.value} ({porcentaje}%)</strong>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </Card.Body>
                 </Card>
