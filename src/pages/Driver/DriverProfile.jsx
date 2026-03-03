@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
-import { Container, Row, Col, Card, Button, Form, Badge } from "react-bootstrap";
-import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt } from "react-icons/fa";
+import { Container, Row, Col, Card, Button, Form, Badge, ListGroup } from "react-bootstrap";
+import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt, FaCalendarAlt, FaUser } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
@@ -28,6 +28,7 @@ function DriverProfile() {
   const [documentos, setDocumentos] = useState([]);
   const [cargandoDocumentos, setCargandoDocumentos] = useState(false);
   const [errorDocumentos, setErrorDocumentos] = useState("");
+  const [licencia, setLicencia] = useState(null);
 
   useEffect(() => {
     const obtenerVehiculo = async () => {
@@ -68,10 +69,15 @@ function DriverProfile() {
         });
         if (respuesta.ok) {
           const data = await respuesta.json();
+          console.log("📊 Calificaciones recibidas:", data);
+          
           if (typeof data === 'number') {
             setDatosCalificacion({ promedio: data, total: 0 });
           } else if (data.promedio !== undefined) {
-            setDatosCalificacion({ promedio: data.promedio, total: data.total || 0 });
+            setDatosCalificacion({ 
+              promedio: data.promedio, 
+              total: data.total || 0 
+            });
           }
         }
       } catch (error) {
@@ -93,6 +99,8 @@ function DriverProfile() {
         });
         if (respuesta.ok) {
           const data = await respuesta.json();
+          console.log("🚗 Viajes recibidos:", data);
+          
           if (Array.isArray(data)) {
             const viajesCompletados = data.filter(v => v.estado === 'FINALIZADO');
             setTotalViajes(viajesCompletados.length);
@@ -107,41 +115,64 @@ function DriverProfile() {
     obtenerEstadisticasViajes();
   }, [token, usuario?.idUsuarios]);
 
-  const obtenerDocumentos = async () => {
-    if (!token || !usuario?.idUsuarios) return;
-    try {
-      setCargandoDocumentos(true);
-      const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setDocumentos(Array.isArray(data) ? data : data.documentos || [data]);
-      }
-    } catch (error) {
-      console.error("Error al obtener documentos:", error);
-    } finally {
-      setCargandoDocumentos(false);
-    }
-  };
-
   useEffect(() => {
+    const obtenerDocumentos = async () => {
+      if (!token || !usuario?.idUsuarios) return;
+      try {
+        setCargandoDocumentos(true);
+        setErrorDocumentos("");
+        
+        const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("📄 Documentos recibidos:", data);
+          
+          // Manejar diferentes estructuras de respuesta
+          let docsArray = [];
+          if (Array.isArray(data)) {
+            docsArray = data;
+          } else if (data && Array.isArray(data.documentos)) {
+            docsArray = data.documentos;
+          } else if (data && typeof data === 'object') {
+            docsArray = [data];
+          }
+          
+          setDocumentos(docsArray);
+          
+          // Buscar la licencia (puede venir como objeto directo o en un array)
+          const licenciaEncontrada = docsArray.find(doc => 
+            doc.tipoDocumento?.toLowerCase().includes('licencia') || 
+            doc.tipoDocumento?.toLowerCase().includes('conducir') ||
+            doc.tipoDocumento === 'LICENCIA_CONDUCCION'
+          );
+          
+          console.log("🎯 Licencia encontrada:", licenciaEncontrada);
+          setLicencia(licenciaEncontrada || null);
+          
+        } else if (response.status === 404) {
+          console.log("No se encontraron documentos");
+          setDocumentos([]);
+          setLicencia(null);
+        } else {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+      } catch (error) {
+        console.error("Error al obtener documentos:", error);
+        setErrorDocumentos(error.message);
+      } finally {
+        setCargandoDocumentos(false);
+      }
+    };
+    
     obtenerDocumentos();
   }, [token, usuario?.idUsuarios]);
-
-  const obtenerLicencia = () => {
-    if (!documentos || documentos.length === 0) return null;
-    return documentos.find(doc => 
-      doc.tipoDocumento?.toLowerCase().includes('licencia') || 
-      doc.tipoDocumento?.toLowerCase().includes('conducir')
-    ) || documentos[0];
-  };
-
-  const licencia = obtenerLicencia();
 
   const guardarCambios = async () => {
     try {
@@ -154,6 +185,7 @@ function DriverProfile() {
         },
         body: JSON.stringify({ nombre, telefono })
       });
+      
       if (response.ok) {
         setUsuario({ ...usuario, nombre, telefono });
         toast.success('Datos actualizados correctamente');
@@ -169,10 +201,39 @@ function DriverProfile() {
 
   const getBadgeColor = (estado) => {
     switch (estado?.toUpperCase()) {
-      case 'APROBADO': case 'VÁLIDO': return 'success';
-      case 'PENDIENTE': return 'warning';
-      case 'RECHAZADO': return 'danger';
-      default: return 'secondary';
+      case 'APROBADO': 
+      case 'VÁLIDO': 
+      case 'VALIDO': 
+        return 'success';
+      case 'PENDIENTE': 
+      case 'REVISION': 
+        return 'warning';
+      case 'RECHAZADO': 
+      case 'VENCIDO': 
+        return 'danger';
+      default: 
+        return 'secondary';
+    }
+  };
+
+  // Función para formatear fecha de expedición (string)
+  const formatearFechaExpedicion = (fecha) => {
+    if (!fecha) return 'No disponible';
+    return fecha; // Es string, lo mostramos directamente
+  };
+
+  // Función para formatear fecha de subida (DateTime)
+  const formatearFechaSubida = (fecha) => {
+    if (!fecha) return 'No disponible';
+    try {
+      const date = new Date(fecha);
+      return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return fecha; // Si falla, mostramos el string original
     }
   };
 
@@ -245,13 +306,23 @@ function DriverProfile() {
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold">NOMBRE COMPLETO</Form.Label>
-                            <Form.Control type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+                            <Form.Control 
+                              type="text" 
+                              value={nombre} 
+                              onChange={(e) => setNombre(e.target.value)} 
+                              placeholder="Tu nombre completo"
+                            />
                           </Form.Group>
                         </Col>
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold">TELÉFONO</Form.Label>
-                            <Form.Control type="text" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+                            <Form.Control 
+                              type="text" 
+                              value={telefono} 
+                              onChange={(e) => setTelefono(e.target.value)} 
+                              placeholder="Tu número de teléfono"
+                            />
                           </Form.Group>
                         </Col>
                       </Row>
@@ -262,18 +333,74 @@ function DriverProfile() {
                           <Card className="p-3 border-0 bg-light rounded-3 h-100">
                             <div className="d-flex align-items-center mb-2">
                               <FaIdCard className="text-primary me-2" />
-                              <span className="fw-bold small">LICENCIA</span>
+                              <span className="fw-bold small">LICENCIA DE CONDUCIR</span>
                             </div>
-                            <p className="mb-0 small">Estado: <Badge bg={getBadgeColor(licencia?.estado)}>{licencia?.estado || 'N/A'}</Badge></p>
+                            
+                            {cargandoDocumentos ? (
+                              <p className="mb-0 small text-muted">Cargando...</p>
+                            ) : licencia ? (
+                              <ListGroup variant="flush" className="mt-2">
+                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
+                                  <span className="text-muted small">Número:</span>
+                                  <span className="fw-bold small">{licencia.numeroDocumento || 'No disponible'}</span>
+                                </ListGroup.Item>
+                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
+                                  <span className="text-muted small">Expedición:</span>
+                                  <span className="fw-bold small">{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
+                                </ListGroup.Item>
+                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
+                                  <span className="text-muted small">Subida:</span>
+                                  <span className="fw-bold small">{formatearFechaSubida(licencia.fechaSubida)}</span>
+                                </ListGroup.Item>
+                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
+                                  <span className="text-muted small">Estado:</span>
+                                  <Badge bg={getBadgeColor(licencia.estado)} className="rounded-pill">
+                                    {licencia.estado || 'N/A'}
+                                  </Badge>
+                                </ListGroup.Item>
+                                {licencia.observaciones && (
+                                  <ListGroup.Item className="px-0 bg-transparent border-0 py-1">
+                                    <small className="text-muted d-block">Observaciones:</small>
+                                    <small className="text-dark">{licencia.observaciones}</small>
+                                  </ListGroup.Item>
+                                )}
+                              </ListGroup>
+                            ) : (
+                              <p className="mb-0 small text-muted mt-2">
+                                No hay licencia registrada
+                              </p>
+                            )}
                           </Card>
                         </Col>
+                        
                         <Col sm={6}>
                           <Card className="p-3 border-0 bg-light rounded-3 h-100">
                             <div className="d-flex align-items-center mb-2">
                               <FaCar className="text-primary me-2" />
                               <span className="fw-bold small">VEHÍCULO</span>
                             </div>
-                            <p className="mb-0 small">Placa: <span className="fw-bold">{vehiculo?.placa || 'No registrada'}</span></p>
+                            {cargandoVehiculo ? (
+                              <p className="mb-0 small text-muted">Cargando...</p>
+                            ) : vehiculo ? (
+                              <>
+                                <p className="mb-0 small">Placa: <span className="fw-bold">{vehiculo.placa || 'No registrada'}</span></p>
+                                <p className="mb-0 small">
+                                  Modelo: <span className="fw-bold">
+                                    {vehiculo.marca || ''} {vehiculo.modelo || ''}
+                                  </span>
+                                </p>
+                                <p className="mb-0 small">
+                                  Capacidad: <span className="fw-bold">{vehiculo.capacidad || 'N/A'} pasajeros</span>
+                                </p>
+                                <p className="mb-0 small">
+                                  Estado: <Badge bg={vehiculo.estado === 'ACTIVO' ? 'success' : 'secondary'} className="rounded-pill">
+                                    {vehiculo.estado || 'N/A'}
+                                  </Badge>
+                                </p>
+                              </>
+                            ) : (
+                              <p className="mb-0 small text-muted">No hay vehículo registrado</p>
+                            )}
                           </Card>
                         </Col>
                       </Row>
