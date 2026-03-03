@@ -30,12 +30,13 @@ function Home() {
   const [topConductores, setTopConductores] = useState([]);
   const [cargandoTop, setCargandoTop] = useState(false);
 
-  // Nuevos estados para reportes
+  /* 
   const [ganancias, setGanancias] = useState({ total: 0, historial: [] });
   const [tiempoEnLinea, setTiempoEnLinea] = useState({ totalHoras: 0, historial: [] });
   const [rutasFrecuentes, setRutasFrecuentes] = useState([]);
   const [resumenViajes, setResumenViajes] = useState({ total: 0, rol: '' });
   const [periodo, setPeriodo] = useState('mensual');
+  */
 
 
   useEffect(() => {
@@ -43,8 +44,7 @@ function Home() {
     traerVehiculos();
     traerDatosGraficos();
     traerTopConductores();
-    traerEstadisticasAvanzadas();
-  }, [periodo]);
+  }, []);
 
 
   const calcularEstadoUsuarios = (usuarios) => {
@@ -229,30 +229,11 @@ function Home() {
   }
 
 
+  /* 
   async function traerEstadisticasAvanzadas() {
-    try {
-      const headers = { "Authorization": "Bearer " + token };
-
-      // Ganancias
-      const resGanancias = await fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/ganancias?periodo=${periodo}`, { headers });
-      if (resGanancias.ok) setGanancias(await resGanancias.json());
-
-      // Tiempo en línea
-      const resTime = await fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/online-time?periodo=${periodo}`, { headers });
-      if (resTime.ok) setTiempoEnLinea(await resTime.json());
-
-      // Rutas
-      const resRutas = await fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/rutas`, { headers });
-      if (resRutas.ok) setRutasFrecuentes(await resRutas.json());
-
-      // Resumen Viajes
-      const resViajes = await fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/viajes`, { headers });
-      if (resViajes.ok) setResumenViajes(await resViajes.json());
-
-    } catch (error) {
-      console.error("Error al traer estadísticas avanzadas:", error);
-    }
+    ...
   }
+  */
 
   const obtenerPromedioConductor = async (idUsuario) => {
     try {
@@ -401,30 +382,6 @@ function Home() {
                       Este es el Dashboard administrativo. Aquí podrás ver las estadísticas generales y reportes de desempeño.
                     </p>
                   </div>
-                  <div className="bg-white p-2 rounded-3 shadow-sm border">
-                    <span className="me-2 fw-bold small text-muted">PERIODO:</span>
-                    <Badge
-                      bg={periodo === 'diario' ? 'primary' : 'light'}
-                      text={periodo === 'diario' ? 'white' : 'dark'}
-                      className="me-1 cursor-pointer"
-                      onClick={() => setPeriodo('diario')}
-                      style={{ cursor: 'pointer', backgroundColor: periodo === 'diario' ? '#54c7b8' : '' }}
-                    >Día</Badge>
-                    <Badge
-                      bg={periodo === 'mensual' ? 'primary' : 'light'}
-                      text={periodo === 'mensual' ? 'white' : 'dark'}
-                      className="me-1 cursor-pointer"
-                      onClick={() => setPeriodo('mensual')}
-                      style={{ cursor: 'pointer', backgroundColor: periodo === 'mensual' ? '#54c7b8' : '' }}
-                    >Mes</Badge>
-                    <Badge
-                      bg={periodo === 'anual' ? 'primary' : 'light'}
-                      text={periodo === 'anual' ? 'white' : 'dark'}
-                      className="cursor-pointer"
-                      onClick={() => setPeriodo('anual')}
-                      style={{ cursor: 'pointer', backgroundColor: periodo === 'anual' ? '#54c7b8' : '' }}
-                    >Año</Badge>
-                  </div>
                 </div>
 
               </Card.Body>
@@ -465,111 +422,9 @@ function Home() {
                 </Col>
               ))}
 
-              {/* Nuevas tarjetas de resumen */}
-              <Col xs={12} sm={6} lg={3}>
-                <Card className="shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '12px', borderBottom: '4px solid #f59e0b' }}>
-                  <Card.Body className="d-flex align-items-center">
-                    <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                      style={{ width: '50px', height: '50px', backgroundColor: '#fef3c7', color: '#f59e0b' }}>
-                      <strong className="fs-4">$</strong>
-                    </div>
-                    <div>
-                      <h6 className="text-muted mb-0 small">Ganancias ({periodo})</h6>
-                      <h3 className="fw-bold mb-0" style={{ color: '#333' }}>${Number(ganancias.total).toLocaleString()}</h3>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col xs={12} sm={6} lg={3}>
-                <Card className="shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '12px', borderBottom: '4px solid #3b82f6' }}>
-                  <Card.Body className="d-flex align-items-center">
-                    <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                      style={{ width: '50px', height: '50px', backgroundColor: '#dbeafe', color: '#3b82f6' }}>
-                      <BsStarFill />
-                    </div>
-                    <div>
-                      <h6 className="text-muted mb-0 small">Horas en Línea</h6>
-                      <h3 className="fw-bold mb-0" style={{ color: '#333' }}>{tiempoEnLinea.totalHoras}h</h3>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col xs={12} sm={6} lg={3}>
-                <Card className="shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '12px', borderBottom: '4px solid #10b981' }}>
-                  <Card.Body className="d-flex align-items-center">
-                    <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                      style={{ width: '50px', height: '50px', backgroundColor: '#d1fae5', color: '#10b981' }}>
-                      <BsTruck />
-                    </div>
-                    <div>
-                      <h6 className="text-muted mb-0 small">Viajes ({resumenViajes.rol})</h6>
-                      <h3 className="fw-bold mb-0" style={{ color: '#333' }}>{resumenViajes.total}</h3>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
             </Row>
 
 
-            <Row className="g-4 mb-4">
-              <Col lg={8}>
-                <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-4 d-flex justify-content-between align-items-center">
-                      <span>Reporte de Ganancias</span>
-                      <small className="text-muted fw-normal">Historial {periodo}</small>
-                    </Card.Title>
-                    <div style={{ height: '300px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={ganancias.historial}>
-                          <defs>
-                            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#54c7b8" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="#54c7b8" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                          <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
-                          <Area type="monotone" dataKey="value" stroke="#54c7b8" fillOpacity={1} fill="url(#colorValue)" name="Ganancias ($)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col lg={4}>
-                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-4">Mejores Rutas</Card.Title>
-                    {rutasFrecuentes.length > 0 ? (
-                      <ListGroup variant="flush">
-                        {rutasFrecuentes.map((ruta, i) => (
-                          <ListGroup.Item key={i} className="px-0 py-3 bg-transparent border-bottom">
-                            <div className="d-flex justify-content-between align-items-center">
-                              <div className="d-flex align-items-center">
-                                <div className="bg-light p-2 rounded me-3">
-                                  <BsTruck className="text-secondary" />
-                                </div>
-                                <div>
-                                  <div className="fw-bold small text-truncate" style={{ maxWidth: '150px' }}>{ruta.name}</div>
-                                  <small className="text-muted">{ruta.count} viajes</small>
-                                </div>
-                              </div>
-                              <Badge bg="info" className="rounded-pill">#{i + 1}</Badge>
-                            </div>
-                          </ListGroup.Item>
-                        ))}
-                      </ListGroup>
-                    ) : (
-                      <div className="text-center py-5 text-muted small">No hay datos de rutas</div>
-                    )}
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
 
             <Row className="g-4">
 
@@ -774,24 +629,6 @@ function Home() {
                             No hay suficientes calificaciones
                           </p>
                         )}
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                  <Col xs={12}>
-                    <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
-                      <Card.Body className="p-4">
-                        <Card.Title className="fw-bold mb-4">Actividad: Horas en línea</Card.Title>
-                        <div style={{ height: '200px' }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={tiempoEnLinea.historial}>
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                              <Tooltip cursor={{ fill: '#f8f9fa' }} contentStyle={{ borderRadius: '10px', border: 'none' }} />
-                              <Bar dataKey="value" fill="#3b82f6" radius={[3, 3, 0, 0]} name="Horas" />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
                       </Card.Body>
                     </Card>
                   </Col>
