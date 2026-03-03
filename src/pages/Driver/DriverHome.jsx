@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner } from "react-bootstrap";
-import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle } from "react-icons/fa";
+import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaCamera } from "react-icons/fa";
 import {
     BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
@@ -59,7 +59,8 @@ const DriverHome = () => {
         marca: '',
         modelo: '',
         placa: '',
-        capacidad: ''
+        capacidad: '',
+        fotoPlacaNueva: ''
     });
     const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
     const [mensajeSolicitud, setMensajeSolicitud] = useState({ tipo: '', texto: '' });
@@ -288,17 +289,34 @@ const DriverHome = () => {
                 marca: v.marca || '',
                 modelo: v.modelo || '',
                 placa: v.placa || '',
-                capacidad: v.capacidad || ''
+                capacidad: v.capacidad || '',
+                fotoPlacaNueva: ''
             });
         }
         setMensajeSolicitud({ tipo: '', texto: '' });
         setShowSolicitudModal(true);
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormDataSolicitud({ ...formDataSolicitud, fotoPlacaNueva: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const enviarSolicitudCambio = async (e) => {
         e.preventDefault();
         const v = vehiculos.length > 0 ? vehiculos[0] : null;
         if (!v) return;
+
+        if (!formDataSolicitud.fotoPlacaNueva) {
+            setMensajeSolicitud({ tipo: 'danger', texto: 'La foto de la placa es obligatoria.' });
+            return;
+        }
 
         try {
             setEnviandoSolicitud(true);
@@ -1188,6 +1206,47 @@ const DriverHome = () => {
                                 onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, capacidad: e.target.value })}
                                 required
                             />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="form-label small fw-bold text-muted d-block">Foto de la Nueva Placa (Obligatorio)</label>
+                            <div
+                                className="border rounded-3 p-3 text-center position-relative"
+                                style={{
+                                    borderStyle: 'dashed !important',
+                                    cursor: 'pointer',
+                                    backgroundColor: '#f8f9fa'
+                                }}
+                                onClick={() => document.getElementById('fotoPlacaInput').click()}
+                            >
+                                {formDataSolicitud.fotoPlacaNueva ? (
+                                    <div className="position-relative">
+                                        <img
+                                            src={formDataSolicitud.fotoPlacaNueva}
+                                            alt="Nueva placa"
+                                            className="img-fluid rounded"
+                                            style={{ maxHeight: '150px' }}
+                                        />
+                                        <div className="position-absolute bottom-0 end-0 bg-white p-1 rounded-circle shadow-sm m-2">
+                                            <FaCamera size={14} color={brandColor} />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="py-2">
+                                        <FaCamera size={32} className="text-muted mb-2" />
+                                        <p className="mb-0 small text-muted">Haz clic para tomar foto o subir imagen</p>
+                                    </div>
+                                )}
+                                <input
+                                    id="fotoPlacaInput"
+                                    type="file"
+                                    accept="image/*"
+                                    capture="environment"
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileChange}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className="d-flex gap-2">
