@@ -26,7 +26,7 @@ function HomeBase() {
     { id: 6, nombre: "Kevin", rol: "Documentación", img: Kevin },
   ];
 
-  const verdeMenta = '#56bca7'; // Tu color institucional
+  const verdeMenta = '#56bca7';
 
   const slidesFunciona = [
     { id: 1, titulo: "Regístrate Como Conductor", desc: "¡Registrate como conductor desde la web!" },
@@ -54,7 +54,6 @@ function HomeBase() {
         <Navbar transparent={true} />
       </div>
 
-      {/* SECCIÓN HERO */}
       <div style={{ 
         position: 'relative', 
         minHeight: '650px', 
@@ -100,7 +99,6 @@ function HomeBase() {
         </div>
       </div>
 
-      {/* SECCIÓN ¿CÓMO FUNCIONA? */}
       <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '80px 0', marginTop: '50px' }}>
         <Container>
           <Row className="text-center mb-5">
@@ -109,32 +107,57 @@ function HomeBase() {
               <p style={{color: '#113d69'}}>Tres simples pasos para comenzar tu experiencia</p>
             </Col>
           </Row>
-          
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 16 }}>
-            <div style={{
-              display: 'flex',
-              gap: '32px',
-              minWidth: 320,
-              padding: '8px',
-            }}>
-              {slidesFunciona.map((item) => (
-                <div key={item.id} style={{
-                  background: verdeMenta,
-                  borderRadius: '30px',
-                  minWidth: 320,
-                  maxWidth: 370,
-                  flex: '0 0 320px',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.10)',
+
+          <Row className="g-4">
+            {slidesFunciona.map((item) => (
+              <Col key={item.id} xs={12} sm={6} lg={4} xl={3}>
+                <div style={{
+                  background: 'transparent',
                   padding: '32px 24px',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
                   textAlign: 'center',
-                  color: '#fff',
+                  color: '#113d69',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  cursor: 'default',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}>
-                  <h3 className="fw-bold mb-3" style={{ fontSize: '1.5rem' }}>{item.titulo}</h3>
-                  <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#f4f4f4' }}>{item.desc}</p>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '55px',
+                    height: '55px',
+                    borderTop: '4px solid #56bca7',
+                    borderLeft: '4px solid #56bca7',
+                    borderTopLeftRadius: '30px',
+                  }} />
+                  
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    width: '55px',
+                    height: '55px',
+                    borderBottom: '4px solid #56bca7',
+                    borderRight: '4px solid #56bca7',
+                    borderBottomRightRadius: '30px',
+                  }} />
+                  
+                  <h3 className="fw-bold mb-3" style={{ fontSize: '1.3rem', color: '#56bca7' }}>{item.titulo}</h3>
+                  <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#113d69', marginBottom: 0 }}>{item.desc}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+              </Col>
+            ))}
+          </Row>
         </Container>
       </div>
 
@@ -148,12 +171,12 @@ function HomeBase() {
         </Row>
       </Container>
 
-      {/* SECCIÓN EQUIPO (Actualizada con Verde Menta y ajuste de imagen de Kevin) */}
+      {/* SECCIÓN EQUIPO */}
       <Container className="py-5">
         <Row className="justify-content-center">
           <Col lg={10}>
             <div style={{ 
-              backgroundColor: verdeMenta, // Ahora el contenedor es verde menta
+              backgroundColor: verdeMenta,
               borderRadius: '40px',
               overflow: 'hidden',
               boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
@@ -173,8 +196,8 @@ function HomeBase() {
                       style={{ 
                         width: '90px', 
                         height: '90px', 
-                        objectFit: autor.nombre === "Kevin" ? 'contain' : 'cover', // Ajuste para Kevin
-                        padding: autor.nombre === "Kevin" ? '5px' : '0' // Aleja la imagen de Kevin del borde
+                        objectFit: autor.nombre === "Kevin" ? 'contain' : 'cover',
+                        padding: autor.nombre === "Kevin" ? '5px' : '0'
                       }} 
                     />
                     <h6 className="fw-bold mb-0 small" style={{color: '#fff'}}>{autor.nombre}</h6>

@@ -9,16 +9,21 @@ function AdminConductores() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [paginaActual, setPaginaActual] = useState(1);
+    const [busqueda, setBusqueda] = useState("");
     const elementosPorPagina = 10;
 
     useEffect(() => {
         traerConductores();
     }, []);
 
+    const conductoresFiltrados = conductores.filter(conductor =>
+        conductor.email.toLowerCase().includes(busqueda.toLowerCase())
+    );
+    
     const indiceUltimoElemento = paginaActual * elementosPorPagina;
     const indicePrimerElemento = indiceUltimoElemento - elementosPorPagina;
-    const conductoresPaginados = conductores.slice(indicePrimerElemento, indiceUltimoElemento);
-    const totalPaginas = Math.ceil(conductores.length / elementosPorPagina);
+    const conductoresPaginados = conductoresFiltrados.slice(indicePrimerElemento, indiceUltimoElemento);
+    const totalPaginas = Math.ceil(conductoresFiltrados.length / elementosPorPagina);
 
     const cambiarPagina = (numeroPagina) => {
         setPaginaActual(numeroPagina);
@@ -249,7 +254,8 @@ function AdminConductores() {
         return (
             <div className="d-flex justify-content-between align-items-center mt-4">
                 <div className="text-muted">
-                    Mostrando {indicePrimerElemento + 1} - {Math.min(indiceUltimoElemento, conductores.length)} de {conductores.length} conductores
+                    Mostrando {indicePrimerElemento + 1} - {Math.min(indiceUltimoElemento, conductoresFiltrados.length)} de {conductoresFiltrados.length} conductores
+                    {busqueda && ` (filtrados de ${conductores.length} totales)`}
                 </div>
                 <Pagination>{items}</Pagination>
             </div>
@@ -289,6 +295,11 @@ function AdminConductores() {
                             <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
                                 Total: {conductores.length}
                             </Badge>
+                            {busqueda && (
+                                <Badge bg="info" className="px-3 py-2">
+                                    Resultados: {conductoresFiltrados.length}
+                                </Badge>
+                            )}
                             <Badge bg="success" className="px-3 py-2">
                                 Activos: {conductores.filter(c => c.estado === 'ACTIVO').length}
                             </Badge>
@@ -298,6 +309,26 @@ function AdminConductores() {
                             <Badge bg="warning" text="dark" className="px-3 py-2">
                                 Suspendidos: {conductores.filter(c => c.estado === 'SUSPENDIDO').length}
                             </Badge>
+                        </div>
+
+                        <div className="mt-4">
+                            <input
+                                type="text"
+                                className="form-control form-control-lg"
+                                placeholder="Buscar por correo electrónico..."
+                                value={busqueda}
+                                onChange={(e) => {
+                                    setBusqueda(e.target.value);
+                                    setPaginaActual(1);
+                                }}
+                                style={{
+                                    borderRadius: '10px',
+                                    border: '2px solid #e0e0e0',
+                                    padding: '12px 20px',
+                                    fontSize: '1rem',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                                }}
+                            />
                         </div>
                     </Col>
                 </Row>
@@ -336,10 +367,10 @@ function AdminConductores() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {conductores.length === 0 ? (
+                                                {conductoresFiltrados.length === 0 ? (
                                                     <tr>
                                                         <td colSpan="7" className="text-center py-4">
-                                                            No hay conductores registrados
+                                                            {busqueda ? "No se encontraron conductores con ese correo" : "No hay conductores registrados"}
                                                         </td>
                                                     </tr>
                                                 ) : (

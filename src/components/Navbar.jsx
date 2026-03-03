@@ -87,17 +87,9 @@ export default function NavbarCustom({ transparent }) {
                   as={Link}
                   to="/login"
                   className="fw-bold px-3 d-flex align-items-center"
-                  style={{
-                    color: 'white',
-                    background: '#56bca7',
-                    border: '2px solid #fff',
-                    borderRadius: '8px',
-                    minWidth: '140px',
-                    justifyContent: 'center',
-                    fontWeight: 600,
-                  }}
+                  style={{color: '#113d69'}}
                 >
-                  <FaDoorOpen style={{ marginRight: 8 }} color="#fff" size={18} />
+                  <FaDoorOpen style={{ marginRight: 8 }} color="#113d69" size={18} />
                   Iniciar Sesión
                 </Nav.Link>
                 <Nav.Link
@@ -105,16 +97,10 @@ export default function NavbarCustom({ transparent }) {
                   to="/register"
                   className="fw-bold px-3 d-flex align-items-center"
                   style={{
-                    color: 'white',
-                    background: '#56bca7',
-                    border: '2px solid #fff',
-                    borderRadius: '8px',
-                    minWidth: '140px',
-                    justifyContent: 'center',
-                    fontWeight: 600,
+                    color: '#113d69'
                   }}
                 >
-                  <FaKey style={{ marginRight: 8 }} color="#fff" size={18} />
+                  <FaKey style={{ marginRight: 8 }} color="#113d69" size={18} />
                   Registrarse
                 </Nav.Link>
               </div>
