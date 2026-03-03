@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../pages/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Pagination, Form, InputGroup } from "react-bootstrap";
 import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
