@@ -86,7 +86,6 @@ function AdminDocumentos() {
         try {
             let nuevoEstado;
 
-            // El backend solo acepta APROBADO o RECHAZADO
             if (estadoActual === 'APROBADO') {
                 nuevoEstado = 'RECHAZADO';
             } else {

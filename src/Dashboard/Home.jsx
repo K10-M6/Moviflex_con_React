@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../pages/context/AuthContext";
-import { Container, Row, Col, Card, Alert, Spinner, ListGroup, Badge } from "react-bootstrap";
+import { Container, Row, Col, Card, Alert, Spinner, ListGroup, Badge, Image } from "react-bootstrap";
 import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill, BsStarFill, BsStarHalf, BsStar } from "react-icons/bs";
 import { FaMedal } from "react-icons/fa";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import fondo from "../pages/Imagenes/AutoresContacto.png";
+import imagenDashboard from "../pages/Imagenes/HomeBaseImage.png";
 
 function Home() {
   const { token, usuario } = useAuth();
@@ -24,6 +25,13 @@ function Home() {
   ]);
   const [topConductores, setTopConductores] = useState([]);
   const [cargandoTop, setCargandoTop] = useState(false);
+
+  const colores = {
+    estrella: '#62d8d9',
+    badgeFondo: '#113d69',
+    badgeTexto: '#ffffff',
+    verdeMenta: '#54c7b8'
+  };
 
   useEffect(() => {
     traerUsuarios();
@@ -283,11 +291,32 @@ function Home() {
     
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
-        stars.push(<BsStarFill key={i} className="text-warning me-1" size={14} />);
+        stars.push(
+          <BsStarFill 
+            key={i} 
+            className="me-1" 
+            size={14} 
+            style={{ color: colores.estrella }}
+          />
+        );
       } else if (i === fullStars + 1 && hasHalfStar) {
-        stars.push(<BsStarHalf key={i} className="text-warning me-1" size={14} />);
+        stars.push(
+          <BsStarHalf 
+            key={i} 
+            className="me-1" 
+            size={14} 
+            style={{ color: colores.estrella }}
+          />
+        );
       } else {
-        stars.push(<BsStar key={i} className="text-warning me-1" size={14} />);
+        stars.push(
+          <BsStar 
+            key={i} 
+            className="me-1" 
+            size={14} 
+            style={{ color: colores.estrella }}
+          />
+        );
       }
     }
     return stars;
@@ -295,9 +324,8 @@ function Home() {
 
   const getMedalColor = (index) => {
     switch(index) {
-      case 0: return '#FFD700'; 
-      case 1: return '#C0C0C0'; 
-      case 2: return '#CD7F32'; 
+      case 1: return '#113d69'; 
+      case 2: return '#C0C0C0'; 
       default: return '#54c7b8'; 
     }
   };
@@ -306,7 +334,7 @@ function Home() {
     {
       title: "Total Usuarios",
       value: stats.totalUsuarios,
-      icon: <BsPeopleFill className="fs-5" />
+      icon: <BsPeopleFill className="fs-5"/>
     },
     {
       title: "Viajeros",
@@ -348,15 +376,30 @@ function Home() {
 
       <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
         <Row className="mb-4">
-          <Col>
+          <Col md={12}>
             <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
-              <Card.Body className="p-4">
-                <h2 className="fw-bold mb-2" style={{ color: '#333' }}>
-                  Hola, {getNombreUsuario()}
-                </h2>
-                <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>
-                  Este es el Dashboard administrativo. Aquí podrás ver las estadísticas generales de la aplicación.
-                </p>
+              <Card.Body className="p-4 d-flex align-items-center">
+                <div className="me-4" style={{ flexShrink: 0 }}>
+                  <Image 
+                    src={imagenDashboard} 
+                    fluid 
+                    style={{ 
+                      maxHeight: '300px',
+                      maxWidth: '300px',
+                      borderRadius: '12px',
+                      objectFit: 'cover'
+                    }} 
+                    alt="Dashboard"
+                  />
+                </div>
+                <div>
+                  <h2 className="fw-bold mb-2" style={{ color: '#113d69' }}>
+                    Hola, {getNombreUsuario()}
+                  </h2>
+                  <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>
+                    Este es el Dashboard administrativo. Aquí podrás ver las estadísticas generales de la aplicación.
+                  </p>
+                </div>
               </Card.Body>
             </Card>
           </Col>
@@ -396,11 +439,11 @@ function Home() {
               ))}
             </Row>
 
-            <Row className="g-4">
-              <Col lg={6}>
+            <Row className="g-4 mb-4">
+              <Col lg={8}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
                   <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
+                    <Card.Title className="fw-bold mb-4" style={{ color: '#113d69' }}>
                       Actividad Semanal
                     </Card.Title>
                     <div style={{ height: '300px' }}>
@@ -415,155 +458,157 @@ function Home() {
                           />
                           <Legend />
                           <Bar dataKey="usuarios" fill="#68bdc4" name="Usuarios" radius={[4, 4, 0, 0]} barSize={28}/>
-                          <Bar dataKey="viajes" fill="#43d699" name="Viajes" radius={[4, 4, 0, 0]} barSize={28} />
+                          <Bar dataKey="viajes" fill="#113d69" name="Viajes" radius={[4, 4, 0, 0]} barSize={28} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </Card.Body>
                 </Card>
               </Col>
-
-              <Col lg={6}>
-                <Row className="g-4">
-                  <Col xs={12}>
-                    <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
-                      <Card.Body className="p-4 d-flex flex-column">
-                        <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
-                          Estado de Usuarios
-                        </Card.Title>
-                        
-                        <div style={{ height: '200px', position: 'relative' }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                              <Pie
-                                data={donutData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={50}
-                                outerRadius={70}
-                                paddingAngle={2}
-                                dataKey="value"
-                                startAngle={90}
-                                endAngle={-270}
-                              >
-                                {donutData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                              </Pie>
-                              <Tooltip 
-                                formatter={(value, name, props) => {
-                                  const total = donutData.reduce((sum, item) => sum + item.value, 0);
-                                  const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                  return [`${value} usuarios (${porcentaje}%)`, name];
+              
+              <Col lg={4}>
+                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
+                  <Card.Body className="p-4">
+                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#113d69' }}>
+                      <FaMedal className="me-2" style={{ color: '#113d69' }} />
+                      Top 5 Mejores Conductores
+                    </Card.Title>
+                    
+                    {cargandoTop ? (
+                      <div className="text-center py-3">
+                        <Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} />
+                        <p className="mt-2 text-muted small">Cargando...</p>
+                      </div>
+                    ) : topConductores.length > 0 ? (
+                      <ListGroup variant="flush">
+                        {topConductores.map((conductor, index) => (
+                          <ListGroup.Item key={conductor.idUsuarios || index} className="px-0 border-0 bg-transparent">
+                            <div className="d-flex align-items-center">
+                              <div 
+                                className="d-flex align-items-center justify-content-center rounded-circle me-2"
+                                style={{ 
+                                  width: '30px', 
+                                  height: '30px', 
+                                  backgroundColor: getMedalColor(index),
+                                  color: index < 3 ? 'white' : '#333',
+                                  fontWeight: 'bold',
+                                  fontSize: '0.9rem'
                                 }}
-                                contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                              />
-                            </PieChart>
-                          </ResponsiveContainer>
-          
-                          <div style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            textAlign: 'center',
-                            pointerEvents: 'none'
-                          }}>
-                            <h3 className="fw-bold mb-0" style={{ color: '#333', fontSize: '1.4rem' }}>
-                              {donutData.reduce((sum, item) => sum + item.value, 0)}
-                            </h3>
-                            <small className="text-muted">Total</small>
-                          </div>
-                        </div>
-                        
-                        <div className="d-flex justify-content-center gap-3 mt-3 flex-wrap">
-                          {donutData.map((item, index) => {
-                            const total = donutData.reduce((sum, item) => sum + item.value, 0) || 1;
-                            const porcentaje = Math.round((item.value / total) * 100);
-                            return (
-                              <div key={index} className="d-flex align-items-center">
-                                <div style={{
-                                  width: '10px',
-                                  height: '10px',
-                                  backgroundColor: item.color,
-                                  borderRadius: '3px',
-                                  marginRight: '6px'
-                                }} />
-                                <div>
-                                  <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>{item.name}</small>
-                                  <strong style={{ fontSize: '0.85rem' }}>{porcentaje}%</strong>
-                                </div>
+                              >
+                                {index + 1}
                               </div>
-                            );
-                          })}
-                        </div>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-
-                  <Col xs={12}>
-                    <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
-                      <Card.Body className="p-4">
-                        <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
-                          <FaMedal className="me-2" style={{ color: '#FFD700' }} />
-                          Top 5 Mejores Conductores
-                        </Card.Title>
-                        
-                        {cargandoTop ? (
-                          <div className="text-center py-3">
-                            <Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} />
-                            <p className="mt-2 text-muted small">Cargando...</p>
-                          </div>
-                        ) : topConductores.length > 0 ? (
-                          <ListGroup variant="flush">
-                            {topConductores.map((conductor, index) => (
-                              <ListGroup.Item key={conductor.idUsuarios || index} className="px-0 border-0 bg-transparent">
-                                <div className="d-flex align-items-center">
-                                  <div 
-                                    className="d-flex align-items-center justify-content-center rounded-circle me-2"
+                              <div className="flex-grow-1">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <strong style={{ fontSize: '0.9rem', color: '#113d69' }}>{conductor.nombre}</strong>
+                                  <Badge 
+                                    bg="none" 
+                                    className="rounded-pill px-2"
                                     style={{ 
-                                      width: '30px', 
-                                      height: '30px', 
-                                      backgroundColor: getMedalColor(index),
-                                      color: index < 3 ? 'white' : '#333',
-                                      fontWeight: 'bold',
-                                      fontSize: '0.9rem'
+                                      fontSize: '0.75rem',
+                                      backgroundColor: '#62d8d9',
+                                      color: 'white'
                                     }}
                                   >
-                                    {index + 1}
-                                  </div>
-                                  <div className="flex-grow-1">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                      <strong style={{ fontSize: '0.9rem' }}>{conductor.nombre}</strong>
-                                      <Badge 
-                                        bg="warning" 
-                                        text="dark" 
-                                        className="rounded-pill px-2"
-                                        style={{ fontSize: '0.75rem' }}
-                                      >
-                                        {conductor.promedioEstrellas ? conductor.promedioEstrellas.toFixed(1) : '0.0'}
-                                      </Badge>
-                                    </div>
-                                    <div className="mt-1">
-                                      {renderStars(conductor.promedioEstrellas || 0)}
-                                      <small className="text-muted ms-2" style={{ fontSize: '0.7rem' }}>
-                                        ({conductor.totalReseñas || 0} reseñas)
-                                      </small>
-                                    </div>
-                                  </div>
+                                    {conductor.promedioEstrellas ? conductor.promedioEstrellas.toFixed(1) : '0.0'}
+                                  </Badge>
                                 </div>
-                              </ListGroup.Item>
+                                <div className="mt-1">
+                                  {renderStars(conductor.promedioEstrellas || 0)}
+                                  <small className="text-muted ms-2" style={{ fontSize: '0.7rem' }}>
+                                    ({conductor.totalReseñas || 0} reseñas)
+                                  </small>
+                                </div>
+                              </div>
+                            </div>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    ) : (
+                      <p className="text-muted text-center py-3 small">
+                        No hay suficientes calificaciones
+                      </p>
+                    )}
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+            <Row className="g-4">
+              <Col md={6} lg={4}>
+                <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
+                  <Card.Body className="p-4 d-flex flex-column">
+                    <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
+                      Estado de Usuarios
+                    </Card.Title>
+                    
+                    <div style={{ height: '200px', position: 'relative' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={donutData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={70}
+                            paddingAngle={2}
+                            dataKey="value"
+                            startAngle={90}
+                            endAngle={-270}
+                          >
+                            {donutData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
                             ))}
-                          </ListGroup>
-                        ) : (
-                          <p className="text-muted text-center py-3 small">
-                            No hay suficientes calificaciones
-                          </p>
-                        )}
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                </Row>
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value, name, props) => {
+                              const total = donutData.reduce((sum, item) => sum + item.value, 0);
+                              const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                              return [`${value} usuarios (${porcentaje}%)`, name];
+                            }}
+                            contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+      
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        textAlign: 'center',
+                        pointerEvents: 'none'
+                      }}>
+                        <h3 className="fw-bold mb-0" style={{ color: '#333', fontSize: '1.4rem' }}>
+                          {donutData.reduce((sum, item) => sum + item.value, 0)}
+                        </h3>
+                        <small className="text-muted">Total</small>
+                      </div>
+                    </div>
+                    
+                    <div className="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+                      {donutData.map((item, index) => {
+                        const total = donutData.reduce((sum, item) => sum + item.value, 0) || 1;
+                        const porcentaje = Math.round((item.value / total) * 100);
+                        return (
+                          <div key={index} className="d-flex align-items-center">
+                            <div style={{
+                              width: '10px',
+                              height: '10px',
+                              backgroundColor: item.color,
+                              borderRadius: '3px',
+                              marginRight: '6px'
+                            }} />
+                            <div>
+                              <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>{item.name}</small>
+                              <strong style={{ fontSize: '0.85rem' }}>{porcentaje}%</strong>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={6} lg={8}>
               </Col>
             </Row>
           </>
