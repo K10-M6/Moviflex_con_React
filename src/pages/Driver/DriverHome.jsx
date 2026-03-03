@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner } from "react-bootstrap";
-import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle } from "react-icons/fa";
+import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaCamera } from "react-icons/fa";
 import {
     BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
@@ -58,7 +58,6 @@ const DriverHome = () => {
     const [formDataSolicitud, setFormDataSolicitud] = useState({
         marca: '',
         modelo: '',
-        placa: '',
         capacidad: ''
     });
     const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
@@ -287,7 +286,6 @@ const DriverHome = () => {
             setFormDataSolicitud({
                 marca: v.marca || '',
                 modelo: v.modelo || '',
-                placa: v.placa || '',
                 capacidad: v.capacidad || ''
             });
         }
@@ -1166,16 +1164,6 @@ const DriverHome = () => {
                                 className="form-control"
                                 value={formDataSolicitud.modelo}
                                 onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, modelo: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="mb-3">
-                            <label className="form-label small fw-bold text-muted">Placa</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                value={formDataSolicitud.placa}
-                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, placa: e.target.value })}
                                 required
                             />
                         </div>

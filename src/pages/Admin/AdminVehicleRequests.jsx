@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect, useState } from "react";
-import { Modal, Button, Alert } from 'react-bootstrap';
+import { Modal, Button, Alert, Spinner } from 'react-bootstrap';
 import QRCode from 'react-qr-code';
 import { FaDownload, FaPrint, FaQrcode, FaUserTag } from 'react-icons/fa';
 import PropTypes from 'prop-types';
