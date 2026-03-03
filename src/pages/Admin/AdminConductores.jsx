@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Pagination } from "react-bootstrap";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 function AdminConductores() {
@@ -8,11 +8,23 @@ function AdminConductores() {
     const [conductores, setConductores] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    
+    const [paginaActual, setPaginaActual] = useState(1);
+    const elementosPorPagina = 10;
+
     useEffect(() => {
         traerConductores();
     }, []);
-    
+
+    const indiceUltimoElemento = paginaActual * elementosPorPagina;
+    const indicePrimerElemento = indiceUltimoElemento - elementosPorPagina;
+    const conductoresPaginados = conductores.slice(indicePrimerElemento, indiceUltimoElemento);
+    const totalPaginas = Math.ceil(conductores.length / elementosPorPagina);
+
+    const cambiarPagina = (numeroPagina) => {
+        setPaginaActual(numeroPagina);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     async function traerConductores() {
         try {
             setLoading(true);
@@ -40,6 +52,7 @@ function AdminConductores() {
             }
             
             setConductores(data);
+            setPaginaActual(1);
             
         } catch (error) {
             console.error("Error al traer conductores:", error);
@@ -54,7 +67,6 @@ function AdminConductores() {
         try {
             let nuevoEstado;
             
-
             switch (estadoActual) {
                 case 'ACTIVO':
                     nuevoEstado = 'INACTIVO';
@@ -130,19 +142,6 @@ function AdminConductores() {
         }
     }
 
-    function getEstadoTexto(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return "Activo";
-            case 'INACTIVO':
-                return "Inactivo";
-            case 'SUSPENDIDO':
-                return "Suspendido";
-            default:
-                return estado || "Sin estado";
-        }
-    }
-
     function getBotonTexto(estado) {
         switch (estado) {
             case 'ACTIVO':
@@ -187,6 +186,76 @@ function AdminConductores() {
         return telefono;
     }
 
+    const Paginacion = () => {
+        if (totalPaginas <= 1) return null;
+
+        let items = [];
+        const maxBotones = 5;
+        let inicio = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
+        let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
+
+        if (fin - inicio + 1 < maxBotones) {
+            inicio = Math.max(1, fin - maxBotones + 1);
+        }
+
+        items.push(
+            <Pagination.Prev
+                key="prev"
+                onClick={() => cambiarPagina(paginaActual - 1)}
+                disabled={paginaActual === 1}
+            />
+        );
+        if (inicio > 1) {
+            items.push(
+                <Pagination.Item key={1} onClick={() => cambiarPagina(1)}>
+                    1
+                </Pagination.Item>
+            );
+            if (inicio > 2) {
+                items.push(<Pagination.Ellipsis key="ellipsis1" disabled />);
+            }
+        }
+
+        for (let numero = inicio; numero <= fin; numero++) {
+            items.push(
+                <Pagination.Item
+                    key={numero}
+                    active={numero === paginaActual}
+                    onClick={() => cambiarPagina(numero)}
+                >
+                    {numero}
+                </Pagination.Item>
+            );
+        }
+
+        if (fin < totalPaginas) {
+            if (fin < totalPaginas - 1) {
+                items.push(<Pagination.Ellipsis key="ellipsis2" disabled />);
+            }
+            items.push(
+                <Pagination.Item key={totalPaginas} onClick={() => cambiarPagina(totalPaginas)}>
+                    {totalPaginas}
+                </Pagination.Item>
+            );
+        }
+        items.push(
+            <Pagination.Next
+                key="next"
+                onClick={() => cambiarPagina(paginaActual + 1)}
+                disabled={paginaActual === totalPaginas}
+            />
+        );
+
+        return (
+            <div className="d-flex justify-content-between align-items-center mt-4">
+                <div className="text-muted">
+                    Mostrando {indicePrimerElemento + 1} - {Math.min(indiceUltimoElemento, conductores.length)} de {conductores.length} conductores
+                </div>
+                <Pagination>{items}</Pagination>
+            </div>
+        );
+    };
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -196,7 +265,6 @@ function AdminConductores() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* Capa de legibilidad */}
             <div style={{ 
                 position: 'absolute', 
                 top: 0, 
@@ -254,77 +322,75 @@ function AdminConductores() {
                                         <p className="mt-3 text-muted">Cargando conductores...</p>
                                     </div>
                                 ) : (
-                                    <Table responsive hover className="align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nombre</th>
-                                                <th>Email</th>
-                                                <th>Teléfono</th>
-                                                <th>Estado</th>
-                                                <th>Registro</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {conductores.length === 0 ? (
+                                    <>
+                                        <Table responsive hover className="align-middle">
+                                            <thead className="table-light">
                                                 <tr>
-                                                    <td colSpan="7" className="text-center py-4">
-                                                        No hay conductores registrados
-                                                    </td>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Email</th>
+                                                    <th>Teléfono</th>
+                                                    <th>Estado</th>
+                                                    <th>Registro</th>
+                                                    <th>Acciones</th>
                                                 </tr>
-                                            ) : (
-                                                conductores.map((conductor) => (
-                                                    <tr key={conductor.idUsuarios}>
-                                                        <td className="fw-semibold">{conductor.idUsuarios}</td>
-                                                        <td>
-                                                            <div className="fw-medium">{conductor.nombre}</div>
-                                                            <small className="text-muted">ID: {conductor.idUsuarios}</small>
-                                                        </td>
-                                                        <td>{conductor.email}</td>
-                                                        <td>{formatearTelefono(conductor.telefono)}</td>
-                                                        <td>
-                                                            <div>{getEstadoBadge(conductor.estado)}</div>
-                                                            <small className="text-muted">
-                                                                {getEstadoTexto(conductor.estado)}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div>{formatearFecha(conductor.creadoEn)}</div>
-                                                            {conductor.actualizadoEn && conductor.actualizadoEn !== conductor.creadoEn && (
-                                                                <small className="text-muted">
-                                                                    Actualizado: {formatearFecha(conductor.actualizadoEn)}
-                                                                </small>
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex flex-column gap-2">
-                                                                <Button
-                                                                    variant={getBotonVariant(conductor.estado)}
-                                                                    size="sm"
-                                                                    onClick={() => cambiarEstadoConductor(conductor.idUsuarios, conductor.estado)}
-                                                                    className="w-100"
-                                                                >
-                                                                    {getBotonTexto(conductor.estado)}
-                                                                </Button>
-                                                                
-                                                                {puedeSuspender(conductor.estado) && (
-                                                                    <Button
-                                                                        variant="outline-warning"
-                                                                        size="sm"
-                                                                        onClick={() => suspenderConductor(conductor.idUsuarios)}
-                                                                        className="w-100"
-                                                                    >
-                                                                        Suspender
-                                                                    </Button>
-                                                                )}
-                                                            </div>
+                                            </thead>
+                                            <tbody>
+                                                {conductores.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="7" className="text-center py-4">
+                                                            No hay conductores registrados
                                                         </td>
                                                     </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </Table>
+                                                ) : (
+                                                    conductoresPaginados.map((conductor) => (
+                                                        <tr key={conductor.idUsuarios}>
+                                                            <td className="fw-semibold">{conductor.idUsuarios}</td>
+                                                            <td>
+                                                                <div className="fw-medium">{conductor.nombre}</div>
+                                                                <small className="text-muted">ID: {conductor.idUsuarios}</small>
+                                                            </td>
+                                                            <td>{conductor.email}</td>
+                                                            <td>{formatearTelefono(conductor.telefono)}</td>
+                                                            <td>{getEstadoBadge(conductor.estado)}</td>
+                                                            <td>
+                                                                <div>{formatearFecha(conductor.creadoEn)}</div>
+                                                                {conductor.actualizadoEn && conductor.actualizadoEn !== conductor.creadoEn && (
+                                                                    <small className="text-muted">
+                                                                        Actualizado: {formatearFecha(conductor.actualizadoEn)}
+                                                                    </small>
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <div className="d-flex flex-column gap-2">
+                                                                    <Button
+                                                                        variant={getBotonVariant(conductor.estado)}
+                                                                        size="sm"
+                                                                        onClick={() => cambiarEstadoConductor(conductor.idUsuarios, conductor.estado)}
+                                                                        className="w-100"
+                                                                    >
+                                                                        {getBotonTexto(conductor.estado)}
+                                                                    </Button>
+                                                                    
+                                                                    {puedeSuspender(conductor.estado) && (
+                                                                        <Button
+                                                                            variant="outline-warning"
+                                                                            size="sm"
+                                                                            onClick={() => suspenderConductor(conductor.idUsuarios)}
+                                                                            className="w-100"
+                                                                        >
+                                                                            Suspender
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                        <Paginacion />
+                                    </>
                                 )}
                             </Card.Body>
                         </Card>

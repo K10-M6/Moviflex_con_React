@@ -487,7 +487,7 @@ const DriverHome = () => {
                                         style={{ color: '#666' }}
                                         onClick={() => navigate("/vehicle-registration")}
                                     >
-                                        Nuevo Vehículo
+                                        Registrar Vehículo
                                         <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
                                     </Button>
                                 )}
@@ -495,7 +495,6 @@ const DriverHome = () => {
                         </Card>
                     </Col>
 
-                    {/* Tarjeta de Licencia */}
                     <Col lg={5}>
                         <Card className="h-100" style={cardStyle}>
                             <Card.Body className="p-4 d-flex flex-column">

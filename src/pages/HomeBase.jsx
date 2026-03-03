@@ -74,8 +74,7 @@ function HomeBase() {
         <Container style={{ position: 'relative', zIndex: 10, marginBottom: '2rem' }}>
           <Row className="justify-content-center text-center">
             <Col lg={10}>
-                <h1 className="display-4 fw-bold text-dark mb-3">Conectamos personas. Optimizamos trayectos.</h1>
-                <Button size="lg" style={{background: '#000', border: 'none'}} as={Link} to="/register">Comenzar Ahora</Button>
+                <h1 className="display-4 fw-bold mb-3" style={{color: '#113d69'}}>Conectamos personas. Optimizamos trayectos.</h1>
             </Col>
           </Row>
         </Container>
@@ -106,8 +105,8 @@ function HomeBase() {
         <Container>
           <Row className="text-center mb-5">
             <Col>
-              <h2 className="fw-bold" style={{ fontSize: '2.5rem', color: '#333' }}>¿Cómo Funciona?</h2>
-              <p className="text-muted">Tres simples pasos para comenzar tu experiencia</p>
+              <h2 className="fw-bold" style={{ fontSize: '2.5rem', color: '#113d69' }}>¿Cómo Funciona?</h2>
+              <p style={{color: '#113d69'}}>Tres simples pasos para comenzar tu experiencia</p>
             </Col>
           </Row>
           
@@ -143,7 +142,7 @@ function HomeBase() {
       <Container className="py-5">
         <Row className="justify-content-center">
           <Col lg={10} className="text-center">
-            <h2 className="fw-bold mb-4" style={{ color: '#333' }}>¡Únete a la Revolución del Viaje Compartido!</h2>
+            <h2 className="fw-bold mb-4" style={{ color: '#113d69' }}>¡Únete a la Revolución del Viaje Compartido!</h2>
             <Image src={imagenAbajo} fluid style={{ width: '100%', borderRadius: '20px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}/>
           </Col>
         </Row>
@@ -179,7 +178,7 @@ function HomeBase() {
                       }} 
                     />
                     <h6 className="fw-bold mb-0 small" style={{color: '#fff'}}>{autor.nombre}</h6>
-                    <p style={{ fontSize: '11px', color: '#000', fontWeight: '500' }}>{autor.rol}</p>
+                    <p style={{ fontSize: '11px', color: '#113d69', fontWeight: '500' }}>{autor.rol}</p>
                   </Col>
                 ))}
               </Row>
@@ -188,7 +187,7 @@ function HomeBase() {
         </Row>
       </Container>
 
-      <footer className="py-5 text-white text-center mt-auto" style={{ background: '#3c3c3c' }}>
+      <footer className="py-5 text-white text-center mt-auto" style={{ background: '#cccbd2af' }}>
         <Container>
           <h2 className="mb-4">Únete a nuestra comunidad</h2>
           <Button as={Link} to="/register" variant="light" className="px-5 fw-bold">Registrarse Ahora</Button>

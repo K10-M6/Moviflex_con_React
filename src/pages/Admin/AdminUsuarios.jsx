@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Pagination } from "react-bootstrap";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 function AdminUsuarios() {
@@ -8,10 +8,21 @@ function AdminUsuarios() {
     const [usuarios, setUsuarios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    
+    const [paginaActual, setPaginaActual] = useState(1);
+    const elementosPorPagina = 10;
+
     useEffect(() => {
         traerUsuarios();
     }, []);
+    const indiceUltimoElemento = paginaActual * elementosPorPagina;
+    const indicePrimerElemento = indiceUltimoElemento - elementosPorPagina;
+    const usuariosPaginados = usuarios.slice(indicePrimerElemento, indiceUltimoElemento);
+    const totalPaginas = Math.ceil(usuarios.length / elementosPorPagina);
+
+    const cambiarPagina = (numeroPagina) => {
+        setPaginaActual(numeroPagina);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
     
     async function traerUsuarios() {
         try {
@@ -40,6 +51,7 @@ function AdminUsuarios() {
             }
             
             setUsuarios(data);
+            setPaginaActual(1);
             
         } catch (error) {
             console.error("Error al traer usuarios:", error);
@@ -183,19 +195,6 @@ function AdminUsuarios() {
         }
     }
 
-    function getEstadoTexto(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return "Activo";
-            case 'INACTIVO':
-                return "Inactivo";
-            case 'SUSPENDIDO':
-                return "Suspendido";
-            default:
-                return estado || "Sin estado";
-        }
-    }
-
     function getBotonTexto(estado) {
         switch (estado) {
             case 'ACTIVO':
@@ -225,6 +224,73 @@ function AdminUsuarios() {
     function puedeSuspender(estado) {
         return estado !== 'SUSPENDIDO';
     }
+    const Paginacion = () => {
+        if (totalPaginas <= 1) return null;
+
+        let items = [];
+        const maxBotones = 5;
+        let inicio = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
+        let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
+
+        if (fin - inicio + 1 < maxBotones) {
+            inicio = Math.max(1, fin - maxBotones + 1);
+        }
+        items.push(
+            <Pagination.Prev
+                key="prev"
+                onClick={() => cambiarPagina(paginaActual - 1)}
+                disabled={paginaActual === 1}
+            />
+        );
+        if (inicio > 1) {
+            items.push(
+                <Pagination.Item key={1} onClick={() => cambiarPagina(1)}>
+                    1
+                </Pagination.Item>
+            );
+            if (inicio > 2) {
+                items.push(<Pagination.Ellipsis key="ellipsis1" disabled />);
+            }
+        }
+
+        for (let numero = inicio; numero <= fin; numero++) {
+            items.push(
+                <Pagination.Item
+                    key={numero}
+                    active={numero === paginaActual}
+                    onClick={() => cambiarPagina(numero)}
+                >
+                    {numero}
+                </Pagination.Item>
+            );
+        }
+        if (fin < totalPaginas) {
+            if (fin < totalPaginas - 1) {
+                items.push(<Pagination.Ellipsis key="ellipsis2" disabled />);
+            }
+            items.push(
+                <Pagination.Item key={totalPaginas} onClick={() => cambiarPagina(totalPaginas)}>
+                    {totalPaginas}
+                </Pagination.Item>
+            );
+        }
+        items.push(
+            <Pagination.Next
+                key="next"
+                onClick={() => cambiarPagina(paginaActual + 1)}
+                disabled={paginaActual === totalPaginas}
+            />
+        );
+
+        return (
+            <div className="d-flex justify-content-between align-items-center mt-4">
+                <div className="text-muted">
+                    Mostrando {indicePrimerElemento + 1} - {Math.min(indiceUltimoElemento, usuarios.length)} de {usuarios.length} usuarios
+                </div>
+                <Pagination>{items}</Pagination>
+            </div>
+        );
+    };
 
     return (
         <div style={{
@@ -235,7 +301,6 @@ function AdminUsuarios() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* Capa de legibilidad */}
             <div style={{ 
                 position: 'absolute', 
                 top: 0, 
@@ -293,77 +358,78 @@ function AdminUsuarios() {
                                         <p className="mt-3 text-muted">Cargando usuarios...</p>
                                     </div>
                                 ) : (
-                                    <Table responsive hover className="align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nombre</th>
-                                                <th>Email</th>
-                                                <th>Teléfono</th>
-                                                <th>Rol</th>
-                                                <th>Estado</th>
-                                                <th>Registro</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {usuarios.length === 0 ? (
+                                    <>
+                                        <Table responsive hover className="align-middle">
+                                            <thead className="table-light">
                                                 <tr>
-                                                    <td colSpan="8" className="text-center py-4">
-                                                        No hay usuarios registrados
-                                                    </td>
+                                                    <th>ID</th>
+                                                    <th>Nombre</th>
+                                                    <th>Email</th>
+                                                    <th>Teléfono</th>
+                                                    <th>Rol</th>
+                                                    <th>Estado</th>
+                                                    <th>Registro</th>
+                                                    <th>Acciones</th>
                                                 </tr>
-                                            ) : (
-                                                usuarios.map((usuario) => (
-                                                    <tr key={usuario.idUsuarios}>
-                                                        <td className="fw-semibold">{usuario.idUsuarios}</td>
-                                                        <td>
-                                                            <div className="fw-medium">{usuario.nombre}</div>
-                                                            <small className="text-muted">ID: {usuario.idUsuarios}</small>
-                                                        </td>
-                                                        <td>{usuario.email}</td>
-                                                        <td>{usuario.telefono || <span className="text-muted">No especificado</span>}</td>
-                                                        <td>{getRolBadge(usuario.idRol, usuario.rol?.nombre)}</td>
-                                                        <td>
-                                                            <div>{getEstadoBadge(usuario.estado)}</div>
-                                                            <small className="text-muted">
-                                                                {getEstadoTexto(usuario.estado)}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div>{formatearFecha(usuario.creadoEn)}</div>
-                                                            <small className="text-muted">
-                                                                ID: {usuario.idUsuarios}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex flex-column gap-2">
-                                                                <Button
-                                                                    variant={getBotonVariant(usuario.estado)}
-                                                                    size="sm"
-                                                                    onClick={() => cambiarEstadoUsuario(usuario.idUsuarios, usuario.estado)}
-                                                                    className="w-100"
-                                                                >
-                                                                    {getBotonTexto(usuario.estado)}
-                                                                </Button>
-                                                                
-                                                                {puedeSuspender(usuario.estado) && (
-                                                                    <Button
-                                                                        variant="outline-warning"
-                                                                        size="sm"
-                                                                        onClick={() => suspenderUsuario(usuario.idUsuarios)}
-                                                                        className="w-100"
-                                                                    >
-                                                                        Suspender
-                                                                    </Button>
-                                                                )}
-                                                            </div>
+                                            </thead>
+                                            <tbody>
+                                                {usuarios.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="8" className="text-center py-4">
+                                                            No hay usuarios registrados
                                                         </td>
                                                     </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </Table>
+                                                ) : (
+                                                    usuariosPaginados.map((usuario) => (
+                                                        <tr key={usuario.idUsuarios}>
+                                                            <td className="fw-semibold">{usuario.idUsuarios}</td>
+                                                            <td>
+                                                                <div className="fw-medium">{usuario.nombre}</div>
+                                                                <small className="text-muted">ID: {usuario.idUsuarios}</small>
+                                                            </td>
+                                                            <td>{usuario.email}</td>
+                                                            <td>{usuario.telefono || <span className="text-muted">No especificado</span>}</td>
+                                                            <td>{getRolBadge(usuario.idRol, usuario.rol?.nombre)}</td>
+                                                            <td>{getEstadoBadge(usuario.estado)}</td>
+                                                            <td>
+                                                                <div>{formatearFecha(usuario.creadoEn)}</div>
+                                                                {usuario.actualizadoEn && usuario.actualizadoEn !== usuario.creadoEn && (
+                                                                    <small className="text-muted">
+                                                                        Actualizado: {formatearFecha(usuario.actualizadoEn)}
+                                                                    </small>
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <div className="d-flex flex-column gap-2">
+                                                                    <Button
+                                                                        variant={getBotonVariant(usuario.estado)}
+                                                                        size="sm"
+                                                                        onClick={() => cambiarEstadoUsuario(usuario.idUsuarios, usuario.estado)}
+                                                                        className="w-100"
+                                                                    >
+                                                                        {getBotonTexto(usuario.estado)}
+                                                                    </Button>
+                                                                    
+                                                                    {puedeSuspender(usuario.estado) && (
+                                                                        <Button
+                                                                            variant="outline-warning"
+                                                                            size="sm"
+                                                                            onClick={() => suspenderUsuario(usuario.idUsuarios)}
+                                                                            className="w-100"
+                                                                        >
+                                                                            Suspender
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                        
+                                        <Paginacion />
+                                    </>
                                 )}
                             </Card.Body>
                         </Card>

@@ -263,7 +263,6 @@ function Home() {
           })
         );
         
-        // Ordenamos por promedio (de mayor a menor) y tomamos los primeros 5
         const top5 = conductoresConPromedio
           .sort((a, b) => b.promedioEstrellas - a.promedioEstrellas)
           .slice(0, 5);
@@ -398,7 +397,7 @@ function Home() {
             </Row>
 
             <Row className="g-4">
-              <Col lg={8}>
+              <Col lg={6}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
                   <Card.Body className="p-4">
                     <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
@@ -424,7 +423,7 @@ function Home() {
                 </Card>
               </Col>
 
-              <Col lg={4}>
+              <Col lg={6}>
                 <Row className="g-4">
                   <Col xs={12}>
                     <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>

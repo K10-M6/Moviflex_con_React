@@ -53,7 +53,7 @@ export default function NavbarCustom({ transparent }) {
       expand="lg" 
       className="sticky-top py-1" 
       style={{ 
-        backgroundColor: transparent ? 'transparent' : '#f3f3f3', 
+        backgroundColor: transparent ? 'transparent' : '#f3f3f35d', 
         borderBottom: transparent ? 'none' : '0px solid #adadad',
         transition: 'all 0.3s ease-in-out',
         boxShadow: transparent ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'

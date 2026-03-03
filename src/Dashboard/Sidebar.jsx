@@ -5,15 +5,12 @@ import { BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill, BsListCheck, BsMenuB
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../pages/context/AuthContext";
 import Logo from "../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png";
-import QRModal from "../components/QRModal";
 import fondo from "../pages/Imagenes/AutoresContacto.png";
 
 function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { usuario, token, logout } = useAuth();
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [qrValue, setQrValue] = useState('');
   
   const handleNavigation = (path) => {
     navigate(path);
@@ -21,16 +18,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
       OpenSidebar();
     }
   };
-  
-  const generarQr = () => {
-    if (!token) {
-        alert("No hay Token disponible. Inicia sesión nuevamente.");
-        return;
-    }
-    const qrData = `${token}|${usuario?.nombre || ''}`;
-    setQrValue(qrData);
-    setShowQRModal(true);
-  };
+
   
   const menuItems = [
     { icon: <BsGrid1X2Fill />, label: "Dashboard", path: "/dashboard/home" },
@@ -92,19 +80,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
             <BsChevronLeft size={15} />
           </button>
         </div>
-        
-        <div className="px-4 mt-3">
-          <button
-            onClick={generarQr}
-            className="btn w-100 d-flex align-items-center justify-content-start p-2 rounded-pill border-0 shadow-sm"
-            style={{ backgroundColor: '#54c7b8', color: 'white' }}
-          >
-            <span className="me-3 d-flex align-items-center justify-content-center rounded-circle bg-white bg-opacity-25" style={{ width: '32px', height: '32px' }}>
-              <BsQrCode size={18} />
-            </span>
-            <span className="fw-bold">GENERAR QR</span>
-          </button>
-        </div>
+      
 
         <ul className="nav flex-column p-3 mt-3">
           {menuItems.map((item, index) => (
@@ -146,14 +122,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
         </div>
       </aside>
 
-      <QRModal
-        show={showQRModal}
-        onHide={() => setShowQRModal(false)}
-        qrValue={qrValue}
-        usuario={usuario}
-        titulo="Tu QR de Acceso"
-        mensajeExpiracion="Válido por 3 horas"
-      />
+
     </>
   );
 }
