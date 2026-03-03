@@ -441,457 +441,466 @@ const DriverHome = () => {
                                 <Button
                                     variant="link"
                                     className="p-0 ms-2 fw-bold text-decoration-none shadow-none"
+                                    onClick={repetirTutorial}
+                                    style={{ color: brandColor }}
+                                >
+                                    <FaInfoCircle className="me-1" /> Ayuda
+                                </Button>
+                            </div>
+                            <p className="text-muted mb-0">Bienvenido, gestiona tu actividad diaria</p>
+                        </div>
                         <div className="d-flex align-items-center gap-3">
-                                    <div className="text-end me-3 d-none d-md-block">
-                                        <span className="small text-uppercase fw-bold text-muted d-block">Ganancias {periodo}</span>
-                                        <h3 className="fw-bold mb-0" style={{ color: brandColor }}>${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h3>
-                                    </div>
-                                    <div className="bg-light p-1 rounded-3 d-flex gap-1 border">
-                                        <Badge
-                                            bg={periodo === 'diario' ? 'primary' : 'light'}
-                                            text={periodo === 'diario' ? 'white' : 'dark'}
-                                            className="cursor-pointer py-2 px-3"
-                                            onClick={() => setPeriodo('diario')}
-                                            style={{ cursor: 'pointer', backgroundColor: periodo === 'diario' ? brandColor : '' }}
-                                        >Día</Badge>
-                                        <Badge
-                                            bg={periodo === 'mensual' ? 'primary' : 'light'}
-                                            text={periodo === 'mensual' ? 'white' : 'dark'}
-                                            className="cursor-pointer py-2 px-3"
-                                            onClick={() => setPeriodo('mensual')}
-                                            style={{ cursor: 'pointer', backgroundColor: periodo === 'mensual' ? brandColor : '' }}
-                                        >Mes</Badge>
-                                        <Badge
-                                            bg={periodo === 'anual' ? 'primary' : 'light'}
-                                            text={periodo === 'anual' ? 'white' : 'dark'}
-                                            className="cursor-pointer py-2 px-3"
-                                            onClick={() => setPeriodo('anual')}
-                                            style={{ cursor: 'pointer', backgroundColor: periodo === 'anual' ? brandColor : '' }}
-                                        >Año</Badge>
-                                    </div>
+                            <div className="text-end me-3 d-none d-md-block">
+                                <span className="small text-uppercase fw-bold text-muted d-block">Ganancias {periodo}</span>
+                                <h3 className="fw-bold mb-0" style={{ color: brandColor }}>${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h3>
+                            </div>
+                            <div className="bg-light p-1 rounded-3 d-flex gap-1 border">
+                                <Badge
+                                    bg={periodo === 'diario' ? 'primary' : 'light'}
+                                    text={periodo === 'diario' ? 'white' : 'dark'}
+                                    className="cursor-pointer py-2 px-3"
+                                    onClick={() => setPeriodo('diario')}
+                                    style={{ cursor: 'pointer', backgroundColor: periodo === 'diario' ? brandColor : '' }}
+                                >Día</Badge>
+                                <Badge
+                                    bg={periodo === 'mensual' ? 'primary' : 'light'}
+                                    text={periodo === 'mensual' ? 'white' : 'dark'}
+                                    className="cursor-pointer py-2 px-3"
+                                    onClick={() => setPeriodo('mensual')}
+                                    style={{ cursor: 'pointer', backgroundColor: periodo === 'mensual' ? brandColor : '' }}
+                                >Mes</Badge>
+                                <Badge
+                                    bg={periodo === 'anual' ? 'primary' : 'light'}
+                                    text={periodo === 'anual' ? 'white' : 'dark'}
+                                    className="cursor-pointer py-2 px-3"
+                                    onClick={() => setPeriodo('anual')}
+                                    style={{ cursor: 'pointer', backgroundColor: periodo === 'anual' ? brandColor : '' }}
+                                >Año</Badge>
+                            </div>
+                        </div>
+                    </Card.Body>
+                </Card>
+
+                {/* Nuevas tarjetas de analíticas */}
+                <Row className="g-4 mb-4">
+                    <Col xs={12} sm={6} lg={3}>
+                        <Card style={{ ...cardStyle, borderBottom: `4px solid ${brandColor}` }}>
+                            <Card.Body className="d-flex align-items-center p-4">
+                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                                    style={{ width: '50px', height: '50px', backgroundColor: `${brandColor}15`, color: brandColor }}>
+                                    <FaWallet size={20} />
+                                </div>
+                                <div>
+                                    <h6 className="text-muted mb-0 small">Ganancias</h6>
+                                    <h4 className="fw-bold mb-0">${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h4>
                                 </div>
                             </Card.Body>
                         </Card>
+                    </Col>
+                    <Col xs={12} sm={6} lg={3}>
+                        <Card style={{ ...cardStyle, borderBottom: '4px solid #3b82f6' }}>
+                            <Card.Body className="d-flex align-items-center p-4">
+                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                                    style={{ width: '50px', height: '50px', backgroundColor: '#dbeafe', color: '#3b82f6' }}>
+                                    <FaClock size={20} />
+                                </div>
+                                <div>
+                                    <h6 className="text-muted mb-0 small">Tiempo en Línea</h6>
+                                    <h4 className="fw-bold mb-0">{statsAvanzadas.tiempoEnLinea.totalHoras}h</h4>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs={12} sm={6} lg={3}>
+                        <Card style={{ ...cardStyle, borderBottom: '4px solid #10b981' }}>
+                            <Card.Body className="d-flex align-items-center p-4">
+                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                                    style={{ width: '50px', height: '50px', backgroundColor: '#d1fae5', color: '#10b981' }}>
+                                    <FaCheckCircle size={20} />
+                                </div>
+                                <div>
+                                    <h6 className="text-muted mb-0 small">Viajes Finalizados</h6>
+                                    <h4 className="fw-bold mb-0">{statsAvanzadas.resumenViajes.total}</h4>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs={12} sm={6} lg={3}>
+                        <Card style={{ ...cardStyle, borderBottom: '4px solid #f59e0b' }}>
+                            <Card.Body className="d-flex align-items-center p-4">
+                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                                    style={{ width: '50px', height: '50px', backgroundColor: '#fef3c7', color: '#f59e0b' }}>
+                                    <FaRoute size={20} />
+                                </div>
+                                <div>
+                                    <h6 className="text-muted mb-0 small">Ruta Principal</h6>
+                                    <h4 className="fw-bold mb-0" style={{ fontSize: '0.9rem' }}>
+                                        {statsAvanzadas.rutasFrecuentes[0]?.name || 'N/A'}
+                                    </h4>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
 
-                        {/* Nuevas tarjetas de analíticas */}
-                        <Row className="g-4 mb-4">
-                            <Col xs={12} sm={6} lg={3}>
-                                <Card style={{ ...cardStyle, borderBottom: `4px solid ${brandColor}` }}>
-                                    <Card.Body className="d-flex align-items-center p-4">
-                                        <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                            style={{ width: '50px', height: '50px', backgroundColor: `${brandColor}15`, color: brandColor }}>
-                                            <FaWallet size={20} />
-                                        </div>
-                                        <div>
-                                            <h6 className="text-muted mb-0 small">Ganancias</h6>
-                                            <h4 className="fw-bold mb-0">${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h4>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col xs={12} sm={6} lg={3}>
-                                <Card style={{ ...cardStyle, borderBottom: '4px solid #3b82f6' }}>
-                                    <Card.Body className="d-flex align-items-center p-4">
-                                        <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                            style={{ width: '50px', height: '50px', backgroundColor: '#dbeafe', color: '#3b82f6' }}>
-                                            <FaClock size={20} />
-                                        </div>
-                                        <div>
-                                            <h6 className="text-muted mb-0 small">Tiempo en Línea</h6>
-                                            <h4 className="fw-bold mb-0">{statsAvanzadas.tiempoEnLinea.totalHoras}h</h4>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col xs={12} sm={6} lg={3}>
-                                <Card style={{ ...cardStyle, borderBottom: '4px solid #10b981' }}>
-                                    <Card.Body className="d-flex align-items-center p-4">
-                                        <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                            style={{ width: '50px', height: '50px', backgroundColor: '#d1fae5', color: '#10b981' }}>
-                                            <FaCheckCircle size={20} />
-                                        </div>
-                                        <div>
-                                            <h6 className="text-muted mb-0 small">Viajes Finalizados</h6>
-                                            <h4 className="fw-bold mb-0">{statsAvanzadas.resumenViajes.total}</h4>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col xs={12} sm={6} lg={3}>
-                                <Card style={{ ...cardStyle, borderBottom: '4px solid #f59e0b' }}>
-                                    <Card.Body className="d-flex align-items-center p-4">
-                                        <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                            style={{ width: '50px', height: '50px', backgroundColor: '#fef3c7', color: '#f59e0b' }}>
-                                            <FaRoute size={20} />
-                                        </div>
-                                        <div>
-                                            <h6 className="text-muted mb-0 small">Ruta Principal</h6>
-                                            <h4 className="fw-bold mb-0" style={{ fontSize: '0.9rem' }}>
-                                                {statsAvanzadas.rutasFrecuentes[0]?.name || 'N/A'}
-                                            </h4>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        </Row>
-
-                        <Row className="g-4 mb-4">
-                            <Col lg={8}>
-                                <Card style={cardStyle}>
-                                    <Card.Body className="p-4">
-                                        <div className="d-flex justify-content-between align-items-center mb-4">
-                                            <h5 className="fw-bold mb-0">Tendencia de Ganancias</h5>
-                                            <Badge bg="light" text="dark" className="border">Historial {periodo}</Badge>
-                                        </div>
-                                        <div style={{ height: '300px' }}>
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <AreaChart data={statsAvanzadas.ganancias.historial}>
-                                                    <defs>
-                                                        <linearGradient id="colorGanancias" x1="0" y1="0" x2="0" y2="1">
-                                                            <stop offset="5%" stopColor={brandColor} stopOpacity={0.8} />
-                                                            <stop offset="95%" stopColor={brandColor} stopOpacity={0} />
-                                                        </linearGradient>
-                                                    </defs>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                                    <Area type="monotone" dataKey="value" stroke={brandColor} fillOpacity={1} fill="url(#colorGanancias)" name="Ganancias ($)" />
-                                                </AreaChart>
-                                            </ResponsiveContainer>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col lg={4}>
-                                <Card style={cardStyle}>
-                                    <Card.Body className="p-4">
-                                        <h5 className="fw-bold mb-4">Horas en Línea</h5>
-                                        <div style={{ height: '300px' }}>
-                                            <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={statsAvanzadas.tiempoEnLinea.historial}>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                                                    <Tooltip cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Horas" barSize={25} />
-                                                </BarChart>
-                                            </ResponsiveContainer>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        </Row>
-                        {/* Tarjeta de Vehículo */}
-                        <Col lg={7}>
-                            <Card className="h-100" style={cardStyle}>
-                                <Card.Body className="p-4">
-                                    <div className="d-flex align-items-center mb-4">
-                                        <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '12px',
-                                            backgroundColor: `${brandColor}15`,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            marginRight: '12px'
-                                        }}>
-                                            <FaCar size={20} style={{ color: brandColor }} />
-                                        </div>
-                                        <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Vehículo Activo</h5>
+                <Row className="g-4 mb-4">
+                    <Col lg={8}>
+                        <Card style={cardStyle}>
+                            <Card.Body className="p-4">
+                                <div className="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 className="fw-bold mb-0">Tendencia de Ganancias</h5>
+                                    <Badge bg="light" text="dark" className="border">Historial {periodo}</Badge>
+                                </div>
+                                <div style={{ height: '300px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={statsAvanzadas.ganancias.historial}>
+                                            <defs>
+                                                <linearGradient id="colorGanancias" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={brandColor} stopOpacity={0.8} />
+                                                    <stop offset="95%" stopColor={brandColor} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                            <Area type="monotone" dataKey="value" stroke={brandColor} fillOpacity={1} fill="url(#colorGanancias)" name="Ganancias ($)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col lg={4}>
+                        <Card style={cardStyle}>
+                            <Card.Body className="p-4">
+                                <h5 className="fw-bold mb-4">Horas en Línea</h5>
+                                <div style={{ height: '300px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={statsAvanzadas.tiempoEnLinea.historial}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <Tooltip cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Horas" barSize={25} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+                <Row className="g-4 mb-4">
+                    {/* Tarjeta de Vehículo */}
+                    <Col lg={7}>
+                        <Card className="h-100" style={cardStyle}>
+                            <Card.Body className="p-4">
+                                <div className="d-flex align-items-center mb-4">
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '12px',
+                                        backgroundColor: `${brandColor}15`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginRight: '12px'
+                                    }}>
+                                        <FaCar size={20} style={{ color: brandColor }} />
                                     </div>
+                                    <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Vehículo Activo</h5>
+                                </div>
 
-                                    {cargandoVehiculo ? (
-                                        <div className="text-center py-5">
-                                            <Spinner animation="border" style={{ color: brandColor }} />
-                                        </div>
-                                    ) : errorVehiculo ? (
-                                        <div className="text-center py-4" style={{ backgroundColor: '#FEF2F2', borderRadius: '16px' }}>
-                                            <p className="small text-danger mb-2">{errorVehiculo}</p>
-                                            <Button variant="outline-secondary" size="sm" onClick={() => window.location.reload()}>Reintentar</Button>
-                                        </div>
-                                    ) : vehiculoPrincipal ? (
-                                        <div style={{
-                                            padding: '16px',
-                                            borderRadius: '16px',
-                                            backgroundColor: '#F9FAFB',
-                                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
-                                        }}>
-                                            <Row className="align-items-center">
-                                                <Col xs={3} className="text-center">
-                                                    <div style={{
-                                                        fontSize: '2.5rem',
-                                                        backgroundColor: '#fff',
-                                                        borderRadius: '12px',
-                                                        padding: '8px',
-                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                                                    }}>
-                                                        🚘
-                                                    </div>
-                                                </Col>
-                                                <Col xs={9}>
-                                                    <h6 className="fw-semibold mb-1" style={{ color: '#333', fontSize: '1.1rem' }}>
-                                                        {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}
-                                                    </h6>
-                                                    <p className="mb-1 text-muted small">Placa: <span className="text-dark fw-semibold">{vehiculoPrincipal.placa}</span></p>
-                                                    <p className="mb-0 text-muted small">Capacidad: {vehiculoPrincipal.capacidad} pasajeros</p>
-                                                </Col>
-                                            </Row>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-4" style={{ backgroundColor: '#F9FAFB', borderRadius: '16px' }}>
-                                            <p className="text-muted small mb-3">No tienes un vehículo registrado</p>
-                                            <Button
-                                                style={{ backgroundColor: brandColor, border: 'none', color: 'white' }}
-                                                className="fw-semibold px-4 py-2"
-                                                onClick={() => navigate("/registrar-vehiculo")}
-                                            >
-                                                Registrar ahora
-                                            </Button>
-                                        </div>
-                                    )}
-
-                                    {vehiculoPrincipal && (
-                                        <Button
-                                            variant="link"
-                                            className="mt-3 p-0 text-decoration-none fw-semibold small shadow-none"
-                                            style={{ color: '#666' }}
-                                            onClick={() => navigate("/vehicle-registration")}
-                                        >
-                                            Registrar Vehículo
-                                            <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
-                                        </Button>
-                                    )}
-                                </Card.Body>
-                            </Card>
-                        </Col>
-
-                        <Col lg={5}>
-                            <Card className="h-100" style={cardStyle}>
-                                <Card.Body className="p-4 d-flex flex-column">
-                                    <div className="d-flex align-items-center mb-4">
-                                        <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '12px',
-                                            backgroundColor: `${brandColor}15`,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            marginRight: '12px'
-                                        }}>
-                                            <FaIdCard size={20} style={{ color: brandColor }} />
-                                        </div>
-                                        <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Licencia de Conducir</h5>
+                                {cargandoVehiculo ? (
+                                    <div className="text-center py-5">
+                                        <Spinner animation="border" style={{ color: brandColor }} />
                                     </div>
-
-                                    {cargandoDocumentos ? (
-                                        <div className="text-center py-4">
-                                            <Spinner animation="border" size="sm" style={{ color: brandColor }} />
-                                            <p className="mt-2 text-muted small">Cargando documentos...</p>
-                                        </div>
-                                    ) : errorDocumentos ? (
-                                        <Alert variant="danger" className="py-2">
-                                            <small>{errorDocumentos}</small>
-                                        </Alert>
-                                    ) : licencia ? (
-                                        <div className="mb-auto">
-                                            <ListGroup variant="flush">
-                                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                    <span className="text-muted small">Número</span>
-                                                    <span className="fw-semibold" style={{ color: '#333' }}>{licencia.numeroDocumento || 'Sin número'}</span>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                    <span className="text-muted small">Expedición</span>
-                                                    <span className="fw-semibold" style={{ color: '#333' }}>{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                    <span className="text-muted small">Subida</span>
-                                                    <span className="fw-semibold" style={{ color: '#333' }}>{formatearFechaSubida(licencia.fechaSubida)}</span>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                    <span className="text-muted small">Estado</span>
-                                                    {getDocumentoBadge(licencia.estado)}
-                                                </ListGroup.Item>
-                                            </ListGroup>
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-4">
-                                            <p className="text-muted small">No tienes una licencia registrada</p>
-                                            <Button
-                                                className="mt-2 fw-semibold py-2"
-                                                style={{ backgroundColor: brandColor, border: 'none', color: 'white' }}
-                                                onClick={() => navigate("/documentacion")}
-                                            >
-                                                Subir licencia
-                                            </Button>
-                                        </div>
-                                    )}
-
-                                    {licencia && (
-                                        <Button
-                                            className="w-100 mt-4 fw-semibold py-2"
-                                            style={{
-                                                backgroundColor: brandColor,
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '12px',
-                                                boxShadow: '0 4px 12px rgba(84, 199, 184, 0.3)'
-                                            }}
-                                            onClick={() => navigate("/documentacion")}
-                                        >
-                                            ACTUALIZAR LICENCIA
-                                        </Button>
-                                    )}
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
-
-                    <Row className="mt-4">
-                        <Col lg={12}>
-                            {documentos && documentos.some(d => d.estado === 'RECHAZADO') && (
-                                <Alert variant="danger" className="border-0 mb-4" style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)' }}>
-                                    <div className="d-flex align-items-center">
-                                        <FaInfoCircle size={24} className="me-3" />
-                                        <div>
-                                            <h5 className="mb-1 fw-semibold">Documentación Rechazada</h5>
-                                            <p className="mb-0 small">Tu documentación no ha sido aprobada. No podrás publicar nuevos viajes hasta que actualices tus documentos.</p>
-                                        </div>
-                                        <Button
-                                            variant="danger"
-                                            className="ms-auto rounded-pill px-4 fw-semibold border-0"
-                                            style={{ boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)' }}
-                                            onClick={() => navigate("/documentacion")}
-                                        >
-                                            ACTUALIZAR
-                                        </Button>
+                                ) : errorVehiculo ? (
+                                    <div className="text-center py-4" style={{ backgroundColor: '#FEF2F2', borderRadius: '16px' }}>
+                                        <p className="small text-danger mb-2">{errorVehiculo}</p>
+                                        <Button variant="outline-secondary" size="sm" onClick={() => window.location.reload()}>Reintentar</Button>
                                     </div>
-                                </Alert>
-                            )}
-
-                            {/* Tarjeta de Viajes */}
-                            <Card className="border-0" style={{ borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
-                                <Card.Body className="p-4">
-                                    <div className="d-flex align-items-center justify-content-between mb-4">
-                                        <div className="d-flex align-items-center">
-                                            <div style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '12px',
-                                                backgroundColor: `${brandColor}15`,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                marginRight: '12px'
-                                            }}>
-                                                <FaHistory size={20} style={{ color: brandColor }} />
-                                            </div>
-                                            <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Viajes Recientes</h5>
-                                        </div>
-                                        <div className="d-flex gap-2">
-                                            <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">
-                                                {estadisticasViajes.completados} Completados
-                                            </Badge>
-                                            {estadisticasViajes.enCurso > 0 && (
-                                                <Badge bg="warning" className="rounded-pill px-3 py-2 fw-normal">
-                                                    {estadisticasViajes.enCurso} En curso
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {cargandoViajes ? (
-                                        <div className="text-center py-4">
-                                            <Spinner animation="border" style={{ color: brandColor }} />
-                                            <p className="mt-2 text-muted small">Cargando viajes...</p>
-                                        </div>
-                                    ) : errorViajes ? (
-                                        <div className="text-center py-4">
-                                            <p className="text-danger small">{errorViajes}</p>
-                                            <Button
-                                                variant="outline-secondary"
-                                                size="sm"
-                                                onClick={() => window.location.reload()}
-                                            >
-                                                Reintentar
-                                            </Button>
-                                        </div>
-                                    ) : viajesRecientes.length === 0 ? (
-                                        <div className="text-center py-5">
-                                            <div style={{
-                                                width: '60px',
-                                                height: '60px',
-                                                borderRadius: '50%',
-                                                backgroundColor: '#F3F4F6',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                margin: '0 auto 16px'
-                                            }}>
-                                                <FaHistory size={24} className="text-muted" />
-                                            </div>
-                                            <p className="text-muted mb-0">No hay viajes recientes</p>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <ListGroup variant="flush">
-                                                {viajesRecientes.map((viaje) => (
-                                                    <ListGroup.Item key={viaje.idViajes} className="px-0 border-0 py-3" style={{ borderBottom: '1px solid #F3F4F6' }}>
-                                                        <Row className="align-items-center">
-                                                            <Col xs={1} className="text-center">
-                                                                <div style={{
-                                                                    width: '32px',
-                                                                    height: '32px',
-                                                                    borderRadius: '10px',
-                                                                    backgroundColor: `${brandColor}10`,
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <FaCar size={16} color={brandColor} />
-                                                                </div>
-                                                            </Col>
-                                                            <Col xs={5}>
-                                                                <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
-                                                                <small className="text-muted">
-                                                                    {formatearFecha(viaje.fechaHoraSalida)}
-                                                                </small>
-                                                            </Col>
-                                                            <Col xs={3}>
-                                                                <small className="text-muted">
-                                                                    {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
-                                                                </small>
-                                                            </Col>
-                                                            <Col xs={3} className="text-end">
-                                                                <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2 fw-normal">
-                                                                    {getEstadoTexto(viaje.estado)}
-                                                                </Badge>
-                                                            </Col>
-                                                        </Row>
-                                                    </ListGroup.Item>
-                                                ))}
-                                            </ListGroup>
-
-                                            {todosLosViajes.length > 3 && (
-                                                <div className="text-center mt-4">
-                                                    <Button
-                                                        variant="outline-secondary"
-                                                        onClick={() => setShowHistorialCompleto(true)}
-                                                        className="rounded-pill px-4 py-2 fw-semibold border-0"
-                                                        style={{ backgroundColor: '#F9FAFB', color: '#666' }}
-                                                    >
-                                                        Ver historial completo ({todosLosViajes.length} viajes)
-                                                    </Button>
+                                ) : vehiculoPrincipal ? (
+                                    <div style={{
+                                        padding: '16px',
+                                        borderRadius: '16px',
+                                        backgroundColor: '#F9FAFB',
+                                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+                                    }}>
+                                        <Row className="align-items-center">
+                                            <Col xs={3} className="text-center">
+                                                <div style={{
+                                                    fontSize: '2.5rem',
+                                                    backgroundColor: '#fff',
+                                                    borderRadius: '12px',
+                                                    padding: '8px',
+                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                                                }}>
+                                                    🚘
                                                 </div>
-                                            )}
-                                        </>
-                                    )}
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
+                                            </Col>
+                                            <Col xs={9}>
+                                                <h6 className="fw-semibold mb-1" style={{ color: '#333', fontSize: '1.1rem' }}>
+                                                    {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}
+                                                </h6>
+                                                <p className="mb-1 text-muted small">Placa: <span className="text-dark fw-semibold">{vehiculoPrincipal.placa}</span></p>
+                                                <p className="mb-0 text-muted small">Capacidad: {vehiculoPrincipal.capacidad} pasajeros</p>
+                                            </Col>
+                                        </Row>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4" style={{ backgroundColor: '#F9FAFB', borderRadius: '16px' }}>
+                                        <p className="text-muted small mb-3">No tienes un vehículo registrado</p>
+                                        <Button
+                                            style={{ backgroundColor: brandColor, border: 'none', color: 'white' }}
+                                            className="fw-semibold px-4 py-2"
+                                            onClick={() => navigate("/registrar-vehiculo")}
+                                        >
+                                            Registrar ahora
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {vehiculoPrincipal && (
+                                    <Button
+                                        variant="link"
+                                        className="mt-3 p-0 text-decoration-none fw-semibold small shadow-none"
+                                        style={{ color: '#666' }}
+                                        onClick={() => navigate("/vehicle-registration")}
+                                    >
+                                        Registrar Vehículo
+                                        <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
+                                    </Button>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+
+                    <Col lg={5}>
+                        <Card className="h-100" style={cardStyle}>
+                            <Card.Body className="p-4 d-flex flex-column">
+                                <div className="d-flex align-items-center mb-4">
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '12px',
+                                        backgroundColor: `${brandColor}15`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginRight: '12px'
+                                    }}>
+                                        <FaIdCard size={20} style={{ color: brandColor }} />
+                                    </div>
+                                    <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Licencia de Conducir</h5>
+                                </div>
+
+                                {cargandoDocumentos ? (
+                                    <div className="text-center py-4">
+                                        <Spinner animation="border" size="sm" style={{ color: brandColor }} />
+                                        <p className="mt-2 text-muted small">Cargando documentos...</p>
+                                    </div>
+                                ) : errorDocumentos ? (
+                                    <Alert variant="danger" className="py-2">
+                                        <small>{errorDocumentos}</small>
+                                    </Alert>
+                                ) : licencia ? (
+                                    <div className="mb-auto">
+                                        <ListGroup variant="flush">
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                                <span className="text-muted small">Número</span>
+                                                <span className="fw-semibold" style={{ color: '#333' }}>{licencia.numeroDocumento || 'Sin número'}</span>
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                                <span className="text-muted small">Expedición</span>
+                                                <span className="fw-semibold" style={{ color: '#333' }}>{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                                <span className="text-muted small">Subida</span>
+                                                <span className="fw-semibold" style={{ color: '#333' }}>{formatearFechaSubida(licencia.fechaSubida)}</span>
+                                            </ListGroup.Item>
+                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
+                                                <span className="text-muted small">Estado</span>
+                                                {getDocumentoBadge(licencia.estado)}
+                                            </ListGroup.Item>
+                                        </ListGroup>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4">
+                                        <p className="text-muted small">No tienes una licencia registrada</p>
+                                        <Button
+                                            className="mt-2 fw-semibold py-2"
+                                            style={{ backgroundColor: brandColor, border: 'none', color: 'white' }}
+                                            onClick={() => navigate("/documentacion")}
+                                        >
+                                            Subir licencia
+                                        </Button>
+                                    </div>
+                                )}
+
+                                {licencia && (
+                                    <Button
+                                        className="w-100 mt-4 fw-semibold py-2"
+                                        style={{
+                                            backgroundColor: brandColor,
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '12px',
+                                            boxShadow: '0 4px 12px rgba(84, 199, 184, 0.3)'
+                                        }}
+                                        onClick={() => navigate("/documentacion")}
+                                    >
+                                        ACTUALIZAR LICENCIA
+                                    </Button>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+
+                <Row className="mt-4">
+                    <Col lg={12}>
+                        {documentos && documentos.some(d => d.estado === 'RECHAZADO') && (
+                            <Alert variant="danger" className="border-0 mb-4" style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)' }}>
+                                <div className="d-flex align-items-center">
+                                    <FaInfoCircle size={24} className="me-3" />
+                                    <div>
+                                        <h5 className="mb-1 fw-semibold">Documentación Rechazada</h5>
+                                        <p className="mb-0 small">Tu documentación no ha sido aprobada. No podrás publicar nuevos viajes hasta que actualices tus documentos.</p>
+                                    </div>
+                                    <Button
+                                        variant="danger"
+                                        className="ms-auto rounded-pill px-4 fw-semibold border-0"
+                                        style={{ boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)' }}
+                                        onClick={() => navigate("/documentacion")}
+                                    >
+                                        ACTUALIZAR
+                                    </Button>
+                                </div>
+                            </Alert>
+                        )}
+
+                        {/* Tarjeta de Viajes */}
+                        <Card className="border-0" style={{ borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
+                            <Card.Body className="p-4">
+                                <div className="d-flex align-items-center justify-content-between mb-4">
+                                    <div className="d-flex align-items-center">
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '12px',
+                                            backgroundColor: `${brandColor}15`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginRight: '12px'
+                                        }}>
+                                            <FaHistory size={20} style={{ color: brandColor }} />
+                                        </div>
+                                        <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Viajes Recientes</h5>
+                                    </div>
+                                    <div className="d-flex gap-2">
+                                        <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">
+                                            {estadisticasViajes.completados} Completados
+                                        </Badge>
+                                        {estadisticasViajes.enCurso > 0 && (
+                                            <Badge bg="warning" className="rounded-pill px-3 py-2 fw-normal">
+                                                {estadisticasViajes.enCurso} En curso
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {cargandoViajes ? (
+                                    <div className="text-center py-4">
+                                        <Spinner animation="border" style={{ color: brandColor }} />
+                                        <p className="mt-2 text-muted small">Cargando viajes...</p>
+                                    </div>
+                                ) : errorViajes ? (
+                                    <div className="text-center py-4">
+                                        <p className="text-danger small">{errorViajes}</p>
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={() => window.location.reload()}
+                                        >
+                                            Reintentar
+                                        </Button>
+                                    </div>
+                                ) : viajesRecientes.length === 0 ? (
+                                    <div className="text-center py-5">
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            borderRadius: '50%',
+                                            backgroundColor: '#F3F4F6',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            margin: '0 auto 16px'
+                                        }}>
+                                            <FaHistory size={24} className="text-muted" />
+                                        </div>
+                                        <p className="text-muted mb-0">No hay viajes recientes</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <ListGroup variant="flush">
+                                            {viajesRecientes.map((viaje) => (
+                                                <ListGroup.Item key={viaje.idViajes} className="px-0 border-0 py-3" style={{ borderBottom: '1px solid #F3F4F6' }}>
+                                                    <Row className="align-items-center">
+                                                        <Col xs={1} className="text-center">
+                                                            <div style={{
+                                                                width: '32px',
+                                                                height: '32px',
+                                                                borderRadius: '10px',
+                                                                backgroundColor: `${brandColor}10`,
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center'
+                                                            }}>
+                                                                <FaCar size={16} color={brandColor} />
+                                                            </div>
+                                                        </Col>
+                                                        <Col xs={5}>
+                                                            <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
+                                                            <small className="text-muted">
+                                                                {formatearFecha(viaje.fechaHoraSalida)}
+                                                            </small>
+                                                        </Col>
+                                                        <Col xs={3}>
+                                                            <small className="text-muted">
+                                                                {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                                            </small>
+                                                        </Col>
+                                                        <Col xs={3} className="text-end">
+                                                            <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2 fw-normal">
+                                                                {getEstadoTexto(viaje.estado)}
+                                                            </Badge>
+                                                        </Col>
+                                                    </Row>
+                                                </ListGroup.Item>
+                                            ))}
+                                        </ListGroup>
+
+                                        {todosLosViajes.length > 3 && (
+                                            <div className="text-center mt-4">
+                                                <Button
+                                                    variant="outline-secondary"
+                                                    onClick={() => setShowHistorialCompleto(true)}
+                                                    className="rounded-pill px-4 py-2 fw-semibold border-0"
+                                                    style={{ backgroundColor: '#F9FAFB', color: '#666' }}
+                                                >
+                                                    Ver historial completo ({todosLosViajes.length} viajes)
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
             </Container>
 
             {/* Modal de Historial Completo */}
@@ -1050,7 +1059,7 @@ const DriverHome = () => {
                     </div>
                 </Modal.Body>
             </Modal>
-        </div>
+        </div >
     );
 };
 
