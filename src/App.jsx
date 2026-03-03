@@ -9,6 +9,8 @@ import AdminConductores from "./pages/Admin/AdminConductores";
 import AdminUsuarios from "./pages/Admin/AdminUsuarios";
 import AdminVehiculos from "./pages/Admin/AdminVehiculos";
 import { AuthProvider, useAuth } from "./pages/context/AuthContext";
+import { SocketProvider } from "./pages/context/SocketContext";
+import { Toaster } from "react-hot-toast";
 import AdminViajeros from "./pages/Admin/AdminViajeros";
 import Profile from "./pages/User/Profile";
 import UserHome from "./pages/User/UserHome";
@@ -31,85 +33,87 @@ function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/dashboard/home" element={
-            <RequiredAuth>
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-                <Header/>
-                <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
-                  <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
-                  <div style={{ 
-                    flex: 1,
-                    marginLeft: openSidebarToggle ? '280px' : '0px',
-                    transition: 'margin-left 0.3s ease-in-out',
-                    backgroundColor: '#f5f5f5', 
-                    height: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <Home />
+      <SocketProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/dashboard/home" element={
+              <RequiredAuth>
+                <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+                  <Header />
+                  <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
+                    <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
+                    <div style={{
+                      flex: 1,
+                      marginLeft: openSidebarToggle ? '280px' : '0px',
+                      transition: 'margin-left 0.3s ease-in-out',
+                      backgroundColor: '#f5f5f5',
+                      height: '100%',
+                      overflow: 'auto'
+                    }}>
+                      <Home />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </RequiredAuth>
-          } />
-          
-          <Route path="/" element={<HomeBase />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-      
-          <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
-          
+              </RequiredAuth>
+            } />
+
+            <Route path="/" element={<HomeBase />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
 
-          <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
-          <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
-          <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
-          <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
-          <Route path="/vehicle-registration" element={<RequiredAuth><VehicleRegistration /></RequiredAuth>} />
-          <Route path="/documents" element={<RequiredAuth><Documents /></RequiredAuth>} />
+            <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
 
-          <Route path="/dashboard/home" element={
-            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-              <Home />
-            </DashboardLayout>
-          } />
 
-          <Route path="/admin/conductores" element={
-            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-              <AdminConductores />
-            </DashboardLayout>
-          } />
+            <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
+            <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
+            <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
+            <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
+            <Route path="/vehicle-registration" element={<RequiredAuth><VehicleRegistration /></RequiredAuth>} />
+            <Route path="/documents" element={<RequiredAuth><Documents /></RequiredAuth>} />
 
-          <Route path="/admin/usuarios" element={
-            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-              <AdminUsuarios />
-            </DashboardLayout>
-          } />
+            <Route path="/dashboard/home" element={
+              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                <Home />
+              </DashboardLayout>
+            } />
 
-          <Route path="/admin/vehiculos" element={
-            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-              <AdminVehiculos />
-            </DashboardLayout>
-          } />
+            <Route path="/admin/conductores" element={
+              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                <AdminConductores />
+              </DashboardLayout>
+            } />
 
-          <Route path="/admin/viajeros" element={
-            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-              <AdminViajeros />
-            </DashboardLayout>
-          } />
+            <Route path="/admin/usuarios" element={
+              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                <AdminUsuarios />
+              </DashboardLayout>
+            } />
 
-          <Route path="/admin/documentos" element={
-            <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-              <AdminDocumentos />
-            </DashboardLayout>
-          } />  
+            <Route path="/admin/vehiculos" element={
+              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                <AdminVehiculos />
+              </DashboardLayout>
+            } />
 
-          <Route path="/perfil" element={<Navigate to="/profile" replace />} />
-          <Route path="/qr-activation" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="/admin/viajeros" element={
+              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                <AdminViajeros />
+              </DashboardLayout>
+            } />
+
+            <Route path="/admin/documentos" element={
+              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                <AdminDocumentos />
+              </DashboardLayout>
+            } />
+
+            <Route path="/perfil" element={<Navigate to="/profile" replace />} />
+            <Route path="/qr-activation" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </SocketProvider>
     </AuthProvider>
   );
 }
