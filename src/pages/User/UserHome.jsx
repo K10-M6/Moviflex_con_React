@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup } from "react-bootstrap";
-import { FaUser, FaRoute, FaWallet, FaHistory, FaStar, FaCalendarAlt, FaArrowRight } from "react-icons/fa";
+import { FaUser, FaRoute, FaWallet, FaHistory, FaStar, FaCalendarAlt, FaArrowRight, FaChartLine, FaSuitcase } from "react-icons/fa";
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+    ResponsiveContainer, AreaChart, Area
+} from 'recharts';
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -38,49 +42,57 @@ const UserHome = () => {
         total: 0
     });
 
+    // Nuevos estados para analíticas de pasajero
+    const [statsAvanzadas, setStatsAvanzadas] = useState({
+        gastos: { total: 0, historial: [] },
+        frecuencia: { total: 0, historial: [] }
+    });
+    const [periodo, setPeriodo] = useState('mensual');
+    const [cargandoStats, setCargandoStats] = useState(false);
+
     useEffect(() => {
         const obtenerViajes = async () => {
             if (!token || !usuario?.idUsuarios) {
                 console.log("No hay token o usuario disponible");
                 return;
             }
-            
+
             try {
                 setCargandoViajes(true);
                 setErrorViajes("");
-                
+
                 console.log("Obteniendo viajes para usuario:", usuario.idUsuarios);
-                
+
                 const respuesta = await fetch(
-                    `https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, 
-                    { 
-                        headers: { 
-                            'Authorization': `Bearer ${token}`, 
-                            'Content-Type': 'application/json' 
-                        } 
+                    `https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
                     }
                 );
-                
+
                 console.log("Respuesta status:", respuesta.status);
-                
+
                 if (respuesta.ok) {
                     const data = await respuesta.json();
                     console.log("Viajes recibidos:", data);
-                    
+
                     const viajesData = Array.isArray(data) ? data : [];
                     setViajesRecientes(viajesData.slice(0, 3));
-                    
+
                     const completados = viajesData.filter(v => v.estado === 'COMPLETADO').length;
                     const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
                     const totalGastado = viajesData.reduce((sum, v) => sum + (v.precioFinal || 0), 0);
-                    
+
                     setEstadisticas({
                         totalViajes: viajesData.length,
                         viajesCompletados: completados,
                         viajesCancelados: cancelados,
                         totalGastado: totalGastado
                     });
-                    
+
                 } else if (respuesta.status === 404) {
                     console.log("No se encontraron viajes");
                     setViajesRecientes([]);
@@ -102,9 +114,9 @@ const UserHome = () => {
                 setCargandoViajes(false);
             }
         };
-        
+
         obtenerViajes();
-        
+
     }, [token, usuario?.idUsuarios]);
 
     useEffect(() => {
@@ -113,7 +125,7 @@ const UserHome = () => {
             try {
                 setCargandoPagos(true);
                 const respuesta = await fetch(
-                    `https://backendmovi-production-c657.up.railway.app/api/pagos/usuario/`, 
+                    `https://backendmovi-production-c657.up.railway.app/api/pagos/usuario/`,
                     { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
                 );
                 if (respuesta.ok) {
@@ -130,8 +142,42 @@ const UserHome = () => {
         obtenerPagos();
     }, [token, usuario?.idUsuarios]);
 
+    // Función para traer estadísticas avanzadas (gastos y frecuencia)
+    const traerEstadisticasPasajero = async () => {
+        if (!token) return;
+        try {
+            setCargandoStats(true);
+            const headers = { "Authorization": "Bearer " + token };
+
+            // Reutilizamos el endpoint de ganancias como 'gastos' para el pasajero
+            // Y el de viajes como frecuencia
+            const [resGastos, resViajes] = await Promise.all([
+                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/ganancias?periodo=${periodo}`, { headers }),
+                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/online-time?periodo=${periodo}`, { headers }) // Usamos online-time como ejemplo activo o viajes
+            ]);
+
+            const nuevasStats = { ...statsAvanzadas };
+
+            if (resGastos.ok) nuevasStats.gastos = await resGastos.json();
+
+            // Para frecuencia de viajes, el backend tiene un endpoint de resumen
+            const resResumen = await fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/viajes`, { headers });
+            if (resResumen.ok) nuevasStats.frecuencia = await resResumen.json();
+
+            setStatsAvanzadas(nuevasStats);
+        } catch (error) {
+            console.error("Error al traer estadísticas del pasajero:", error);
+        } finally {
+            setCargandoStats(false);
+        }
+    };
+
+    useEffect(() => {
+        traerEstadisticasPasajero();
+    }, [token, periodo]);
+
     const getEstadoColor = (estado) => {
-        switch(estado) {
+        switch (estado) {
             case 'COMPLETADO': return 'success';
             case 'CANCELADO': return 'danger';
             case 'RESERVADO': return 'info';
@@ -141,7 +187,7 @@ const UserHome = () => {
     };
 
     const getEstadoTexto = (estado) => {
-        switch(estado) {
+        switch (estado) {
             case 'COMPLETADO': return 'Completado';
             case 'CANCELADO': return 'Cancelado';
             case 'RESERVADO': return 'Reservado';
@@ -151,7 +197,7 @@ const UserHome = () => {
     };
 
     const getPagoEstadoColor = (estado) => {
-        switch(estado) {
+        switch (estado) {
             case 'PAGADO': return 'success';
             case 'PENDIENTE': return 'warning';
             case 'FALLIDO': return 'danger';
@@ -171,7 +217,7 @@ const UserHome = () => {
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        
+
             <div style={{ backgroundColor: brandColor, borderBottom: `1.5px solid ${darkBorder}`, zIndex: 10 }}>
                 <Navbar />
             </div>
@@ -184,7 +230,7 @@ const UserHome = () => {
                 position: 'relative',
                 padding: '40px 0'
             }}>
-               
+
                 <div style={{
                     position: 'absolute',
                     top: 0,
@@ -204,16 +250,71 @@ const UserHome = () => {
                                 </h2>
                                 <p className="text-muted mb-0">Explora y gestiona tus viajes como pasajero</p>
                             </div>
-                            <div className="text-end">
-                                <span className="small text-uppercase fw-bold text-muted d-block">Total Gastado</span>
-                                <h3 className="fw-bold mb-0" style={{ color: brandColor }}>
-                                    {formatearMoneda(estadisticas.totalGastado)}
-                                </h3>
+                            <div className="d-flex align-items-center gap-3">
+                                <div className="text-end d-none d-md-block">
+                                    <span className="small text-uppercase fw-bold text-muted d-block">Gastado {periodo}</span>
+                                    <h3 className="fw-bold mb-0" style={{ color: brandColor }}>
+                                        {formatearMoneda(statsAvanzadas.gastos.total)}
+                                    </h3>
+                                </div>
+                                <div className="bg-light p-1 rounded-3 d-flex gap-1 border">
+                                    <Badge
+                                        bg={periodo === 'diario' ? 'primary' : 'light'}
+                                        text={periodo === 'diario' ? 'white' : 'dark'}
+                                        onClick={() => setPeriodo('diario')}
+                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'diario' ? brandColor : '' }}
+                                    >Día</Badge>
+                                    <Badge
+                                        bg={periodo === 'mensual' ? 'primary' : 'light'}
+                                        text={periodo === 'mensual' ? 'white' : 'dark'}
+                                        onClick={() => setPeriodo('mensual')}
+                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'mensual' ? brandColor : '' }}
+                                    >Mes</Badge>
+                                    <Badge
+                                        bg={periodo === 'anual' ? 'primary' : 'light'}
+                                        text={periodo === 'anual' ? 'white' : 'dark'}
+                                        onClick={() => setPeriodo('anual')}
+                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'anual' ? brandColor : '' }}
+                                    >Año</Badge>
+                                </div>
                             </div>
                         </Card.Body>
                     </Card>
 
-                    <Row className="g-4">
+                    <Row className="g-4 mt-2 mb-4">
+                        <Col lg={12}>
+                            <Card style={cardStyle}>
+                                <Card.Body className="p-4">
+                                    <div className="d-flex justify-content-between align-items-center mb-4">
+                                        <div className="d-flex align-items-center">
+                                            <FaChartLine size={20} style={{ color: brandColor }} className="me-2" />
+                                            <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Hábitos de Gasto</h5>
+                                        </div>
+                                        <Badge bg="light" text="dark" className="border">Gastos en el tiempo ({periodo})</Badge>
+                                    </div>
+                                    <div style={{ height: '250px' }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={statsAvanzadas.gastos.historial}>
+                                                <defs>
+                                                    <linearGradient id="colorGastos" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor={brandColor} stopOpacity={0.8} />
+                                                        <stop offset="95%" stopColor={brandColor} stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                                <Area type="monotone" dataKey="value" stroke={brandColor} fillOpacity={1} fill="url(#colorGastos)" name="Gastado ($)" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+
+                    <Row className="g-4 mb-4">
                         <Col lg={7}>
                             <Card className="h-100" style={cardStyle}>
                                 <Card.Body className="p-4">
@@ -235,9 +336,9 @@ const UserHome = () => {
                                             </div>
                                         </Col>
                                     </Row>
-                                    <Button 
-                                        variant="link" 
-                                        className="mt-4 p-0 text-decoration-none fw-bold small shadow-none" 
+                                    <Button
+                                        variant="link"
+                                        className="mt-4 p-0 text-decoration-none fw-bold small shadow-none"
                                         style={{ color: darkBorder }}
                                         onClick={() => navigate(`/profile`)}
                                     >
@@ -258,7 +359,7 @@ const UserHome = () => {
                                         <div className="text-center py-4"><div className="spinner-border spinner-border-sm" style={{ color: brandColor }} /></div>
                                     ) : (
                                         <ListGroup variant="flush" className="mb-auto">
-                                            {pagosRecientes.map((pago) => (
+                                            {pagosRecientes.slice(0, 4).map((pago) => (
                                                 <ListGroup.Item key={pago.idPago} className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
                                                     <div>
                                                         <div className="fw-bold small">{pago.tipoPago || 'Pago de viaje'}</div>
@@ -274,8 +375,8 @@ const UserHome = () => {
                                             ))}
                                         </ListGroup>
                                     )}
-                                    <Button 
-                                        className="w-100 mt-4 fw-bold py-2 shadow-sm" 
+                                    <Button
+                                        className="w-100 mt-4 fw-bold py-2 shadow-sm"
                                         style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
                                         onClick={() => navigate("/pagos")}
                                     >
@@ -286,7 +387,7 @@ const UserHome = () => {
                         </Col>
                     </Row>
 
-                    <Row className="mt-4">
+                    <Row>
                         <Col lg={12}>
                             <Card style={cardStyle}>
                                 <Card.Body className="p-4">
@@ -320,8 +421,8 @@ const UserHome = () => {
                         </Col>
                     </Row>
                 </Container>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

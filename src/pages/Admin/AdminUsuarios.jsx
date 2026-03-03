@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Pagination } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Pagination, Form, InputGroup } from "react-bootstrap";
+import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
+
 
 function AdminUsuarios() {
     const { token } = useAuth();
@@ -9,6 +11,9 @@ function AdminUsuarios() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [paginaActual, setPaginaActual] = useState(1);
+    const [busqueda, setBusqueda] = useState("");
+    const [buscando, setBuscando] = useState(false);
+
     const elementosPorPagina = 10;
 
     useEffect(() => {
@@ -23,12 +28,12 @@ function AdminUsuarios() {
         setPaginaActual(numeroPagina);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    
+
     async function traerUsuarios() {
         try {
             setLoading(true);
             setError("");
-            
+
             const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
                 method: "GET",
                 headers: {
@@ -36,23 +41,23 @@ function AdminUsuarios() {
                     "Authorization": "Bearer " + token
                 }
             });
-            
+
             if (!response.ok) {
                 if (response.status === 403) {
                     throw new Error("Acceso denegado. No tienes permisos de administrador.");
                 }
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (!Array.isArray(data)) {
                 throw new Error("La respuesta del servidor no es válida");
             }
-            
+
             setUsuarios(data);
             setPaginaActual(1);
-            
+
         } catch (error) {
             console.error("Error al traer usuarios:", error);
             setError(error.message);
@@ -62,10 +67,42 @@ function AdminUsuarios() {
         }
     }
 
+    async function handleSearch(e) {
+        if (e) e.preventDefault();
+        if (!busqueda.trim()) {
+            traerUsuarios();
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setBuscando(true);
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/search?q=${busqueda}`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            if (!response.ok) throw new Error("Error en la búsqueda");
+            const data = await response.json();
+            setUsuarios(data);
+            setPaginaActual(1);
+        } catch (error) {
+            setError("Error al buscar usuarios");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function limpiarBusqueda() {
+        setBusqueda("");
+        setBuscando(false);
+        traerUsuarios();
+    }
+
+
     async function cambiarEstadoUsuario(id, estadoActual) {
         try {
             let nuevoEstado;
-            
+
             switch (estadoActual) {
                 case 'ACTIVO':
                     nuevoEstado = 'INACTIVO';
@@ -79,7 +116,7 @@ function AdminUsuarios() {
                 default:
                     nuevoEstado = 'ACTIVO';
             }
-            
+
             const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
@@ -94,9 +131,9 @@ function AdminUsuarios() {
             if (!response.ok) {
                 throw new Error(`Error al cambiar estado: ${response.status}`);
             }
-            
+
             await traerUsuarios();
-            
+
         } catch (error) {
             console.error("Error al cambiar estado:", error);
             setError("Error al cambiar estado del usuario");
@@ -119,9 +156,9 @@ function AdminUsuarios() {
             if (!response.ok) {
                 throw new Error(`Error al suspender usuario: ${response.status}`);
             }
-            
+
             await traerUsuarios();
-            
+
         } catch (error) {
             console.error("Error al suspender usuario:", error);
             setError("Error al suspender el usuario");
@@ -145,7 +182,7 @@ function AdminUsuarios() {
                     return rolNombre;
             }
         }
-        
+
         switch (parseInt(rolId)) {
             case 1:
                 return "Administrador";
@@ -160,7 +197,7 @@ function AdminUsuarios() {
 
     function getRolBadge(rolId, rolNombre) {
         const nombre = getRolNombre(rolId, rolNombre);
-        
+
         switch (nombre) {
             case "Administrador":
                 return <Badge bg="primary">Administrador</Badge>;
@@ -301,14 +338,14 @@ function AdminUsuarios() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            <div style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                backgroundColor: 'rgba(255, 255, 255, 0.92)', 
-                zIndex: 0 
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                zIndex: 0
             }} />
 
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
@@ -320,8 +357,40 @@ function AdminUsuarios() {
                                 <p className="text-muted mb-0 small">Administra los usuarios registrados en la plataforma</p>
                             </Card.Body>
                         </Card>
-                        
+
+                        <Card className="border-0 shadow-sm mt-3" style={{ borderRadius: '12px' }}>
+                            <Card.Body className="p-3">
+                                <Form onSubmit={handleSearch}>
+                                    <InputGroup>
+                                        <InputGroup.Text className="bg-white border-end-0">
+                                            <BsSearch />
+                                        </InputGroup.Text>
+                                        <Form.Control
+                                            type="text"
+                                            placeholder="Buscar por nombre, email, placa o identificación..."
+                                            value={busqueda}
+                                            onChange={(e) => setBusqueda(e.target.value)}
+                                            className="border-start-0"
+                                        />
+                                        {busqueda && (
+                                            <Button variant="outline-secondary" className="border-start-0 border-end-0 bg-white" onClick={limpiarBusqueda}>
+                                                <BsXCircle />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="primary"
+                                            type="submit"
+                                            style={{ backgroundColor: '#54c7b8', border: 'none' }}
+                                        >
+                                            Buscar
+                                        </Button>
+                                    </InputGroup>
+                                </Form>
+                            </Card.Body>
+                        </Card>
+
                         <div className="d-flex gap-3 mt-3 flex-wrap">
+
                             <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
                                 Total: {usuarios.length}
                             </Badge>
@@ -337,7 +406,7 @@ function AdminUsuarios() {
                         </div>
                     </Col>
                 </Row>
-                
+
                 {error && (
                     <Row className="mb-3">
                         <Col>
@@ -347,7 +416,7 @@ function AdminUsuarios() {
                         </Col>
                     </Row>
                 )}
-                
+
                 <Row>
                     <Col>
                         <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
@@ -409,7 +478,7 @@ function AdminUsuarios() {
                                                                     >
                                                                         {getBotonTexto(usuario.estado)}
                                                                     </Button>
-                                                                    
+
                                                                     {puedeSuspender(usuario.estado) && (
                                                                         <Button
                                                                             variant="outline-warning"
@@ -427,7 +496,7 @@ function AdminUsuarios() {
                                                 )}
                                             </tbody>
                                         </Table>
-                                        
+
                                         <Paginacion />
                                     </>
                                 )}

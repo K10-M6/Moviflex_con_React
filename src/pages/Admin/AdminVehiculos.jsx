@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Image } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Image, Form, InputGroup } from "react-bootstrap";
 import { FaCheckCircle, FaTimesCircle, FaEye, FaCar } from "react-icons/fa";
+import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
+
 
 function AdminVehiculos() {
     const { token } = useAuth();
@@ -13,6 +15,9 @@ function AdminVehiculos() {
     const [showPhotoModal, setShowPhotoModal] = useState(false);
     const [selectedPhoto, setSelectedPhoto] = useState("");
     const [validatingPlate, setValidatingPlate] = useState(false);
+    const [busqueda, setBusqueda] = useState("");
+    const [buscando, setBuscando] = useState(false);
+
 
     const traerUsuarios = useCallback(async () => {
         try {
@@ -77,6 +82,52 @@ function AdminVehiculos() {
             setLoading(false);
         }
     }, [token]);
+
+    async function handleSearch(e) {
+        if (e) e.preventDefault();
+        if (!busqueda.trim()) {
+            traerVehiculos();
+            return;
+        }
+
+        try {
+            setLoading(true);
+            setBuscando(true);
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/search?q=${busqueda}`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            if (!response.ok) throw new Error("Error en la búsqueda");
+            const data = await response.json();
+
+            // Reconstruir lista de vehículos a partir de los usuarios encontrados
+            const vehiculosEncontrados = [];
+            data.forEach(usuario => {
+                if (usuario.vehiculos && usuario.vehiculos.length > 0) {
+                    usuario.vehiculos.forEach(v => {
+                        vehiculosEncontrados.push({
+                            ...v,
+                            idUsuario: usuario.idUsuarios,
+                            // Asegurar que idVehiculos exista si no viene del search (el backend debe incluirlo)
+                            idVehiculos: v.idVehiculos || v.id // Fallback
+                        });
+                    });
+                }
+            });
+
+            setVehiculos(vehiculosEncontrados);
+        } catch (error) {
+            setError("Error al buscar vehículos");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function limpiarBusqueda() {
+        setBusqueda("");
+        setBuscando(false);
+        traerVehiculos();
+    }
+
 
     useEffect(() => {
         traerUsuarios();
@@ -247,14 +298,14 @@ function AdminVehiculos() {
             position: 'relative'
         }}>
             {/* Capa de legibilidad */}
-            <div style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                backgroundColor: 'rgba(255, 255, 255, 0.92)', 
-                zIndex: 0 
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                zIndex: 0
             }} />
 
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
@@ -267,7 +318,39 @@ function AdminVehiculos() {
                             </Card.Body>
                         </Card>
 
+                        <Card className="border-0 shadow-sm mt-3" style={{ borderRadius: '12px' }}>
+                            <Card.Body className="p-3">
+                                <Form onSubmit={handleSearch}>
+                                    <InputGroup>
+                                        <InputGroup.Text className="bg-white border-end-0">
+                                            <BsSearch />
+                                        </InputGroup.Text>
+                                        <Form.Control
+                                            type="text"
+                                            placeholder="Buscar por placa, propietario o marca/modelo..."
+                                            value={busqueda}
+                                            onChange={(e) => setBusqueda(e.target.value)}
+                                            className="border-start-0"
+                                        />
+                                        {busqueda && (
+                                            <Button variant="outline-secondary" className="border-start-0 border-end-0 bg-white" onClick={limpiarBusqueda}>
+                                                <BsXCircle />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="primary"
+                                            type="submit"
+                                            style={{ backgroundColor: '#54c7b8', border: 'none' }}
+                                        >
+                                            Buscar
+                                        </Button>
+                                    </InputGroup>
+                                </Form>
+                            </Card.Body>
+                        </Card>
+
                         <div className="d-flex gap-3 mt-3 flex-wrap">
+
                             <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
                                 Total: {vehiculos.length}
                             </Badge>
