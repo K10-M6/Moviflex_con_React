@@ -53,6 +53,17 @@ const DriverHome = () => {
     const [periodo, setPeriodo] = useState('mensual');
     const [cargandoStats, setCargandoStats] = useState(false);
 
+    // Estados para solicitud de cambio de vehículo
+    const [showSolicitudModal, setShowSolicitudModal] = useState(false);
+    const [formDataSolicitud, setFormDataSolicitud] = useState({
+        marca: '',
+        modelo: '',
+        placa: '',
+        capacidad: ''
+    });
+    const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
+    const [mensajeSolicitud, setMensajeSolicitud] = useState({ tipo: '', texto: '' });
+
     useEffect(() => {
         const hasSeenTutorial = localStorage.getItem("tutorial_conductor_visto");
         if (!hasSeenTutorial) setShowTutorial(true);
@@ -269,6 +280,55 @@ const DriverHome = () => {
         };
         obtenerVehiculos();
     }, [token]);
+
+    const handleAbrirSolicitud = () => {
+        const v = vehiculos.length > 0 ? vehiculos[0] : null;
+        if (v) {
+            setFormDataSolicitud({
+                marca: v.marca || '',
+                modelo: v.modelo || '',
+                placa: v.placa || '',
+                capacidad: v.capacidad || ''
+            });
+        }
+        setMensajeSolicitud({ tipo: '', texto: '' });
+        setShowSolicitudModal(true);
+    };
+
+    const enviarSolicitudCambio = async (e) => {
+        e.preventDefault();
+        const v = vehiculos.length > 0 ? vehiculos[0] : null;
+        if (!v) return;
+
+        try {
+            setEnviandoSolicitud(true);
+            setMensajeSolicitud({ tipo: '', texto: '' });
+
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${v.idVehiculos}/solicitar-cambio`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(formDataSolicitud)
+            });
+
+            if (response.ok) {
+                setMensajeSolicitud({
+                    tipo: 'success',
+                    texto: 'Tu solicitud ha sido enviada al administrador. Recibirás una notificación cuando sea revisada.'
+                });
+                setTimeout(() => setShowSolicitudModal(false), 3000);
+            } else {
+                const err = await response.json();
+                setMensajeSolicitud({ tipo: 'danger', texto: err.error || 'Error al enviar la solicitud' });
+            }
+        } catch (error) {
+            setMensajeSolicitud({ tipo: 'danger', texto: 'Error de conexión con el servidor' });
+        } finally {
+            setEnviandoSolicitud(false);
+        }
+    };
 
     const getEstadoColor = (estado) => {
         switch (estado) {
@@ -662,15 +722,25 @@ const DriverHome = () => {
                                 )}
 
                                 {vehiculoPrincipal && (
-                                    <Button
-                                        variant="link"
-                                        className="mt-3 p-0 text-decoration-none fw-semibold small shadow-none"
-                                        style={{ color: '#666' }}
-                                        onClick={() => navigate("/vehicle-registration")}
-                                    >
-                                        Registrar Vehículo
-                                        <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
-                                    </Button>
+                                    <div className="d-flex flex-column gap-2 mt-3">
+                                        <Button
+                                            variant="outline-primary"
+                                            className="w-100 fw-semibold rounded-pill py-2"
+                                            style={{ borderColor: brandColor, color: brandColor }}
+                                            onClick={handleAbrirSolicitud}
+                                        >
+                                            Solicitar Cambio de Datos
+                                        </Button>
+                                        <Button
+                                            variant="link"
+                                            className="p-0 text-decoration-none fw-semibold small shadow-none"
+                                            style={{ color: '#666' }}
+                                            onClick={() => navigate("/vehicle-registration")}
+                                        >
+                                            Registrar Otro Vehículo
+                                            <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
+                                        </Button>
+                                    </div>
                                 )}
                             </Card.Body>
                         </Card>
@@ -1057,6 +1127,88 @@ const DriverHome = () => {
                             Saltar recorrido
                         </Button>
                     </div>
+                </Modal.Body>
+            </Modal>
+
+            {/* Modal de Solicitud de Cambio de Vehículo */}
+            <Modal show={showSolicitudModal} onHide={() => !enviandoSolicitud && setShowSolicitudModal(false)} centered>
+                <Modal.Header closeButton={!enviandoSolicitud} className="border-0 pb-0">
+                    <Modal.Title className="fw-bold" style={{ color: '#333' }}>
+                        Solicitar Cambio de Vehículo
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4">
+                    <p className="text-muted small mb-4">
+                        Completa los nuevos datos. Tu solicitud será revisada por un administrador antes de aplicarse.
+                    </p>
+
+                    {mensajeSolicitud.texto && (
+                        <Alert variant={mensajeSolicitud.tipo} className="py-2 small">
+                            {mensajeSolicitud.texto}
+                        </Alert>
+                    )}
+
+                    <form onSubmit={enviarSolicitudCambio}>
+                        <div className="mb-3">
+                            <label className="form-label small fw-bold text-muted">Marca</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={formDataSolicitud.marca}
+                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, marca: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label small fw-bold text-muted">Modelo</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={formDataSolicitud.modelo}
+                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, modelo: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label small fw-bold text-muted">Placa</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={formDataSolicitud.placa}
+                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, placa: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="form-label small fw-bold text-muted">Capacidad (Pasajeros)</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                value={formDataSolicitud.capacidad}
+                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, capacidad: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div className="d-flex gap-2">
+                            <Button
+                                variant="light"
+                                className="w-100 fw-semibold py-2 rounded-pill"
+                                onClick={() => setShowSolicitudModal(false)}
+                                disabled={enviandoSolicitud}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                className="w-100 fw-semibold py-2 rounded-pill border-0"
+                                style={{ backgroundColor: brandColor, color: 'white' }}
+                                disabled={enviandoSolicitud}
+                            >
+                                {enviandoSolicitud ? <Spinner animation="border" size="sm" /> : "Enviar Solicitud"}
+                            </Button>
+                        </div>
+                    </form>
                 </Modal.Body>
             </Modal>
         </div >

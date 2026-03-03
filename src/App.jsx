@@ -23,6 +23,7 @@ import DashboardLayout from "./Dashboard/DashboardLayout"
 import Documents from "./pages/Documents";
 import AdminDocumentos from "./pages/Admin/AdminDocuments";
 import VehicleRegistration from "./pages/Driver/VehicleRegistration";
+import AdminVehicleRequests from "./pages/Admin/AdminVehicleRequests";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
@@ -106,6 +107,12 @@ function App() {
             <Route path="/admin/documentos" element={
               <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
                 <AdminDocumentos />
+              </DashboardLayout>
+            } />
+
+            <Route path="/admin/solicitudes-vehiculos" element={
+              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                <AdminVehicleRequests />
               </DashboardLayout>
             } />
 

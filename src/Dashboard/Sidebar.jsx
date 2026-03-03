@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill, BsListCheck, BsMenuButtonWideFill, BsChevronRight,
-  BsChevronLeft, BsQrCode, BsFileEarmarkTextFill
+import {
+  BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill, BsListCheck, BsMenuButtonWideFill, BsChevronRight,
+  BsChevronLeft, BsQrCode, BsFileEarmarkTextFill, BsArrowRepeat
 } from "react-icons/bs";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../pages/context/AuthContext";
@@ -11,7 +12,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { usuario, token, logout } = useAuth();
-  
+
   const handleNavigation = (path) => {
     navigate(path);
     if (window.innerWidth < 768) {
@@ -19,14 +20,15 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
     }
   };
 
-  
+
   const menuItems = [
     { icon: <BsGrid1X2Fill />, label: "Dashboard", path: "/dashboard/home" },
     { icon: <BsPeopleFill />, label: "Viajeros", path: "/admin/viajeros" },
     { icon: <BsFillGrid3X3GapFill />, label: "Conductores", path: "/admin/conductores" },
     { icon: <BsListCheck />, label: "Usuarios", path: "/admin/usuarios" },
     { icon: <BsMenuButtonWideFill />, label: "Vehículos", path: "/admin/vehiculos" },
-    { icon: <BsFileEarmarkTextFill />, label: "Documentos", path: "/admin/documentos" }
+    { icon: <BsFileEarmarkTextFill />, label: "Documentos", path: "/admin/documentos" },
+    { icon: <BsArrowRepeat />, label: "Solicitudes", path: "/admin/solicitudes-vehiculos" }
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -34,12 +36,12 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
   return (
     <>
       {!openSidebarToggle && (
-        <button 
+        <button
           className="btn position-fixed start-0"
           onClick={OpenSidebar}
-          style={{ 
+          style={{
             zIndex: 999, width: '45px', height: '45px', top: '20px', left: '20px',
-            backgroundColor: 'transparent', border: 'none', display: 'flex', 
+            backgroundColor: 'transparent', border: 'none', display: 'flex',
             alignItems: 'center', justifyContent: 'center'
           }}
         >
@@ -48,17 +50,17 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
       )}
 
       {openSidebarToggle && (
-        <div 
+        <div
           className="d-md-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-25"
           onClick={OpenSidebar}
           style={{ zIndex: 999 }}
         />
       )}
 
-      <aside 
+      <aside
         className={`position-fixed top-0 start-0 vh-100 overflow-y-auto shadow-sm
           ${openSidebarToggle ? 'd-block' : ''} col-md-3 col-lg-2 p-0`}
-        style={{ 
+        style={{
           zIndex: 1000,
           backgroundImage: `url(${fondo})`,
           backgroundSize: 'cover',
@@ -80,7 +82,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
             <BsChevronLeft size={15} />
           </button>
         </div>
-      
+
 
         <ul className="nav flex-column p-3 mt-3">
           {menuItems.map((item, index) => (
