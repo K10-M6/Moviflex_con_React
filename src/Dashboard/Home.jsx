@@ -28,6 +28,7 @@ function Home() {
     { name: 'Suspendidos', value: 0, color: '#f59e0b' }
   ]);
   const [topConductores, setTopConductores] = useState([]);
+  const [topViajeros, setTopViajeros] = useState([]);
   const [cargandoTop, setCargandoTop] = useState(false);
 
   /* 
@@ -43,7 +44,7 @@ function Home() {
     traerUsuarios();
     traerVehiculos();
     traerDatosGraficos();
-    traerTopConductores();
+    traerTopRankings();
   }, []);
 
 
@@ -235,64 +236,31 @@ function Home() {
   }
   */
 
-  const obtenerPromedioConductor = async (idUsuario) => {
-    try {
-      const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-conductores`, {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          promedio: data.promedio || 0,
-          total: data.total || 0
-        };
-      }
-      return { promedio: 0, total: 0 };
-    } catch (error) {
-      console.error(`Error al obtener promedio para conductor ${idUsuario}:`, error);
-      return { promedio: 0, total: 0 };
-    }
-  };
-
-  async function traerTopConductores() {
+  async function traerTopRankings() {
     try {
       setCargandoTop(true);
-      const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-conductores", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        }
-      });
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      };
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const [resConductores, resViajeros] = await Promise.all([
+        fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-conductores", { headers }),
+        fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-viajeros", { headers })
+      ]);
+
+      if (resConductores.ok) {
+        const data = await resConductores.json();
+        setTopConductores(Array.isArray(data) ? data : []);
       }
 
-      const data = await response.json();
-      console.log("Top conductores (raw):", data);
-
-      if (Array.isArray(data)) {
-        const primeros10 = data.slice(0, 10);
-        const conductoresConPromedio = await Promise.all(
-          primeros10.map(async (conductor) => {
-            const { promedio, total } = await obtenerPromedioConductor(conductor.idUsuarios);
-            return {
-              ...conductor,
-              promedioEstrellas: promedio,
-              totalReseñas: total
-            };
-          })
-        );
-
-        const top5 = conductoresConPromedio
-          .sort((a, b) => b.promedioEstrellas - a.promedioEstrellas)
-          .slice(0, 5);
-
-        setTopConductores(top5);
+      if (resViajeros.ok) {
+        const data = await resViajeros.json();
+        setTopViajeros(Array.isArray(data) ? data : []);
       }
+
     } catch (error) {
-      console.error("Error al traer top conductores:", error);
+      console.error("Error al traer rankings:", error);
     } finally {
       setCargandoTop(false);
     }
@@ -569,34 +537,32 @@ function Home() {
                     </Card>
                   </Col>
 
-                  <Col xs={12}>
-                    <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
+                  <Col xs={12} md={6}>
+                    <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
                       <Card.Body className="p-4">
                         <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
                           <FaMedal className="me-2" style={{ color: '#FFD700' }} />
                           Top 5 Mejores Conductores
                         </Card.Title>
 
-
                         {cargandoTop ? (
                           <div className="text-center py-3">
                             <Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} />
-                            <p className="mt-2 text-muted small">Cargando...</p>
                           </div>
                         ) : topConductores.length > 0 ? (
                           <ListGroup variant="flush">
-                            {topConductores.map((conductor, index) => (
-                              <ListGroup.Item key={conductor.idUsuarios || index} className="px-0 border-0 bg-transparent">
+                            {topConductores.slice(0, 5).map((conductor, index) => (
+                              <ListGroup.Item key={conductor.idUsuarios || index} className="px-0 border-0 bg-transparent py-2">
                                 <div className="d-flex align-items-center">
                                   <div
-                                    className="d-flex align-items-center justify-content-center rounded-circle me-2"
+                                    className="d-flex align-items-center justify-content-center rounded-circle me-3"
                                     style={{
-                                      width: '30px',
-                                      height: '30px',
+                                      width: '32px',
+                                      height: '32px',
                                       backgroundColor: getMedalColor(index),
                                       color: index < 3 ? 'white' : '#333',
                                       fontWeight: 'bold',
-                                      fontSize: '0.9rem'
+                                      fontSize: '0.85rem'
                                     }}
                                   >
                                     {index + 1}
@@ -604,19 +570,14 @@ function Home() {
                                   <div className="flex-grow-1">
                                     <div className="d-flex justify-content-between align-items-center">
                                       <strong style={{ fontSize: '0.9rem' }}>{conductor.nombre}</strong>
-                                      <Badge
-                                        bg="warning"
-                                        text="dark"
-                                        className="rounded-pill px-2"
-                                        style={{ fontSize: '0.75rem' }}
-                                      >
+                                      <span className="fw-bold text-dark" style={{ fontSize: '0.85rem' }}>
                                         {conductor.promedioEstrellas ? conductor.promedioEstrellas.toFixed(1) : '0.0'}
-                                      </Badge>
+                                      </span>
                                     </div>
-                                    <div className="mt-1">
+                                    <div className="d-flex align-items-center mt-1">
                                       {renderStars(conductor.promedioEstrellas || 0)}
-                                      <small className="text-muted ms-2" style={{ fontSize: '0.7rem' }}>
-                                        ({conductor.totalReseñas || 0} reseñas)
+                                      <small className="text-muted ms-2" style={{ fontSize: '0.65rem' }}>
+                                        ({conductor.totalReseñas || 0})
                                       </small>
                                     </div>
                                   </div>
@@ -625,9 +586,62 @@ function Home() {
                             ))}
                           </ListGroup>
                         ) : (
-                          <p className="text-muted text-center py-3 small">
-                            No hay suficientes calificaciones
-                          </p>
+                          <p className="text-muted text-center py-3 small">Sin calificaciones</p>
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Col>
+
+                  <Col xs={12} md={6}>
+                    <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
+                      <Card.Body className="p-4">
+                        <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
+                          <FaMedal className="me-2" style={{ color: '#C0C0C0' }} />
+                          Top 5 Mejores Viajeros
+                        </Card.Title>
+
+                        {cargandoTop ? (
+                          <div className="text-center py-3">
+                            <Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} />
+                          </div>
+                        ) : topViajeros.length > 0 ? (
+                          <ListGroup variant="flush">
+                            {topViajeros.slice(0, 5).map((viajero, index) => (
+                              <ListGroup.Item key={viajero.idUsuarios || index} className="px-0 border-0 bg-transparent py-2">
+                                <div className="d-flex align-items-center">
+                                  <div
+                                    className="d-flex align-items-center justify-content-center rounded-circle me-3"
+                                    style={{
+                                      width: '32px',
+                                      height: '32px',
+                                      backgroundColor: getMedalColor(index),
+                                      color: index < 3 ? 'white' : '#333',
+                                      fontWeight: 'bold',
+                                      fontSize: '0.85rem'
+                                    }}
+                                  >
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-grow-1">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                      <strong style={{ fontSize: '0.9rem' }}>{viajero.nombre}</strong>
+                                      <span className="fw-bold text-dark" style={{ fontSize: '0.85rem' }}>
+                                        {viajero.promedioEstrellas ? viajero.promedioEstrellas.toFixed(1) : '0.0'}
+                                      </span>
+                                    </div>
+                                    <div className="d-flex align-items-center mt-1">
+                                      {renderStars(viajero.promedioEstrellas || 0)}
+                                      <small className="text-muted ms-2" style={{ fontSize: '0.65rem' }}>
+                                        ({viajero.totalReseñas || 0})
+                                      </small>
+                                    </div>
+                                  </div>
+                                </div>
+                              </ListGroup.Item>
+                            ))}
+                          </ListGroup>
+                        ) : (
+                          <p className="text-muted text-center py-3 small">Sin calificaciones</p>
                         )}
                       </Card.Body>
                     </Card>
