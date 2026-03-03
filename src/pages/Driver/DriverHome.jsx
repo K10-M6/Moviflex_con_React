@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner } from "react-bootstrap";
-import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaCamera } from "react-icons/fa";
+import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
+import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaSearch, FaMapMarkerAlt, FaFilter } from "react-icons/fa";
 import {
     BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
@@ -43,6 +43,12 @@ const DriverHome = () => {
         enCurso: 0
     });
 
+    // Nuevos estados para búsqueda y filtros
+    const [busquedaViajes, setBusquedaViajes] = useState("");
+    const [filtroEstado, setFiltroEstado] = useState("TODOS");
+    const [viajeSeleccionado, setViajeSeleccionado] = useState(null);
+    const [showDetalleViaje, setShowDetalleViaje] = useState(false);
+
     // Nuevos estados para analíticas avanzadas
     const [statsAvanzadas, setStatsAvanzadas] = useState({
         ganancias: { total: 0, historial: [] },
@@ -58,6 +64,7 @@ const DriverHome = () => {
     const [formDataSolicitud, setFormDataSolicitud] = useState({
         marca: '',
         modelo: '',
+        placa: '',
         capacidad: ''
     });
     const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
@@ -182,6 +189,7 @@ const DriverHome = () => {
                     console.log("Viajes recibidos:", data);
 
                     const viajesData = Array.isArray(data) ? data : [];
+                    
                     setTodosLosViajes(viajesData);
                     setViajesRecientes(viajesData.slice(0, 3));
 
@@ -214,6 +222,24 @@ const DriverHome = () => {
         return () => clearInterval(intervaloViajes);
 
     }, [token, usuario?.idUsuarios]);
+
+    // Función para filtrar viajes
+    const filtrarViajes = (viajes) => {
+        return viajes.filter(viaje => {
+            // Búsqueda por texto
+            const textoBusqueda = busquedaViajes.toLowerCase();
+            const coincideBusqueda = textoBusqueda === '' || 
+                viaje.idViajes.toString().includes(textoBusqueda) ||
+                (viaje.ruta?.nombre?.toLowerCase().includes(textoBusqueda));
+            
+            // Filtro por estado
+            const coincideEstado = filtroEstado === 'TODOS' || viaje.estado === filtroEstado;
+            
+            return coincideBusqueda && coincideEstado;
+        });
+    };
+
+    const viajesFiltrados = filtrarViajes(todosLosViajes);
 
     // Función para traer estadísticas avanzadas desde el nuevo service
     const traerEstadisticasAvanzadas = async () => {
@@ -286,6 +312,7 @@ const DriverHome = () => {
             setFormDataSolicitud({
                 marca: v.marca || '',
                 modelo: v.modelo || '',
+                placa: v.placa || '',
                 capacidad: v.capacidad || ''
             });
         }
@@ -485,9 +512,8 @@ const DriverHome = () => {
                 zIndex: 0
             }} />
 
-            <div style={{ backgroundColor: brandColor, position: 'relative', zIndex: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-                <Navbar />
-            </div>
+            <Navbar transparent={true}/>
+
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 {/* Tarjeta de bienvenida */}
@@ -915,7 +941,15 @@ const DriverHome = () => {
                                     <>
                                         <ListGroup variant="flush">
                                             {viajesRecientes.map((viaje) => (
-                                                <ListGroup.Item key={viaje.idViajes} className="px-0 border-0 py-3" style={{ borderBottom: '1px solid #F3F4F6' }}>
+                                                <ListGroup.Item 
+                                                    key={viaje.idViajes} 
+                                                    className="px-0 border-0 py-3" 
+                                                    style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
+                                                    onClick={() => {
+                                                        setViajeSeleccionado(viaje);
+                                                        setShowDetalleViaje(true);
+                                                    }}
+                                                >
                                                     <Row className="align-items-center">
                                                         <Col xs={1} className="text-center">
                                                             <div style={{
@@ -930,18 +964,26 @@ const DriverHome = () => {
                                                                 <FaCar size={16} color={brandColor} />
                                                             </div>
                                                         </Col>
-                                                        <Col xs={5}>
+                                                        <Col xs={3}>
                                                             <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
                                                             <small className="text-muted">
                                                                 {formatearFecha(viaje.fechaHoraSalida)}
                                                             </small>
                                                         </Col>
-                                                        <Col xs={3}>
+                                                        <Col xs={4}>
+                                                            <div className="d-flex align-items-center">
+                                                                <FaRoute size={12} color={brandColor} className="me-1" />
+                                                                <small className="text-truncate" style={{ maxWidth: '150px' }}>
+                                                                    {viaje.ruta?.nombre || 'Ruta no disponible'}
+                                                                </small>
+                                                            </div>
+                                                        </Col>
+                                                        <Col xs={2}>
                                                             <small className="text-muted">
                                                                 {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
                                                             </small>
                                                         </Col>
-                                                        <Col xs={3} className="text-end">
+                                                        <Col xs={2} className="text-end">
                                                             <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2 fw-normal">
                                                                 {getEstadoTexto(viaje.estado)}
                                                             </Badge>
@@ -971,43 +1013,130 @@ const DriverHome = () => {
                 </Row>
             </Container>
 
-            {/* Modal de Historial Completo */}
-            <Modal show={showHistorialCompleto} onHide={() => setShowHistorialCompleto(false)} size="lg" centered>
+            {/* Modal de Historial Completo con Búsqueda */}
+            <Modal show={showHistorialCompleto} onHide={() => setShowHistorialCompleto(false)} size="xl" centered>
                 <Modal.Header closeButton style={{ borderBottom: 'none', padding: '1.5rem 1.5rem 0.5rem' }}>
                     <Modal.Title className="fw-semibold" style={{ color: brandColor }}>
                         <FaHistory className="me-2" /> Historial Completo de Viajes
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto', padding: '1rem 1.5rem' }}>
-                    {todosLosViajes.length === 0 ? (
-                        <p className="text-center text-muted py-4">No hay viajes para mostrar</p>
+                <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1rem 1.5rem' }}>
+                    
+                    {/* Barra de búsqueda y filtros */}
+                    <Row className="mb-4 g-3">
+                        <Col md={6}>
+                            <InputGroup>
+                                <InputGroup.Text style={{ backgroundColor: 'white', borderColor: '#e0e0e0' }}>
+                                    <FaSearch color={brandColor} />
+                                </InputGroup.Text>
+                                <Form.Control
+                                    placeholder="Buscar por # de viaje o nombre de ruta..."
+                                    value={busquedaViajes}
+                                    onChange={(e) => setBusquedaViajes(e.target.value)}
+                                    style={{ borderColor: '#e0e0e0' }}
+                                />
+                            </InputGroup>
+                        </Col>
+                        <Col md={4}>
+                            <InputGroup>
+                                <InputGroup.Text style={{ backgroundColor: 'white', borderColor: '#e0e0e0' }}>
+                                    <FaFilter color={brandColor} />
+                                </InputGroup.Text>
+                                <Form.Select
+                                    value={filtroEstado}
+                                    onChange={(e) => setFiltroEstado(e.target.value)}
+                                    style={{ borderColor: '#e0e0e0' }}
+                                >
+                                    <option value="TODOS">Todos los estados</option>
+                                    <option value="FINALIZADO">Completados</option>
+                                    <option value="EN_CURSO">En curso</option>
+                                    <option value="CANCELADO">Cancelados</option>
+                                    <option value="PUBLICADO">Publicados</option>
+                                    <option value="CREADO">Creados</option>
+                                </Form.Select>
+                            </InputGroup>
+                        </Col>
+                        <Col md={2} className="text-end">
+                            <Badge bg="light" text="dark" className="p-3" style={{ fontSize: '0.9rem' }}>
+                                {viajesFiltrados.length} viajes
+                            </Badge>
+                        </Col>
+                    </Row>
+
+                    {viajesFiltrados.length === 0 ? (
+                        <div className="text-center py-5">
+                            <div style={{
+                                width: '60px',
+                                height: '60px',
+                                borderRadius: '50%',
+                                backgroundColor: '#F3F4F6',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 16px'
+                            }}>
+                                <FaHistory size={24} className="text-muted" />
+                            </div>
+                            <p className="text-muted">No se encontraron viajes con los filtros seleccionados</p>
+                            <Button
+                                variant="link"
+                                onClick={() => {
+                                    setBusquedaViajes('');
+                                    setFiltroEstado('TODOS');
+                                }}
+                                style={{ color: brandColor }}
+                            >
+                                Limpiar filtros
+                            </Button>
+                        </div>
                     ) : (
                         <ListGroup variant="flush">
-                            {todosLosViajes.map((viaje) => (
-                                <ListGroup.Item key={viaje.idViajes} className="py-3 border-0" style={{ borderBottom: '1px solid #F3F4F6' }}>
+                            {viajesFiltrados.map((viaje) => (
+                                <ListGroup.Item 
+                                    key={viaje.idViajes} 
+                                    className="py-3 border-0" 
+                                    style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
+                                    onClick={() => {
+                                        setViajeSeleccionado(viaje);
+                                        setShowDetalleViaje(true);
+                                    }}
+                                >
                                     <Row className="align-items-center">
                                         <Col xs={1} className="text-center">
                                             <div style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                borderRadius: '10px',
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '12px',
                                                 backgroundColor: `${brandColor}10`,
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center'
                                             }}>
-                                                <FaCar size={16} color={brandColor} />
+                                                <FaCar size={20} color={brandColor} />
                                             </div>
                                         </Col>
-                                        <Col xs={4}>
+                                        <Col xs={2}>
                                             <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
                                             <small className="text-muted">
                                                 {formatearFecha(viaje.fechaHoraSalida)}
                                             </small>
                                         </Col>
+                                        <Col xs={3}>
+                                            <div className="d-flex align-items-center">
+                                                <FaRoute size={12} color={brandColor} className="me-1" />
+                                                <small className="fw-semibold">Ruta:</small>
+                                                <span className="ms-2 text-muted small">{viaje.ruta?.nombre || 'No disponible'}</span>
+                                            </div>
+                                        </Col>
                                         <Col xs={2}>
                                             <small className="text-muted">
-                                                {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales}
+                                                {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                            </small>
+                                        </Col>
+                                        <Col xs={2}>
+                                            <small className="text-muted d-block">
+                                                <FaClock className="me-1" size={10} />
+                                                {Math.round((viaje.cuposTotales - viaje.cuposDisponibles) * 100 / viaje.cuposTotales)}% ocupado
                                             </small>
                                         </Col>
                                         <Col xs={2} className="text-end">
@@ -1027,6 +1156,128 @@ const DriverHome = () => {
                         onClick={() => setShowHistorialCompleto(false)}
                         className="rounded-pill px-4 border-0"
                         style={{ backgroundColor: '#F9FAFB', color: '#666' }}
+                    >
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal de Detalle de Viaje */}
+            <Modal show={showDetalleViaje} onHide={() => setShowDetalleViaje(false)} size="lg" centered>
+                <Modal.Header closeButton style={{ background: `linear-gradient(135deg, ${brandColor}20, white)`, borderBottom: 'none', padding: '1.5rem' }}>
+                    <Modal.Title className="fw-semibold" style={{ color: '#333' }}>
+                        <FaCar className="me-2" style={{ color: brandColor }} /> Detalle del Viaje #{viajeSeleccionado?.idViajes}
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4">
+                    {viajeSeleccionado && (
+                        <>
+                            <Row className="mb-4">
+                                <Col md={6}>
+                                    <Card style={{ backgroundColor: '#F9FAFB', border: 'none', borderRadius: '16px' }}>
+                                        <Card.Body>
+                                            <h6 className="fw-bold mb-3" style={{ color: brandColor }}>Información General</h6>
+                                            <ListGroup variant="flush">
+                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
+                                                    <span className="text-muted">Fecha y hora:</span>
+                                                    <span className="fw-semibold">{formatearFecha(viajeSeleccionado.fechaHoraSalida)}</span>
+                                                </ListGroup.Item>
+                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
+                                                    <span className="text-muted">Estado:</span>
+                                                    <Badge bg={getEstadoColor(viajeSeleccionado.estado)} className="rounded-pill px-3 py-2">
+                                                        {getEstadoTexto(viajeSeleccionado.estado)}
+                                                    </Badge>
+                                                </ListGroup.Item>
+                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
+                                                    <span className="text-muted">Capacidad:</span>
+                                                    <span className="fw-semibold">{viajeSeleccionado.cuposTotales} pasajeros</span>
+                                                </ListGroup.Item>
+                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
+                                                    <span className="text-muted">Ocupación:</span>
+                                                    <span className="fw-semibold">
+                                                        {viajeSeleccionado.cuposTotales - viajeSeleccionado.cuposDisponibles} / {viajeSeleccionado.cuposTotales}
+                                                        ({Math.round((viajeSeleccionado.cuposTotales - viajeSeleccionado.cuposDisponibles) * 100 / viajeSeleccionado.cuposTotales)}%)
+                                                    </span>
+                                                </ListGroup.Item>
+                                            </ListGroup>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                <Col md={6}>
+                                    <Card style={{ backgroundColor: '#F9FAFB', border: 'none', borderRadius: '16px' }}>
+                                        <Card.Body>
+                                            <h6 className="fw-bold mb-3" style={{ color: brandColor }}>Ruta del Viaje</h6>
+                                            <ListGroup variant="flush">
+                                                {viajeSeleccionado.ruta?.nombre && (
+                                                    <ListGroup.Item className="d-flex px-0 border-0 bg-transparent">
+                                                        <FaRoute size={14} color="#3b82f6" className="me-2 mt-1" />
+                                                        <div>
+                                                            <span className="text-muted">Ruta:</span>
+                                                            <span className="fw-semibold d-block">{viajeSeleccionado.ruta.nombre}</span>
+                                                        </div>
+                                                    </ListGroup.Item>
+                                                )}
+                                                {viajeSeleccionado.ruta?.descripcion && (
+                                                    <ListGroup.Item className="d-flex px-0 border-0 bg-transparent">
+                                                        <FaInfoCircle size={14} color="#666" className="me-2 mt-1" />
+                                                        <div>
+                                                            <span className="text-muted">Descripción:</span>
+                                                            <span className="d-block">{viajeSeleccionado.ruta.descripcion}</span>
+                                                        </div>
+                                                    </ListGroup.Item>
+                                                )}
+                                            </ListGroup>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+
+                            {viajeSeleccionado.ruta?.paradas && viajeSeleccionado.ruta.paradas.length > 0 && (
+                                <Card style={{ backgroundColor: '#F9FAFB', border: 'none', borderRadius: '16px' }}>
+                                    <Card.Body>
+                                        <h6 className="fw-bold mb-3" style={{ color: brandColor }}>Paradas del Recorrido</h6>
+                                        <ListGroup variant="flush">
+                                            {viajeSeleccionado.ruta.paradas
+                                                .sort((a, b) => a.orden - b.orden)
+                                                .map((parada, index) => (
+                                                    <ListGroup.Item key={parada.idParada} className="d-flex align-items-center px-0 border-0 bg-transparent">
+                                                        <div style={{
+                                                            width: '24px',
+                                                            height: '24px',
+                                                            borderRadius: '50%',
+                                                            backgroundColor: index === 0 ? brandColor : index === viajeSeleccionado.ruta.paradas.length - 1 ? '#f59e0b' : '#e0e0e0',
+                                                            color: index === 0 || index === viajeSeleccionado.ruta.paradas.length - 1 ? 'white' : '#666',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            fontSize: '12px',
+                                                            marginRight: '12px'
+                                                        }}>
+                                                            {index + 1}
+                                                        </div>
+                                                        <div>
+                                                            <span className="fw-semibold">{parada.nombre || `Parada ${parada.orden}`}</span>
+                                                            {parada.tipo && (
+                                                                <Badge bg="light" text="dark" className="ms-2" style={{ fontSize: '10px' }}>
+                                                                    {parada.tipo}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    </ListGroup.Item>
+                                                ))}
+                                        </ListGroup>
+                                    </Card.Body>
+                                </Card>
+                            )}
+                        </>
+                    )}
+                </Modal.Body>
+                <Modal.Footer style={{ borderTop: 'none', padding: '1rem 1.5rem 1.5rem' }}>
+                    <Button
+                        variant="outline-secondary"
+                        onClick={() => setShowDetalleViaje(false)}
+                        className="rounded-pill px-4"
+                        style={{ borderColor: '#e0e0e0', color: '#666' }}
                     >
                         Cerrar
                     </Button>
@@ -1164,6 +1415,16 @@ const DriverHome = () => {
                                 className="form-control"
                                 value={formDataSolicitud.modelo}
                                 onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, modelo: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label small fw-bold text-muted">Placa</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                value={formDataSolicitud.placa}
+                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, placa: e.target.value })}
                                 required
                             />
                         </div>

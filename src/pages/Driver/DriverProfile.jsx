@@ -257,10 +257,7 @@ function DriverProfile() {
       <Toaster position="top-right" />
       
       <div style={{ position: 'relative', zIndex: 2 }}>
-        <div style={{ background: '#124c83', width: '100%', position: 'relative', zIndex: 10 }}>
-          <Navbar />
-        </div>
-        
+        <Navbar transparent={true}/>
         <Container className="py-5">
           <Row className="justify-content-center">
             <Col lg={10}>
