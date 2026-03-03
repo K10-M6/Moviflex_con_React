@@ -86,9 +86,6 @@ const AdminVehicleRequests = () => {
                 zIndex: 0
             }} />
 
-            <div style={{ backgroundColor: brandColor, position: 'relative', zIndex: 10 }}>
-                <Navbar />
-            </div>
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4 align-items-center">
