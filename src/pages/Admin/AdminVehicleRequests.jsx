@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Form } from "react-bootstrap";
-import { FaCheck, FaTimes, FaCar, FaUser, FaInfoCircle, FaExchangeAlt, FaEye } from "react-icons/fa";
+import { FaCheck, FaTimes, FaUser, FaExchangeAlt } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import fondo from "../Imagenes/AutoresContacto.png";
 
@@ -14,8 +14,6 @@ const AdminVehicleRequests = () => {
     const [showRevisionModal, setShowRevisionModal] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
     const [observaciones, setObservaciones] = useState("");
-    const [showImageModal, setShowImageModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState("");
 
     const brandColor = "#54c7b8";
 
@@ -88,6 +86,9 @@ const AdminVehicleRequests = () => {
                 zIndex: 0
             }} />
 
+            <div style={{ backgroundColor: brandColor, position: 'relative', zIndex: 10 }}>
+                <Navbar />
+            </div>
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4 align-items-center">
@@ -154,7 +155,6 @@ const AdminVehicleRequests = () => {
                                                 <div className="d-flex flex-wrap gap-1">
                                                     {s.marcaNueva && s.marcaNueva !== s.vehiculo.marca && <Badge bg="info" className="fw-normal">Marca</Badge>}
                                                     {s.modeloNuevo && s.modeloNuevo !== s.vehiculo.modelo && <Badge bg="info" className="fw-normal">Modelo</Badge>}
-                                                    {s.placaNueva && s.placaNueva !== s.vehiculo.placa && <Badge bg="warning" text="dark" className="fw-normal">Placa</Badge>}
                                                     {s.capacidadNueva && s.capacidadNueva !== s.vehiculo.capacidad && <Badge bg="info" className="fw-normal">Capacidad</Badge>}
                                                 </div>
                                             </td>
@@ -195,7 +195,6 @@ const AdminVehicleRequests = () => {
                                     <div className="p-3 bg-light rounded-3">
                                         <p className="mb-1"><strong>Marca:</strong> {selectedSolicitud.vehiculo.marca}</p>
                                         <p className="mb-1"><strong>Modelo:</strong> {selectedSolicitud.vehiculo.modelo}</p>
-                                        <p className="mb-1"><strong>Placa:</strong> {selectedSolicitud.vehiculo.placa}</p>
                                         <p className="mb-0"><strong>Capacidad:</strong> {selectedSolicitud.vehiculo.capacidad} pasajeros</p>
                                     </div>
                                 </Col>
@@ -210,38 +209,11 @@ const AdminVehicleRequests = () => {
                                             <strong>Modelo:</strong> {selectedSolicitud.modeloNuevo || selectedSolicitud.vehiculo.modelo}
                                             {selectedSolicitud.modeloNuevo && selectedSolicitud.modeloNuevo !== selectedSolicitud.vehiculo.modelo && <FaExchangeAlt className="ms-2 text-primary" size={12} />}
                                         </p>
-                                        <p className="mb-1">
-                                            <strong>Placa:</strong> {selectedSolicitud.placaNueva || selectedSolicitud.vehiculo.placa}
-                                            {selectedSolicitud.placaNueva && selectedSolicitud.placaNueva !== selectedSolicitud.vehiculo.placa && <FaExchangeAlt className="ms-2 text-warning" size={12} />}
-                                        </p>
                                         <p className="mb-0">
                                             <strong>Capacidad:</strong> {selectedSolicitud.capacidadNueva || selectedSolicitud.vehiculo.capacidad} pasajeros
                                             {selectedSolicitud.capacidadNueva && selectedSolicitud.capacidadNueva !== selectedSolicitud.vehiculo.capacidad && <FaExchangeAlt className="ms-2 text-primary" size={12} />}
                                         </p>
                                     </div>
-
-                                    {selectedSolicitud.fotoPlacaNuevaUrl && (
-                                        <div className="mt-4">
-                                            <h6 className="text-secondary small fw-bold mb-3">FOTO DE LA NUEVA PLACA</h6>
-                                            <div
-                                                className="position-relative ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm border"
-                                                style={{ cursor: 'pointer' }}
-                                                onClick={() => {
-                                                    setSelectedImage(selectedSolicitud.fotoPlacaNuevaUrl);
-                                                    setShowImageModal(true);
-                                                }}
-                                            >
-                                                <img
-                                                    src={selectedSolicitud.fotoPlacaNuevaUrl}
-                                                    alt="Nueva placa"
-                                                    style={{ objectFit: 'cover' }}
-                                                />
-                                                <div className="position-absolute top-0 end-0 p-2">
-                                                    <Badge bg="dark" className="bg-opacity-50"><FaEye className="me-1" /> Ampliar</Badge>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </Col>
                             </Row>
 
@@ -277,18 +249,6 @@ const AdminVehicleRequests = () => {
                             </div>
                         </>
                     )}
-                </Modal.Body>
-            </Modal>
-
-            {/* Modal para ampliar imagen */}
-            <Modal show={showImageModal} onHide={() => setShowImageModal(false)} size="lg" centered>
-                <Modal.Header closeButton className="border-0 pb-0" />
-                <Modal.Body className="p-4 text-center">
-                    <img
-                        src={selectedImage}
-                        alt="Nueva placa ampliada"
-                        className="img-fluid rounded-3 shadow"
-                    />
                 </Modal.Body>
             </Modal>
         </div>
