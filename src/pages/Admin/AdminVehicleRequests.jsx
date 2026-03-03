@@ -1,28 +1,73 @@
-import React, { useRef, useCallback, useEffect, useState } from "react";
-import { Modal, Button, Alert, Spinner } from 'react-bootstrap';
-import QRCode from 'react-qr-code';
-import { FaDownload, FaPrint, FaQrcode, FaUserTag } from 'react-icons/fa';
-import PropTypes from 'prop-types';
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
+import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Form } from "react-bootstrap";
+import { FaCheck, FaTimes, FaUser, FaExchangeAlt } from "react-icons/fa";
+import Navbar from "../../components/Navbar";
+import fondo from "../Imagenes/AutoresContacto.png";
 
-const QRModal = ({
-  show,
-  onHide,
-  qrValue,
-  usuario,
-  onDownload,
-  onPrint,
-  titulo = "Tu código QR de acceso",
-  mensajeExpiracion = "Este código QR expira en tres horas"
-}) => {
-  const qrContainerRef = useRef(null);
-  const [qrReady, setQrReady] = useState(false);
-  const [error, setError] = useState(null);
+const AdminVehicleRequests = () => {
+    const { token } = useAuth();
+    const { socket } = useSocket();
+    const [solicitudes, setSolicitudes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [procesando, setProcesando] = useState(null); // ID de solicitud siendo procesada
+    const [showRevisionModal, setShowRevisionModal] = useState(false);
+    const [selectedSolicitud, setSelectedSolicitud] = useState(null);
+    const [observaciones, setObservaciones] = useState("");
 
-  const getRolNombre = (idRol) => {
-    const roles = {
-      1: 'Administrador',
-      2: 'Conductor',
-      3: 'Viajero'
+    const brandColor = "#54c7b8";
+
+    const traerSolicitudes = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/pendientes", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            if (!response.ok) throw new Error("Error al cargar solicitudes");
+            const data = await response.json();
+            setSolicitudes(data);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+    useEffect(() => {
+        traerSolicitudes();
+    }, [traerSolicitudes]);
+
+    const handleProcesar = async (id, aprobado) => {
+        try {
+            setProcesando(id);
+            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/${id}/procesar`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ aprobado, observaciones })
+            });
+
+            if (response.ok) {
+                if (socket) {
+                    socket.emit("vehicle_change_processed", { id, aprobado });
+                }
+                setShowRevisionModal(false);
+                setObservaciones("");
+                traerSolicitudes();
+            } else {
+                const err = await response.json();
+                alert(err.error || "Error al procesar solicitud");
+            }
+        } catch (err) {
+            alert("Error de conexión");
+        } finally {
+            setProcesando(null);
+        }
     };
     return roles[idRol] || 'Usuario';
   };

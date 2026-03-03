@@ -7,11 +7,14 @@ import {
 } from 'recharts';
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import { useNavigate } from "react-router-dom";
 import fondo from "../Imagenes/AutoresContacto.png";
+import toast from "react-hot-toast";
 
 const DriverHome = () => {
     const { usuario, token } = useAuth();
+    const { socket } = useSocket();
     const navigate = useNavigate();
 
     const brandColor = "#54c7b8";
@@ -274,37 +277,53 @@ const DriverHome = () => {
         traerEstadisticasAvanzadas();
     }, [token, periodo]);
 
-    useEffect(() => {
-        const obtenerVehiculos = async () => {
-            if (!token) return;
-            try {
-                setCargandoVehiculo(true);
-                setErrorVehiculo("");
-                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (respuesta.ok) {
-                    const data = await respuesta.json();
-                    if (Array.isArray(data)) setVehiculos(data);
-                    else if (data && typeof data === 'object') setVehiculos([data]);
-                    else setVehiculos([]);
-                } else if (respuesta.status === 404) {
-                    setVehiculos([]);
-                } else {
-                    setErrorVehiculo(`Error ${respuesta.status}: No se pudieron cargar los datos`);
+    const obtenerVehiculos = useCallback(async () => {
+        if (!token) return;
+        try {
+            setCargandoVehiculo(true);
+            setErrorVehiculo("");
+            const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-            } catch (error) {
-                setErrorVehiculo("Error de conexión con el servidor");
-            } finally {
-                setCargandoVehiculo(false);
+            });
+
+            if (respuesta.ok) {
+                const data = await respuesta.json();
+                if (Array.isArray(data)) setVehiculos(data);
+                else if (data && typeof data === 'object') setVehiculos([data]);
+                else setVehiculos([]);
+            } else if (respuesta.status === 404) {
+                setVehiculos([]);
+            } else {
+                setErrorVehiculo(`Error ${respuesta.status}: No se pudieron cargar los datos`);
             }
-        };
-        obtenerVehiculos();
+        } catch (error) {
+            setErrorVehiculo("Error de conexión con el servidor");
+        } finally {
+            setCargandoVehiculo(false);
+        }
     }, [token]);
+
+    useEffect(() => {
+        obtenerVehiculos();
+    }, [obtenerVehiculos]);
+
+    useEffect(() => {
+        if (socket) {
+            const handleProcessed = (data) => {
+                toast(data.aprobado ? '¡Tu cambio de vehículo fue aprobado!' : 'Tu cambio de vehículo fue rechazado.', {
+                    icon: data.aprobado ? '✅' : '❌',
+                    duration: 6000
+                });
+                obtenerVehiculos();
+            };
+
+            socket.on("vehicle_change_processed", handleProcessed);
+            return () => socket.off("vehicle_change_processed", handleProcessed);
+        }
+    }, [socket, obtenerVehiculos]);
 
     const handleAbrirSolicitud = () => {
         const v = vehiculos.length > 0 ? vehiculos[0] : null;

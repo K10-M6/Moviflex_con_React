@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill, BsListCheck, BsMenuButtonWideFill, BsChevronRight,
   BsChevronLeft, BsQrCode, BsFileEarmarkTextFill, BsArrowRepeat
 } from "react-icons/bs";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../pages/context/AuthContext";
+import { useSocket } from "../pages/context/SocketContext";
 import Logo from "../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png";
 import fondo from "../pages/Imagenes/AutoresContacto.png";
 
@@ -12,6 +13,41 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { usuario, token, logout } = useAuth();
+  const { socket } = useSocket();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  const fetchPendingCount = useCallback(async () => {
+    if (usuario?.rol === 'ADMIN' && token) {
+      try {
+        const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/pendientes/count", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setPendingCount(data.count);
+        }
+      } catch (err) {
+        console.error("Error fetching pending requests count:", err);
+      }
+    }
+  }, [usuario, token]);
+
+  useEffect(() => {
+    fetchPendingCount();
+
+    if (socket && usuario?.rol === 'ADMIN') {
+      const handleNewRequest = () => setPendingCount(prev => prev + 1);
+      const handleRequestProcessed = () => fetchPendingCount();
+
+      socket.on("new_vehicle_change_request", handleNewRequest);
+      socket.on("vehicle_change_processed", handleRequestProcessed);
+
+      return () => {
+        socket.off("new_vehicle_change_request", handleNewRequest);
+        socket.off("vehicle_change_processed", handleRequestProcessed);
+      };
+    }
+  }, [socket, usuario, fetchPendingCount]);
 
   const handleNavigation = (path) => {
     navigate(path);
@@ -28,7 +64,12 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
     { icon: <BsListCheck />, label: "Usuarios", path: "/admin/usuarios" },
     { icon: <BsMenuButtonWideFill />, label: "Vehículos", path: "/admin/vehiculos" },
     { icon: <BsFileEarmarkTextFill />, label: "Documentos", path: "/admin/documentos" },
-    { icon: <BsArrowRepeat />, label: "Solicitudes", path: "/admin/solicitudes-vehiculos" }
+    {
+      icon: <BsArrowRepeat />,
+      label: "Solicitudes",
+      path: "/admin/solicitudes-vehiculos",
+      badge: pendingCount > 0 ? pendingCount : null
+    }
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -88,7 +129,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
           {menuItems.map((item, index) => (
             <li className="nav-item mb-2" key={index}>
               <button
-                className="nav-link d-flex align-items-center p-2 rounded-3 border-0 w-100 text-start"
+                className="nav-link d-flex align-items-center p-2 rounded-3 border-0 w-100 text-start position-relative"
                 onClick={() => handleNavigation(item.path)}
                 style={{
                   background: isActive(item.path) ? 'rgba(84, 199, 184, 0.1)' : 'transparent',
@@ -101,6 +142,11 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
                   {item.icon}
                 </span>
                 <span className={isActive(item.path) ? 'fw-bold' : ''}>{item.label}</span>
+                {item.badge && (
+                  <span className="position-absolute end-0 me-3 badge rounded-pill bg-danger" style={{ fontSize: '0.7rem' }}>
+                    {item.badge}
+                  </span>
+                )}
               </button>
             </li>
           ))}
