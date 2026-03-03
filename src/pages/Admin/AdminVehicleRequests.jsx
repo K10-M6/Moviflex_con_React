@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Form } from "react-bootstrap";
 import { FaCheck, FaTimes, FaUser, FaExchangeAlt } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
@@ -7,6 +8,7 @@ import fondo from "../Imagenes/AutoresContacto.png";
 
 const AdminVehicleRequests = () => {
     const { token } = useAuth();
+    const { socket } = useSocket();
     const [solicitudes, setSolicitudes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -51,6 +53,9 @@ const AdminVehicleRequests = () => {
             });
 
             if (response.ok) {
+                if (socket) {
+                    socket.emit("vehicle_change_processed", { id, aprobado });
+                }
                 setShowRevisionModal(false);
                 setObservaciones("");
                 traerSolicitudes();
@@ -86,6 +91,9 @@ const AdminVehicleRequests = () => {
                 zIndex: 0
             }} />
 
+            <div style={{ backgroundColor: brandColor, position: 'relative', zIndex: 10 }}>
+                <Navbar />
+            </div>
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4 align-items-center">
