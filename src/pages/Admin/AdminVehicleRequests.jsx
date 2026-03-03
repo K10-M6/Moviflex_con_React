@@ -1,264 +1,342 @@
-import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Form } from "react-bootstrap";
-import { FaCheck, FaTimes, FaCar, FaUser, FaInfoCircle, FaExchangeAlt } from "react-icons/fa";
-import Navbar from "../../components/Navbar";
-import fondo from "../Imagenes/AutoresContacto.png";
+import React, { useRef, useCallback, useEffect, useState } from "react";
+import { Modal, Button, Alert } from 'react-bootstrap';
+import QRCode from 'react-qr-code';
+import { FaDownload, FaPrint, FaQrcode, FaUserTag } from 'react-icons/fa';
+import PropTypes from 'prop-types';
 
-const AdminVehicleRequests = () => {
-    const { token } = useAuth();
-    const [solicitudes, setSolicitudes] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [procesando, setProcesando] = useState(null); // ID de solicitud siendo procesada
-    const [showRevisionModal, setShowRevisionModal] = useState(false);
-    const [selectedSolicitud, setSelectedSolicitud] = useState(null);
-    const [observaciones, setObservaciones] = useState("");
+const QRModal = ({
+  show,
+  onHide,
+  qrValue,
+  usuario,
+  onDownload,
+  onPrint,
+  titulo = "Tu código QR de acceso",
+  mensajeExpiracion = "Este código QR expira en tres horas"
+}) => {
+  const qrContainerRef = useRef(null);
+  const [qrReady, setQrReady] = useState(false);
+  const [error, setError] = useState(null);
 
-    const brandColor = "#54c7b8";
-
-    const traerSolicitudes = useCallback(async () => {
-        try {
-            setLoading(true);
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/pendientes", {
-                headers: { "Authorization": "Bearer " + token }
-            });
-
-            if (!response.ok) throw new Error("Error al cargar solicitudes");
-            const data = await response.json();
-            setSolicitudes(data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    }, [token]);
-
-    useEffect(() => {
-        traerSolicitudes();
-    }, [traerSolicitudes]);
-
-    const handleProcesar = async (id, aprobado) => {
-        try {
-            setProcesando(id);
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/${id}/procesar`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ aprobado, observaciones })
-            });
-
-            if (response.ok) {
-                setShowRevisionModal(false);
-                setObservaciones("");
-                traerSolicitudes();
-            } else {
-                const err = await response.json();
-                alert(err.error || "Error al procesar solicitud");
-            }
-        } catch (err) {
-            alert("Error de conexión");
-        } finally {
-            setProcesando(null);
-        }
+  const getRolNombre = (idRol) => {
+    const roles = {
+      1: 'Administrador',
+      2: 'Conductor',
+      3: 'Viajero'
     };
+    return roles[idRol] || 'Usuario';
+  };
 
-    const openRevision = (solicitud) => {
-        setSelectedSolicitud(solicitud);
-        setObservaciones("");
-        setShowRevisionModal(true);
-    };
+  // Validar que el QR value sea un string válido
+  const isValidQRValue = useCallback(() => {
+    if (!qrValue || typeof qrValue !== 'string') {
+      setError("El valor del QR no es válido");
+      return false;
+    }
+    
+    // Verificar que no sea un objeto [object Object]
+    if (qrValue === '[object Object]' || qrValue.includes('[object')) {
+      setError("El token tiene formato incorrecto");
+      return false;
+    }
+    
+    // Verificar longitud mínima de un token JWT válido
+    if (qrValue.length < 20) {
+      setError("El token es demasiado corto");
+      return false;
+    }
+    
+    setError(null);
+    return true;
+  }, [qrValue]);
 
-    return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundImage: `url(${fondo})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            position: 'relative'
-        }}>
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.92)',
-                zIndex: 0
-            }} />
+  useEffect(() => {
+    if (!show) {
+      setQrReady(false);
+      setError(null);
+      return;
+    }
 
-            <div style={{ backgroundColor: brandColor, position: 'relative', zIndex: 10 }}>
-                <Navbar />
+    if (!qrValue) {
+      setError("No hay datos para generar el QR");
+      setQrReady(false);
+      return;
+    }
+
+    // Validar el QR value
+    if (!isValidQRValue()) {
+      setQrReady(false);
+      return;
+    }
+
+    // Mostrar el QR en consola para debug (solo desarrollo)
+    if (process.env.NODE_ENV === 'development') {
+      console.log("QR Value (primeros 20 chars):", qrValue.substring(0, 20) + "...");
+    }
+
+    const timer = setTimeout(() => {
+      if (qrContainerRef.current) {
+        console.log("✅ QR listo!");
+        setQrReady(true);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [show, qrValue, isValidQRValue]);
+
+  const svgToPng = (svgElement) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 500;
+        canvas.height = 500;
+
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+
+        const img = new Image();
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        img.onload = () => {
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          URL.revokeObjectURL(url);
+
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, 'image/png');
+        };
+
+        img.onerror = (err) => {
+          URL.revokeObjectURL(url);
+          reject(err);
+        };
+        img.src = url;
+      } catch (error) {
+        reject(error);
+      }
+    });
+  };
+
+  const handleDownload = useCallback(async () => {
+    console.log("📥 Iniciando descarga...");
+
+    if (onDownload) {
+      onDownload();
+      return;
+    }
+
+    if (!isValidQRValue()) {
+      alert(`Error: ${error || "El QR no es válido"}`);
+      return;
+    }
+
+    const svgElement = qrContainerRef.current?.querySelector('svg');
+    if (!svgElement) {
+      alert("Error: No se encontró el código QR");
+      return;
+    }
+
+    try {
+      const blob = await svgToPng(svgElement);
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QR-${usuario?.nombre?.replace(/\s+/g, '-') || 'usuario'}.png`;
+
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+      }, 100);
+
+    } catch (error) {
+      console.error("Error en descarga:", error);
+      alert("Error al descargar el QR");
+    }
+  }, [onDownload, usuario?.nombre, isValidQRValue, error]);
+
+  const handlePrint = useCallback(() => {
+    if (!isValidQRValue()) {
+      alert(`Error: ${error || "El QR no es válido"}`);
+      return;
+    }
+
+    const svgElement = qrContainerRef.current?.querySelector('svg');
+    if (!svgElement) {
+      alert("Error: No se encontró el código QR");
+      return;
+    }
+
+    svgToPng(svgElement).then((blob) => {
+      const url = URL.createObjectURL(blob);
+
+      const ventanaImpresion = window.open('', '_blank');
+      ventanaImpresion.document.write(`
+        <html>
+          <head>
+            <title>QR de Acceso - ${usuario?.nombre || 'Usuario'}</title>
+            <style>
+              body { display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; }
+              .container { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 500px; }
+              img { max-width: 100%; border: 2px solid #124c83; padding: 20px; border-radius: 10px; }
+              h2 { color: #124c83; margin-bottom: 20px; }
+              .info { margin: 15px 0; color: #555; }
+              .warning { color: #f39c12; font-size: 12px; margin-top: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2>QR de Acceso</h2>
+              <div class="info">
+                <p><strong>${usuario?.nombre || 'Usuario'}</strong></p>
+                <p>Email: ${usuario?.email || ''}</p>
+                <p>Rol: ${getRolNombre(usuario?.idRol)}</p>
+              </div>
+              <img src="${url}" alt="QR Code" />
+              <p>Escanea este código para iniciar sesión</p>
+              <p class="warning"><small>${mensajeExpiracion}</small></p>
+            </div>
+          </body>
+        </html>
+      `);
+      ventanaImpresion.document.close();
+      ventanaImpresion.focus();
+      setTimeout(() => ventanaImpresion.print(), 250);
+    }).catch(error => {
+      console.error("Error en impresión:", error);
+      alert("Error al preparar la impresión");
+    });
+  }, [usuario, mensajeExpiracion, isValidQRValue, error]);
+
+  return (
+    <Modal show={show} onHide={onHide} centered size="lg">
+      <Modal.Header closeButton style={{ backgroundColor: '#124c83', color: 'white' }}>
+        <Modal.Title>
+          <FaQrcode className="me-2" />
+          {titulo}
+        </Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body className="text-center p-4">
+        {error ? (
+          <Alert variant="danger" className="mb-0">
+            <Alert.Heading>Error al generar el QR</Alert.Heading>
+            <p>{error}</p>
+            <hr />
+            <p className="mb-0">
+              Por favor, intenta generar un nuevo código QR.
+            </p>
+          </Alert>
+        ) : qrValue ? (
+          <>
+            {!qrReady && (
+              <div className="text-info mb-2">
+                <Spinner animation="border" size="sm" className="me-2" />
+                Generando código QR...
+              </div>
+            )}
+
+            <div
+              ref={qrContainerRef}
+              style={{
+                padding: '20px',
+                backgroundColor: 'white',
+                borderRadius: '10px',
+                display: 'inline-block',
+                marginBottom: '20px',
+                border: '2px solid #124c83',
+                boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+                opacity: qrReady ? 1 : 0.7
+              }}
+            >
+              <QRCode
+                value={qrValue}
+                size={256}
+                level="H"
+                fgColor="#124c83"
+                bgColor="#ffffff"
+              />
             </div>
 
-            <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
-                <Row className="mb-4 align-items-center">
-                    <Col>
-                        <h2 className="fw-bold" style={{ color: '#333' }}>Solicitudes de Cambio de Vehículo</h2>
-                        <p className="text-muted">Revisa y aprueba las modificaciones de vehículos de los conductores.</p>
-                    </Col>
-                    <Col xs="auto">
-                        <Button
-                            variant="outline-primary"
-                            onClick={traerSolicitudes}
-                            className="rounded-pill border-0 shadow-sm"
-                            style={{ backgroundColor: 'white', color: brandColor }}
-                        >
-                            Actualizar Lista
-                        </Button>
-                    </Col>
-                </Row>
+            <div className="mb-3">
+              <p className="mb-1">
+                <strong>Usuario:</strong> {usuario?.nombre || 'No especificado'}
+              </p>
+              <p className="mb-1">
+                <small className="text-muted">Email: {usuario?.email || 'No disponible'}</small>
+              </p>
+              <p className="mb-1">
+                <small className="text-info">
+                  <FaUserTag className="me-1" />
+                  Rol: {getRolNombre(usuario?.idRol)}
+                </small>
+              </p>
+              <p className="mb-0">
+                <small className="text-warning">⏰ {mensajeExpiracion}</small>
+              </p>
+            </div>
 
-                {error && <Alert variant="danger">{error}</Alert>}
+            <div className="d-flex gap-2 justify-content-center">
+              <Button
+                variant="success"
+                onClick={handleDownload}
+                disabled={!qrReady}
+              >
+                <FaDownload className="me-2" />
+                Descargar QR
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handlePrint}
+                disabled={!qrReady}
+              >
+                <FaPrint className="me-2" />
+                Imprimir QR
+              </Button>
+            </div>
 
-                <Card className="border-0 shadow-sm" style={{ borderRadius: '20px', overflow: 'hidden' }}>
-                    <Card.Body className="p-0">
-                        {loading ? (
-                            <div className="text-center py-5">
-                                <Spinner animation="border" style={{ color: brandColor }} />
-                                <p className="mt-2 text-muted">Buscando solicitudes pendientes...</p>
-                            </div>
-                        ) : solicitudes.length === 0 ? (
-                            <div className="text-center py-5 text-muted">
-                                <FaCheck size={48} className="mb-3 opacity-25" />
-                                <p>No hay solicitudes pendientes de revisión.</p>
-                            </div>
-                        ) : (
-                            <Table responsive hover className="mb-0 align-middle">
-                                <thead className="bg-light">
-                                    <tr>
-                                        <th className="px-4 py-3 border-0">Conductor</th>
-                                        <th className="py-3 border-0">Vehículo</th>
-                                        <th className="py-3 border-0">Cambios Solicitados</th>
-                                        <th className="py-3 border-0">Fecha</th>
-                                        <th className="px-4 py-3 border-0 text-end">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {solicitudes.map(s => (
-                                        <tr key={s.idSolicitud}>
-                                            <td className="px-4 py-3">
-                                                <div className="d-flex align-items-center">
-                                                    <div className="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style={{ width: '32px', height: '32px' }}>
-                                                        <FaUser size={14} color={brandColor} />
-                                                    </div>
-                                                    <div>
-                                                        <div className="fw-semibold">{s.vehiculo?.usuario?.nombre || 'N/A'}</div>
-                                                        <div className="small text-muted">{s.vehiculo?.usuario?.email}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-3">
-                                                <div className="fw-semibold">{s.vehiculo?.marca} {s.vehiculo?.modelo}</div>
-                                                <div className="small text-muted">Placa: {s.vehiculo?.placa}</div>
-                                            </td>
-                                            <td className="py-3">
-                                                <div className="d-flex flex-wrap gap-1">
-                                                    {s.marcaNueva && s.marcaNueva !== s.vehiculo.marca && <Badge bg="info" className="fw-normal">Marca</Badge>}
-                                                    {s.modeloNuevo && s.modeloNuevo !== s.vehiculo.modelo && <Badge bg="info" className="fw-normal">Modelo</Badge>}
-                                                    {s.placaNueva && s.placaNueva !== s.vehiculo.placa && <Badge bg="warning" text="dark" className="fw-normal">Placa</Badge>}
-                                                    {s.capacidadNueva && s.capacidadNueva !== s.vehiculo.capacidad && <Badge bg="info" className="fw-normal">Capacidad</Badge>}
-                                                </div>
-                                            </td>
-                                            <td className="py-3 small text-muted">
-                                                {new Date(s.fechaSolicitud).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-4 py-3 text-end">
-                                                <Button
-                                                    variant="primary"
-                                                    size="sm"
-                                                    className="rounded-pill px-3 border-0"
-                                                    style={{ backgroundColor: brandColor }}
-                                                    onClick={() => openRevision(s)}
-                                                >
-                                                    Revisar
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        )}
-                    </Card.Body>
-                </Card>
-            </Container>
-
-            {/* Modal de Revisión Detallada */}
-            <Modal show={showRevisionModal} onHide={() => !procesando && setShowRevisionModal(false)} size="lg" centered>
-                <Modal.Header closeButton={!procesando} className="border-0">
-                    <Modal.Title className="fw-bold">Detalle de Modificación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="p-4">
-                    {selectedSolicitud && (
-                        <>
-                            <Row className="mb-4">
-                                <Col md={6}>
-                                    <h6 className="text-muted small fw-bold mb-3">DATOS ACTUALES</h6>
-                                    <div className="p-3 bg-light rounded-3">
-                                        <p className="mb-1"><strong>Marca:</strong> {selectedSolicitud.vehiculo.marca}</p>
-                                        <p className="mb-1"><strong>Modelo:</strong> {selectedSolicitud.vehiculo.modelo}</p>
-                                        <p className="mb-1"><strong>Placa:</strong> {selectedSolicitud.vehiculo.placa}</p>
-                                        <p className="mb-0"><strong>Capacidad:</strong> {selectedSolicitud.vehiculo.capacidad} pasajeros</p>
-                                    </div>
-                                </Col>
-                                <Col md={6}>
-                                    <h6 className="text-primary small fw-bold mb-3">DATOS PROPUESTOS</h6>
-                                    <div className="p-3 bg-light rounded-3 border-start border-primary border-4 shadow-sm" style={{ backgroundColor: '#F0F9FF' }}>
-                                        <p className="mb-1">
-                                            <strong>Marca:</strong> {selectedSolicitud.marcaNueva || selectedSolicitud.vehiculo.marca}
-                                            {selectedSolicitud.marcaNueva && selectedSolicitud.marcaNueva !== selectedSolicitud.vehiculo.marca && <FaExchangeAlt className="ms-2 text-primary" size={12} />}
-                                        </p>
-                                        <p className="mb-1">
-                                            <strong>Modelo:</strong> {selectedSolicitud.modeloNuevo || selectedSolicitud.vehiculo.modelo}
-                                            {selectedSolicitud.modeloNuevo && selectedSolicitud.modeloNuevo !== selectedSolicitud.vehiculo.modelo && <FaExchangeAlt className="ms-2 text-primary" size={12} />}
-                                        </p>
-                                        <p className="mb-1">
-                                            <strong>Placa:</strong> {selectedSolicitud.placaNueva || selectedSolicitud.vehiculo.placa}
-                                            {selectedSolicitud.placaNueva && selectedSolicitud.placaNueva !== selectedSolicitud.vehiculo.placa && <FaExchangeAlt className="ms-2 text-warning" size={12} />}
-                                        </p>
-                                        <p className="mb-0">
-                                            <strong>Capacidad:</strong> {selectedSolicitud.capacidadNueva || selectedSolicitud.vehiculo.capacidad} pasajeros
-                                            {selectedSolicitud.capacidadNueva && selectedSolicitud.capacidadNueva !== selectedSolicitud.vehiculo.capacidad && <FaExchangeAlt className="ms-2 text-primary" size={12} />}
-                                        </p>
-                                    </div>
-                                </Col>
-                            </Row>
-
-                            <Form.Group className="mb-4">
-                                <Form.Label className="small fw-bold text-muted">Observaciones (Opcional)</Form.Label>
-                                <Form.Control
-                                    as="textarea"
-                                    rows={3}
-                                    placeholder="Escribe el motivo de la aprobación o rechazo..."
-                                    value={observaciones}
-                                    onChange={(e) => setObservaciones(e.target.value)}
-                                    disabled={procesando}
-                                />
-                            </Form.Group>
-
-                            <div className="d-flex gap-3 mt-4">
-                                <Button
-                                    variant="danger"
-                                    className="w-100 py-2 rounded-pill border-0"
-                                    onClick={() => handleProcesar(selectedSolicitud.idSolicitud, false)}
-                                    disabled={procesando}
-                                >
-                                    {procesando === selectedSolicitud.idSolicitud ? <Spinner animation="border" size="sm" /> : <><FaTimes className="me-2" /> Rechazar</>}
-                                </Button>
-                                <Button
-                                    className="w-100 py-2 rounded-pill border-0"
-                                    style={{ backgroundColor: brandColor, color: 'white' }}
-                                    onClick={() => handleProcesar(selectedSolicitud.idSolicitud, true)}
-                                    disabled={procesando}
-                                >
-                                    {procesando === selectedSolicitud.idSolicitud ? <Spinner animation="border" size="sm" /> : <><FaCheck className="me-2" /> Aprobar y Aplicar</>}
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Modal.Body>
-            </Modal>
-        </div>
-    );
+            <Alert variant="warning" className="mt-3 mb-0 text-start">
+              <strong>🔐 Seguridad:</strong>
+              <ul className="mb-0 mt-2">
+                <li>Este QR contiene tu token de acceso personal</li>
+                <li>No lo compartas con nadie</li>
+                <li>{mensajeExpiracion}</li>
+                <li>Si alguien más lo escanea, tendrá acceso a tu cuenta</li>
+              </ul>
+            </Alert>
+          </>
+        ) : (
+          <Alert variant="info">
+            No hay datos para generar el QR. Intenta nuevamente.
+          </Alert>
+        )}
+      </Modal.Body>
+    </Modal>
+  );
 };
 
-export default AdminVehicleRequests;
+QRModal.propTypes = {
+  show: PropTypes.bool.isRequired,
+  onHide: PropTypes.func.isRequired,
+  qrValue: PropTypes.string,
+  usuario: PropTypes.shape({
+    nombre: PropTypes.string,
+    email: PropTypes.string,
+    idRol: PropTypes.number
+  }),
+  onDownload: PropTypes.func,
+  onPrint: PropTypes.func,
+  titulo: PropTypes.string,
+  mensajeExpiracion: PropTypes.string
+};
+
+export default QRModal;
