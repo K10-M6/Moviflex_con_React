@@ -4,14 +4,13 @@ import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge } from "re
 import { FaCar, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaIdCard } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import Navbar from '../../components/Navbar';
-import Logo from '../Imagenes/TODO_MOVI.png';
+import Logo from '../Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import toast, { Toaster } from 'react-hot-toast';
 
 function VehicleRegistration() {
   const navigate = useNavigate();
   const { token } = useAuth();
 
-  // Campos exactamente como en el modelo
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
   const [placa, setPlaca] = useState("");
