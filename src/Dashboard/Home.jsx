@@ -249,7 +249,7 @@ function Home() {
           </Col>
         </Row>
 
-        {error && <Alert variant="danger" className="mt-3 border-0 shadow-sm">{error}</Alert>}
+        {error ? <Alert variant="danger" className="mt-3 border-0 shadow-sm">{error}</Alert> : null}
 
         {loading ? (
           <div className="text-center py-5">
@@ -257,7 +257,7 @@ function Home() {
             <p className="mt-3 text-muted">Cargando estadísticas...</p>
           </div>
         ) : (
-          <>
+          <div>
             <Row className="g-4 mb-4">
               {statCards.map((stat, index) => (
                 <Col key={index} xs={12} sm={6} lg={3}>
@@ -449,7 +449,7 @@ function Home() {
                     {onlineUsers.length > 0 ? (
                       <ListGroup variant="flush">
                         {onlineUsers.map((u, index) => (
-                          <ListGroup.Item key={index} className="px-0 border-0 bg-transparent py-2">
+                          <ListGroup.Item key={u.id || u.nombre || `online-${index}`} className="px-0 border-0 bg-transparent py-2">
                             <div className="d-flex align-items-center justify-content-between">
                               <div className="d-flex align-items-center">
                                 <div className="rounded-circle me-3 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', backgroundColor: '#f8f9fa' }}>
@@ -478,7 +478,7 @@ function Home() {
                 </Card>
               </Col>
             </Row>
-          </>
+          </div>
         )}
       </Container>
     </div>
