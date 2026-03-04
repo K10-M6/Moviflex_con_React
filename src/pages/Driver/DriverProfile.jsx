@@ -73,15 +73,20 @@ function DriverProfile() {
           
           if (typeof data === 'number') {
             setDatosCalificacion({ promedio: data, total: 0 });
-          } else if (data.promedio !== undefined) {
+          } else if (data && data.promedio !== undefined) {
             setDatosCalificacion({ 
               promedio: data.promedio, 
               total: data.total || 0 
             });
+          } else {
+            setDatosCalificacion({ promedio: 0, total: 0 });
           }
+        } else {
+          setDatosCalificacion({ promedio: 0, total: 0 });
         }
       } catch (error) {
         console.error("Error al obtener calificaciones:", error);
+        setDatosCalificacion({ promedio: 0, total: 0 });
       }
     };
     obtenerCalificaciones();
@@ -104,12 +109,15 @@ function DriverProfile() {
           if (Array.isArray(data)) {
             const viajesCompletados = data.filter(v => v.estado === 'FINALIZADO');
             setTotalViajes(viajesCompletados.length);
-          } else if (data.totalViajes) {
+          } else if (data && data.totalViajes) {
             setTotalViajes(data.totalViajes);
+          } else {
+            setTotalViajes(0);
           }
         }
       } catch (error) {
         console.error("Error al obtener estadísticas:", error);
+        setTotalViajes(0);
       }
     };
     obtenerEstadisticasViajes();
@@ -134,7 +142,6 @@ function DriverProfile() {
           const data = await response.json();
           console.log("📄 Documentos recibidos:", data);
           
-          // Manejar diferentes estructuras de respuesta
           let docsArray = [];
           if (Array.isArray(data)) {
             docsArray = data;
@@ -146,7 +153,6 @@ function DriverProfile() {
           
           setDocumentos(docsArray);
           
-          // Buscar la licencia (puede venir como objeto directo o en un array)
           const licenciaEncontrada = docsArray.find(doc => 
             doc.tipoDocumento?.toLowerCase().includes('licencia') || 
             doc.tipoDocumento?.toLowerCase().includes('conducir') ||
@@ -216,13 +222,11 @@ function DriverProfile() {
     }
   };
 
-  // Función para formatear fecha de expedición (string)
   const formatearFechaExpedicion = (fecha) => {
     if (!fecha) return 'No disponible';
-    return fecha; // Es string, lo mostramos directamente
+    return fecha;
   };
 
-  // Función para formatear fecha de subida (DateTime)
   const formatearFechaSubida = (fecha) => {
     if (!fecha) return 'No disponible';
     try {
@@ -233,8 +237,19 @@ function DriverProfile() {
         year: 'numeric'
       });
     } catch {
-      return fecha; // Si falla, mostramos el string original
+      return fecha;
     }
+  };
+
+  // Función para formatear el promedio de manera segura
+  const formatearPromedio = (promedio) => {
+    if (promedio === undefined || promedio === null) return '0.0';
+    if (typeof promedio === 'number') return promedio.toFixed(1);
+    if (typeof promedio === 'string') {
+      const num = parseFloat(promedio);
+      return isNaN(num) ? '0.0' : num.toFixed(1);
+    }
+    return '0.0';
   };
 
   return (
@@ -247,7 +262,6 @@ function DriverProfile() {
         position: 'relative', 
         overflowX: 'hidden' 
     }}>
-      {/* Capa de legibilidad (Overlay) */}
       <div style={{ 
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
           backgroundColor: 'rgba(255, 255, 255, 0.65)', 
@@ -278,7 +292,7 @@ function DriverProfile() {
                     
                     <h3 className="fw-bold mb-1">{nombre || usuario?.nombre}</h3>
                     <Badge bg="warning" text="dark" className="px-3 rounded-pill mb-3">
-                      <FaStar className="me-1" /> {datosCalificacion.promedio.toFixed(1)} ({datosCalificacion.total} reseñas)
+                      <FaStar className="me-1" /> {formatearPromedio(datosCalificacion.promedio)} ({datosCalificacion.total || 0} reseñas)
                     </Badge>
                     
                     <Button onClick={() => navigate("/documentacion")} variant="outline-success" className="w-100 mb-3 rounded-pill">
