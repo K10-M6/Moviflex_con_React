@@ -154,7 +154,7 @@ function Home() {
     try {
       setCargandoTop(true);
       const headers = { "Content-Type": "application/json", "Authorization": "Bearer " + token };
-      
+
       const [resConductores, resViajeros] = await Promise.all([
         fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-conductores", { headers }),
         fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-viajeros", { headers })
@@ -195,7 +195,7 @@ function Home() {
   };
 
   const statCards = [
-    { title: "Total Usuarios", value: stats.totalUsuarios, icon: <BsPeopleFill className="fs-5"/> },
+    { title: "Total Usuarios", value: stats.totalUsuarios, icon: <BsPeopleFill className="fs-5" /> },
     { title: "Viajeros", value: stats.totalViajeros, icon: <BsPersonCircle className="fs-5" /> },
     { title: "Conductores", value: stats.totalConductores, icon: <BsTruck className="fs-5" /> },
     { title: "Vehículos", value: stats.totalVehiculos, icon: <BsCarFrontFill className="fs-5" /> }
@@ -278,7 +278,7 @@ function Home() {
                           <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 12 }} />
                           <Tooltip cursor={{ fill: 'rgba(84, 199, 184, 0.05)' }} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
                           <Legend />
-                          <Bar dataKey="usuarios" fill="#68bdc4" name="Usuarios" radius={[4, 4, 0, 0]} barSize={28}/>
+                          <Bar dataKey="usuarios" fill="#68bdc4" name="Usuarios" radius={[4, 4, 0, 0]} barSize={28} />
                           <Bar dataKey="viajes" fill="#113d69" name="Viajes" radius={[4, 4, 0, 0]} barSize={28} />
                         </BarChart>
                       </ResponsiveContainer>
@@ -331,112 +331,138 @@ function Home() {
               </Col>
             </Row>
 
-            <Row className="g-4">
-              <Col md={6} lg={4}>
+            <Row className="mb-4">
+              <Col md={12}>
+                <div className="d-flex align-items-center mb-3">
+                  <h4 className="fw-bold mb-0" style={{ color: '#113d69' }}>Ranking de Excelencia</h4>
+                  <div className="ms-3 flex-grow-1" style={{ height: '2px', backgroundColor: '#e9ecef' }} />
+                </div>
+              </Col>
+
+              <Col lg={6} xl={4}>
+                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
+                  <Card.Body className="p-4">
+                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
+                      <FaMedal className="me-2" style={{ color: '#FFD700' }} />
+                      Mejores Conductores
+                    </Card.Title>
+                    <p className="text-muted small mb-4">Top 5 conductores con mayor puntuación acumulada.</p>
+                    {cargandoTop ? (
+                      <div className="text-center py-4"><Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} /></div>
+                    ) : topConductores.length > 0 ? (
+                      <ListGroup variant="flush">
+                        {topConductores.slice(0, 5).map((c, i) => (
+                          <ListGroup.Item key={c.idUsuarios || i} className="px-0 border-0 bg-transparent py-3">
+                            <div className="d-flex align-items-center">
+                              <div className="d-flex align-items-center justify-content-center rounded-circle me-3 shadow-sm" style={{ width: '36px', height: '36px', backgroundColor: getMedalColor(i), color: i < 3 ? 'white' : '#333', fontWeight: 'bold', fontSize: '1rem' }}>
+                                {i + 1}
+                              </div>
+                              <div className="flex-grow-1">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <strong style={{ fontSize: '0.95rem' }}>{c.nombre}</strong>
+                                  <Badge bg="none" className="rounded-pill px-2 py-1" style={{ fontSize: '0.8rem', backgroundColor: colores.estrella, color: 'white' }}>
+                                    {c.promedioEstrellas?.toFixed(1) || '0.0'} ★
+                                  </Badge>
+                                </div>
+                                <div className="d-flex align-items-center mt-1">
+                                  {renderStars(c.promedioEstrellas || 0)}
+                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({c.totalReseñas} reseñas)</small>
+                                </div>
+                              </div>
+                            </div>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    ) : (
+                      <div className="text-center py-4 text-muted small">
+                        <BsStar className="mb-2 d-block mx-auto opacity-50" size={24} />
+                        Aún no hay conductores calificados
+                      </div>
+                    )}
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              <Col lg={6} xl={4}>
+                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
+                  <Card.Body className="p-4">
+                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
+                      <FaMedal className="me-2" style={{ color: '#C0C0C0' }} />
+                      Mejores Viajeros
+                    </Card.Title>
+                    <p className="text-muted small mb-4">Pasajeros destacados por buen comportamiento y puntualidad.</p>
+                    {cargandoTop ? (
+                      <div className="text-center py-4"><Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} /></div>
+                    ) : topViajeros.length > 0 ? (
+                      <ListGroup variant="flush">
+                        {topViajeros.slice(0, 5).map((v, i) => (
+                          <ListGroup.Item key={v.idUsuarios || i} className="px-0 border-0 bg-transparent py-3">
+                            <div className="d-flex align-items-center">
+                              <div className="d-flex align-items-center justify-content-center rounded-circle me-3 shadow-sm" style={{ width: '36px', height: '36px', backgroundColor: getMedalColor(i), color: i < 3 ? 'white' : '#333', fontWeight: 'bold', fontSize: '1rem' }}>
+                                {i + 1}
+                              </div>
+                              <div className="flex-grow-1">
+                                <div className="d-flex justify-content-between align-items-center">
+                                  <strong style={{ fontSize: '0.95rem' }}>{v.nombre}</strong>
+                                  <Badge bg="none" className="rounded-pill px-2 py-1" style={{ fontSize: '0.8rem', backgroundColor: colores.estrella, color: 'white' }}>
+                                    {v.promedioEstrellas?.toFixed(1) || '0.0'} ★
+                                  </Badge>
+                                </div>
+                                <div className="d-flex align-items-center mt-1">
+                                  {renderStars(v.promedioEstrellas || 0)}
+                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({v.totalReseñas} reseñas)</small>
+                                </div>
+                              </div>
+                            </div>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    ) : (
+                      <div className="text-center py-4 text-muted small">
+                        <BsStar className="mb-2 d-block mx-auto opacity-50" size={24} />
+                        Aún no hay viajeros calificados
+                      </div>
+                    )}
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              <Col lg={12} xl={4}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
                   <Card.Body className="p-4">
                     <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
                       <BsCircleFill className="me-2 text-success" size={12} />
-                      Usuarios Conectados ({onlineUsers.length})
+                      Sesiones Activas ({onlineUsers.length})
                     </Card.Title>
+                    <p className="text-muted small mb-4">Usuarios interactuando con la plataforma en tiempo real.</p>
                     {onlineUsers.length > 0 ? (
                       <ListGroup variant="flush">
                         {onlineUsers.map((u, index) => (
                           <ListGroup.Item key={index} className="px-0 border-0 bg-transparent py-2">
                             <div className="d-flex align-items-center justify-content-between">
                               <div className="d-flex align-items-center">
-                                <div className="rounded-circle me-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', backgroundColor: '#e9ecef' }}>
-                                  <BsPersonCircle size={20} className="text-muted" />
+                                <div className="rounded-circle me-3 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', backgroundColor: '#f8f9fa' }}>
+                                  <BsPersonCircle size={24} className="text-muted" />
                                 </div>
                                 <div>
-                                  <div className="fw-bold small">{u.nombre}</div>
-                                  <div className="text-muted" style={{ fontSize: '0.7rem' }}>{u.role}</div>
+                                  <div className="fw-bold mb-0" style={{ fontSize: '0.9rem' }}>{u.nombre}</div>
+                                  <div className="text-muted" style={{ fontSize: '0.75rem' }}>{u.role}</div>
                                 </div>
                               </div>
-                              <Badge bg="success" className="rounded-pill" style={{ fontSize: '0.65rem' }}>En línea</Badge>
+                              <div className="d-flex align-items-center">
+                                <span className="p-1 rounded-circle bg-success me-2" style={{ width: '8px', height: '8px' }}></span>
+                                <small className="text-success fw-bold" style={{ fontSize: '0.7rem' }}>En línea</small>
+                              </div>
                             </div>
                           </ListGroup.Item>
                         ))}
                       </ListGroup>
                     ) : (
-                      <p className="text-muted text-center py-3 small">No hay usuarios conectados</p>
+                      <div className="text-center py-5">
+                        <BsPeopleFill className="text-muted mb-2 opacity-25" size={40} />
+                        <p className="text-muted small">No hay usuarios activos</p>
+                      </div>
                     )}
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col md={6} lg={4}>
-                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
-                      <FaMedal className="me-2" style={{ color: '#FFD700' }} />
-                      Top 5 Conductores
-                    </Card.Title>
-                    {cargandoTop ? (
-                      <div className="text-center py-3"><Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} /></div>
-                    ) : topConductores.length > 0 ? (
-                      <ListGroup variant="flush">
-                        {topConductores.slice(0, 5).map((c, i) => (
-                          <ListGroup.Item key={c.idUsuarios || i} className="px-0 border-0 bg-transparent py-2">
-                            <div className="d-flex align-items-center">
-                              <div className="d-flex align-items-center justify-content-center rounded-circle me-2" style={{ width: '30px', height: '30px', backgroundColor: getMedalColor(i), color: i < 3 ? 'white' : '#333', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                {i + 1}
-                              </div>
-                              <div className="flex-grow-1">
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <strong style={{ fontSize: '0.9rem' }}>{c.nombre}</strong>
-                                  <Badge bg="none" className="rounded-pill px-2" style={{ fontSize: '0.75rem', backgroundColor: colores.estrella, color: 'white' }}>
-                                    {c.promedioEstrellas?.toFixed(1) || '0.0'}
-                                  </Badge>
-                                </div>
-                                <div className="mt-1">
-                                  {renderStars(c.promedioEstrellas || 0)}
-                                  <small className="text-muted ms-2" style={{ fontSize: '0.7rem' }}>({c.totalReseñas || 0})</small>
-                                </div>
-                              </div>
-                            </div>
-                          </ListGroup.Item>
-                        ))}
-                      </ListGroup>
-                    ) : <p className="text-muted text-center py-3 small">Sin calificaciones</p>}
-                  </Card.Body>
-                </Card>
-              </Col>
-
-              <Col md={6} lg={4}>
-                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
-                      <FaMedal className="me-2" style={{ color: '#C0C0C0' }} />
-                      Top 5 Viajeros
-                    </Card.Title>
-                    {cargandoTop ? (
-                      <div className="text-center py-3"><Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} /></div>
-                    ) : topViajeros.length > 0 ? (
-                      <ListGroup variant="flush">
-                        {topViajeros.slice(0, 5).map((v, i) => (
-                          <ListGroup.Item key={v.idUsuarios || i} className="px-0 border-0 bg-transparent py-2">
-                            <div className="d-flex align-items-center">
-                              <div className="d-flex align-items-center justify-content-center rounded-circle me-2" style={{ width: '30px', height: '30px', backgroundColor: getMedalColor(i), color: i < 3 ? 'white' : '#333', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                                {i + 1}
-                              </div>
-                              <div className="flex-grow-1">
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <strong style={{ fontSize: '0.9rem' }}>{v.nombre}</strong>
-                                  <Badge bg="none" className="rounded-pill px-2" style={{ fontSize: '0.75rem', backgroundColor: colores.estrella, color: 'white' }}>
-                                    {v.promedioEstrellas?.toFixed(1) || '0.0'}
-                                  </Badge>
-                                </div>
-                                <div className="mt-1">
-                                  {renderStars(v.promedioEstrellas || 0)}
-                                  <small className="text-muted ms-2" style={{ fontSize: '0.7rem' }}>({v.totalReseñas || 0})</small>
-                                </div>
-                              </div>
-                            </div>
-                          </ListGroup.Item>
-                        ))}
-                      </ListGroup>
-                    ) : <p className="text-muted text-center py-3 small">Sin calificaciones</p>}
                   </Card.Body>
                 </Card>
               </Col>
