@@ -132,7 +132,7 @@ function AdminViajeros() {
             case 'SUSPENDIDO':
                 return <Badge bg="warning" text="dark" className="px-3 py-1">Suspendido</Badge>;
             default:
-                return <Badge bg="light" text="dark" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
+                return <Badge bg="secondary" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
         }
     }
 
@@ -189,7 +189,7 @@ function AdminViajeros() {
     }
 
     function formatearTelefono(telefono) {
-        if (!telefono) return <span className="text-muted">No especificado</span>;
+        if (!telefono) return <span className="text-muted fst-italic">No especificado</span>;
         return telefono;
     }
 
@@ -202,38 +202,45 @@ function AdminViajeros() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* Capa de legibilidad */}
-            <div style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                backgroundColor: 'rgba(255, 255, 255, 0.92)', 
-                zIndex: 0 
-            }} />
+            {/* OVERLAY ELIMINADO - ahora se ve la imagen de fondo directamente */}
 
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
+                        <Card className="border-0 shadow" style={{ 
+                            borderRadius: '16px', 
+                            borderLeft: '6px solid #51cfbd',
+                            overflow: 'hidden',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}>
                             <Card.Body className="p-4">
-                                <h1 className="display-5 fw-bold mb-0" style={{ color: '#333' }}>Lista de Viajeros</h1>
-                                <p className="text-muted mb-0 small">Administra los viajeros registrados en la plataforma</p>
+                                <h1 className="display-5 fw-bold mb-0" style={{ 
+                                    color: '#2c3e50',
+                                    letterSpacing: '-0.02em'
+                                }}>
+                                    Lista de Viajeros
+                                </h1>
+                                <p className="text-muted mb-0 small">
+                                    <span style={{ color: '#51cfbd' }}>●</span> Administra los viajeros registrados en la plataforma
+                                </p>
                             </Card.Body>
                         </Card>
                         
                         <div className="d-flex gap-3 mt-3 flex-wrap">
-                            <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
+                            <Badge bg="primary" className="px-3 py-2" style={{ 
+                                backgroundColor: '#51cfbd', 
+                                border: 'none',
+                                fontSize: '0.9rem'
+                            }}>
                                 Total: {viajeros.length}
                             </Badge>
-                            <Badge bg="success" className="px-3 py-2">
+                            <Badge bg="success" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Activos: {viajeros.filter(v => v.estado === 'ACTIVO').length}
                             </Badge>
-                            <Badge bg="danger" className="px-3 py-2">
+                            <Badge bg="danger" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Inactivos: {viajeros.filter(v => v.estado === 'INACTIVO').length}
                             </Badge>
-                            <Badge bg="warning" text="dark" className="px-3 py-2">
+                            <Badge bg="warning" text="dark" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Suspendidos: {viajeros.filter(v => v.estado === 'SUSPENDIDO').length}
                             </Badge>
                         </div>
@@ -243,7 +250,7 @@ function AdminViajeros() {
                 {error && (
                     <Row className="mb-3">
                         <Col>
-                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow-sm">
+                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow">
                                 <strong>Error:</strong> {error}
                             </Alert>
                         </Col>
@@ -252,85 +259,101 @@ function AdminViajeros() {
                 
                 <Row>
                     <Col>
-                        <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
-                            <Card.Body>
+                        <Card className="shadow border-0" style={{ 
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}>
+                            <Card.Body className="p-0">
                                 {loading ? (
                                     <div className="text-center py-5">
-                                        <Spinner animation="border" style={{ color: '#54c7b8' }} />
+                                        <Spinner animation="border" style={{ color: '#51cfbd' }} />
                                         <p className="mt-3 text-muted">Cargando viajeros...</p>
                                     </div>
                                 ) : (
-                                    <Table responsive hover className="align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nombre</th>
-                                                <th>Email</th>
-                                                <th>Teléfono</th>
-                                                <th>Estado</th>
-                                                <th>Registro</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {viajeros.length === 0 ? (
+                                    <div className="table-responsive">
+                                        <Table hover className="align-middle mb-0">
+                                            <thead style={{ 
+                                                backgroundColor: 'rgba(248, 249, 250, 0.9)',
+                                                borderBottom: '2px solid #51cfbd'
+                                            }}>
                                                 <tr>
-                                                    <td colSpan="7" className="text-center py-4">
-                                                        No hay viajeros registrados
-                                                    </td>
+                                                    <th className="py-3 px-4">ID</th>
+                                                    <th className="py-3">Nombre</th>
+                                                    <th className="py-3">Email</th>
+                                                    <th className="py-3">Teléfono</th>
+                                                    <th className="py-3">Estado</th>
+                                                    <th className="py-3">Registro</th>
+                                                    <th className="py-3">Acciones</th>
                                                 </tr>
-                                            ) : (
-                                                viajeros.map((viajero) => (
-                                                    <tr key={viajero.idUsuarios}>
-                                                        <td className="fw-semibold">{viajero.idUsuarios}</td>
-                                                        <td>
-                                                            <div className="fw-medium">{viajero.nombre}</div>
-                                                            <small className="text-muted">ID: {viajero.idUsuarios}</small>
-                                                        </td>
-                                                        <td>{viajero.email}</td>
-                                                        <td>{formatearTelefono(viajero.telefono)}</td>
-                                                        <td>
-                                                            <div>{getEstadoBadge(viajero.estado)}</div>
-                                                            <small className="text-muted">
-                                                                {getEstadoTexto(viajero.estado)}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div>{formatearFecha(viajero.creadoEn)}</div>
-                                                            {viajero.actualizadoEn && viajero.actualizadoEn !== viajero.creadoEn && (
-                                                                <small className="text-muted">
-                                                                    Actualizado: {formatearFecha(viajero.actualizadoEn)}
-                                                                </small>
-                                                            )}
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex flex-column gap-2">
-                                                                <Button
-                                                                    variant={getBotonVariant(viajero.estado)}
-                                                                    size="sm"
-                                                                    onClick={() => cambiarEstadoViajero(viajero.idUsuarios, viajero.estado)}
-                                                                    className="w-100"
-                                                                >
-                                                                    {getBotonTexto(viajero.estado)}
-                                                                </Button>
-                                                                
-                                                                {puedeSuspender(viajero.estado) && (
-                                                                    <Button
-                                                                        variant="outline-warning"
-                                                                        size="sm"
-                                                                        onClick={() => suspenderViajero(viajero.idUsuarios)}
-                                                                        className="w-100"
-                                                                    >
-                                                                        Suspender
-                                                                    </Button>
-                                                                )}
-                                                            </div>
+                                            </thead>
+                                            <tbody style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+                                                {viajeros.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="7" className="text-center py-4 text-muted">
+                                                            No hay viajeros registrados
                                                         </td>
                                                     </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </Table>
+                                                ) : (
+                                                    viajeros.map((viajero, index) => (
+                                                        <tr key={viajero.idUsuarios} style={{
+                                                            backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
+                                                        }}>
+                                                            <td className="fw-semibold px-4">{viajero.idUsuarios}</td>
+                                                            <td>
+                                                                <div className="fw-medium">{viajero.nombre}</div>
+                                                                <small className="text-muted">ID: {viajero.idUsuarios}</small>
+                                                            </td>
+                                                            <td>{viajero.email}</td>
+                                                            <td>{formatearTelefono(viajero.telefono)}</td>
+                                                            <td>
+                                                                <div>{getEstadoBadge(viajero.estado)}</div>
+                                                            </td>
+                                                            <td>
+                                                                <div>{formatearFecha(viajero.creadoEn)}</div>
+                                                                {viajero.actualizadoEn && viajero.actualizadoEn !== viajero.creadoEn && (
+                                                                    <small className="text-muted d-block">
+                                                                        Actualizado: {formatearFecha(viajero.actualizadoEn)}
+                                                                    </small>
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <div className="d-flex flex-column gap-2" style={{ minWidth: '120px' }}>
+                                                                    <Button
+                                                                        variant={getBotonVariant(viajero.estado)}
+                                                                        size="sm"
+                                                                        onClick={() => cambiarEstadoViajero(viajero.idUsuarios, viajero.estado)}
+                                                                        className="w-100"
+                                                                        style={{
+                                                                            transition: 'all 0.2s',
+                                                                            fontWeight: '500'
+                                                                        }}
+                                                                    >
+                                                                        {getBotonTexto(viajero.estado)}
+                                                                    </Button>
+                                                                    
+                                                                    {puedeSuspender(viajero.estado) && (
+                                                                        <Button
+                                                                            variant="outline-warning"
+                                                                            size="sm"
+                                                                            onClick={() => suspenderViajero(viajero.idUsuarios)}
+                                                                            className="w-100"
+                                                                            style={{
+                                                                                transition: 'all 0.2s',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            Suspender
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                    </div>
                                 )}
                             </Card.Body>
                         </Card>
@@ -341,4 +364,4 @@ function AdminViajeros() {
     );
 }
 
-export default AdminViajeros;   
+export default AdminViajeros;

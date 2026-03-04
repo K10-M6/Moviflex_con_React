@@ -140,7 +140,7 @@ function AdminDocumentos() {
             case 'PENDIENTE':
                 return <Badge bg="warning" text="dark" className="px-3 py-1">Pendiente</Badge>;
             default:
-                return <Badge bg="light" text="dark" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
+                return <Badge bg="secondary" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
         }
     }
 
@@ -175,7 +175,7 @@ function AdminDocumentos() {
             case 'APROBADO':
                 return "outline-danger";
             case 'RECHAZADO':
-                return "outline-warning";
+                return "outline-success";
             case 'PENDIENTE':
                 return "outline-success";
             default:
@@ -239,38 +239,45 @@ function AdminDocumentos() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* Capa de legibilidad */}
-            <div style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                backgroundColor: 'rgba(255, 255, 255, 0.92)', 
-                zIndex: 0 
-            }} />
+            {/* OVERLAY ELIMINADO - ahora se ve la imagen de fondo directamente */}
 
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
+                        <Card className="border-0 shadow" style={{ 
+                            borderRadius: '16px', 
+                            borderLeft: '6px solid #51cfbd',
+                            overflow: 'hidden',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}>
                             <Card.Body className="p-4">
-                                <h1 className="display-5 fw-bold mb-0" style={{ color: '#333' }}>Gestión de Documentos</h1>
-                                <p className="text-muted mb-0 small">Revisa y administra los documentos subidos por los usuarios</p>
+                                <h1 className="display-5 fw-bold mb-0" style={{ 
+                                    color: '#2c3e50',
+                                    letterSpacing: '-0.02em'
+                                }}>
+                                    Gestión de Documentos
+                                </h1>
+                                <p className="text-muted mb-0 small">
+                                    <span style={{ color: '#51cfbd' }}>●</span> Revisa y administra los documentos subidos por los usuarios
+                                </p>
                             </Card.Body>
                         </Card>
 
                         <div className="d-flex gap-3 mt-3 flex-wrap">
-                            <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
+                            <Badge bg="primary" className="px-3 py-2" style={{ 
+                                backgroundColor: '#51cfbd', 
+                                border: 'none',
+                                fontSize: '0.9rem'
+                            }}>
                                 Total: {documentos.length}
                             </Badge>
-                            <Badge bg="success" className="px-3 py-2">
+                            <Badge bg="success" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Aprobados: {documentos.filter(d => d.estado === 'APROBADO').length}
                             </Badge>
-                            <Badge bg="warning" text="dark" className="px-3 py-2">
+                            <Badge bg="warning" text="dark" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Pendientes: {documentos.filter(d => d.estado === 'PENDIENTE').length}
                             </Badge>
-                            <Badge bg="danger" className="px-3 py-2">
+                            <Badge bg="danger" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Rechazados: {documentos.filter(d => d.estado === 'RECHAZADO').length}
                             </Badge>
                         </div>
@@ -280,7 +287,7 @@ function AdminDocumentos() {
                 {error && (
                     <Row className="mb-3">
                         <Col>
-                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow-sm">
+                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow">
                                 <strong>Error:</strong> {error}
                             </Alert>
                         </Col>
@@ -289,93 +296,119 @@ function AdminDocumentos() {
 
                 <Row>
                     <Col>
-                        <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
-                            <Card.Body>
+                        <Card className="shadow border-0" style={{ 
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}>
+                            <Card.Body className="p-0">
                                 {loading ? (
                                     <div className="text-center py-5">
-                                        <Spinner animation="border" style={{ color: '#54c7b8' }} />
+                                        <Spinner animation="border" style={{ color: '#51cfbd' }} />
                                         <p className="mt-3 text-muted">Cargando documentos...</p>
                                     </div>
                                 ) : (
-                                    <Table responsive hover className="align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Usuario</th>
-                                                <th>Tipo Documento</th>
-                                                <th>Documento</th>
-                                                <th>Estado</th>
-                                                <th>Fecha Subida</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {documentos.length === 0 ? (
+                                    <div className="table-responsive">
+                                        <Table hover className="align-middle mb-0">
+                                            <thead style={{ 
+                                                backgroundColor: 'rgba(248, 249, 250, 0.9)',
+                                                borderBottom: '2px solid #51cfbd'
+                                            }}>
                                                 <tr>
-                                                    <td colSpan="7" className="text-center py-4">
-                                                        No hay documentos registrados
-                                                    </td>
+                                                    <th className="py-3 px-4">ID</th>
+                                                    <th className="py-3">Usuario</th>
+                                                    <th className="py-3">Tipo Documento</th>
+                                                    <th className="py-3">Documento</th>
+                                                    <th className="py-3">Estado</th>
+                                                    <th className="py-3">Fecha Subida</th>
+                                                    <th className="py-3">Acciones</th>
                                                 </tr>
-                                            ) : (
-                                                documentos.map((documento) => (
-                                                    <tr key={documento.idDocumentacion}>
-                                                        <td className="fw-semibold">{documento.idDocumentacion}</td>
-                                                        <td>
-                                                            <div className="fw-medium">
-                                                                {obtenerNombreUsuario(documento.idUsuario)}
-                                                            </div>
-                                                            <small className="text-muted">
-                                                                ID Usuario: {documento.idUsuario}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div className="fw-medium">
-                                                                {documento.tipoDocumento || documento.tipo}
-                                                            </div>
-                                                            <div className="mt-1">
-                                                                {getTipoDocumentoBadge(documento.tipoDocumento || documento.tipo)}
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div>
-                                                                <strong>N°:</strong> {documento.numeroDocumento || documento.numero || "-"}
-                                                            </div>
-                                                            <div className="d-flex align-items-center gap-2 mt-1">
-                                                                <Button
-                                                                    variant="outline-primary"
-                                                                    size="sm"
-                                                                    onClick={() => handleVerImagen(documento)}
-                                                                >
-                                                                    Ver Imagen
-                                                                </Button>
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div>{getEstadoBadge(documento.estado)}</div>
-                                                            <small className="text-muted">
-                                                                {getEstadoTexto(documento.estado)}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div>{formatearFecha(documento.fechaSubida || documento.creadoEn)}</div>
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex flex-column gap-2">
-                                                                <Button
-                                                                    variant={getBotonVariant(documento.estado)}
-                                                                    size="sm"
-                                                                    onClick={() => cambiarEstadoDocumento(documento.idDocumentacion, documento.estado)}
-                                                                    className="w-100"
-                                                                >
-                                                                    {getBotonTexto(documento.estado)}
-                                                                </Button>
-                                                            </div>
+                                            </thead>
+                                            <tbody style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+                                                {documentos.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="7" className="text-center py-4 text-muted">
+                                                            No hay documentos registrados
                                                         </td>
                                                     </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </Table>
+                                                ) : (
+                                                    documentos.map((documento, index) => (
+                                                        <tr key={documento.idDocumentacion} style={{
+                                                            backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
+                                                        }}>
+                                                            <td className="fw-semibold px-4">{documento.idDocumentacion}</td>
+                                                            <td>
+                                                                <div className="fw-medium">
+                                                                    {obtenerNombreUsuario(documento.idUsuario)}
+                                                                </div>
+                                                                <small className="text-muted">
+                                                                    ID: {documento.idUsuario}
+                                                                </small>
+                                                            </td>
+                                                            <td>
+                                                                <div className="fw-medium">
+                                                                    {documento.tipoDocumento || documento.tipo}
+                                                                </div>
+                                                                <div className="mt-1">
+                                                                    {getTipoDocumentoBadge(documento.tipoDocumento || documento.tipo)}
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div>
+                                                                    <strong>N°:</strong> {documento.numeroDocumento || documento.numero || "-"}
+                                                                </div>
+                                                                <div className="d-flex align-items-center gap-2 mt-2">
+                                                                    <Button
+                                                                        variant="outline-primary"
+                                                                        size="sm"
+                                                                        onClick={() => handleVerImagen(documento)}
+                                                                        style={{
+                                                                            transition: 'all 0.2s',
+                                                                            fontWeight: '500',
+                                                                            borderColor: '#51cfbd',
+                                                                            color: '#51cfbd'
+                                                                        }}
+                                                                        onMouseEnter={(e) => {
+                                                                            e.target.style.backgroundColor = '#51cfbd';
+                                                                            e.target.style.color = 'white';
+                                                                        }}
+                                                                        onMouseLeave={(e) => {
+                                                                            e.target.style.backgroundColor = 'transparent';
+                                                                            e.target.style.color = '#51cfbd';
+                                                                        }}
+                                                                    >
+                                                                        Ver Imagen
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div>{getEstadoBadge(documento.estado)}</div>
+                                                            </td>
+                                                            <td>
+                                                                <div>{formatearFecha(documento.fechaSubida || documento.creadoEn)}</div>
+                                                            </td>
+                                                            <td>
+                                                                <div className="d-flex flex-column gap-2" style={{ minWidth: '100px' }}>
+                                                                    <Button
+                                                                        variant={getBotonVariant(documento.estado)}
+                                                                        size="sm"
+                                                                        onClick={() => cambiarEstadoDocumento(documento.idDocumentacion, documento.estado)}
+                                                                        className="w-100"
+                                                                        style={{
+                                                                            transition: 'all 0.2s',
+                                                                            fontWeight: '500'
+                                                                        }}
+                                                                    >
+                                                                        {getBotonTexto(documento.estado)}
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                    </div>
                                 )}
                             </Card.Body>
                         </Card>
@@ -383,36 +416,62 @@ function AdminDocumentos() {
                 </Row>
             </Container>
 
-            {/* Modal para ver imagen */}
-            <Modal show={showImageModal} onHide={handleCloseModal} size="lg" centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>
+            {/* Modal para ver imagen - con estilo mejorado */}
+            <Modal 
+                show={showImageModal} 
+                onHide={handleCloseModal} 
+                size="lg" 
+                centered
+                style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)'
+                }}
+            >
+                <Modal.Header 
+                    closeButton 
+                    style={{ 
+                        borderBottom: '2px solid #51cfbd',
+                        backgroundColor: 'rgba(255, 255, 255, 0.98)'
+                    }}
+                >
+                    <Modal.Title style={{ color: '#2c3e50' }}>
                         {selectedDocumento && (
                             <>
-                                Documento: {selectedDocumento.tipo || selectedDocumento.tipoDocumento} -
-                                Usuario: {obtenerNombreUsuario(selectedDocumento.idUsuario)}
+                                <span style={{ color: '#51cfbd' }}>📄</span> {selectedDocumento.tipo || selectedDocumento.tipoDocumento} - 
+                                <span className="ms-1">{obtenerNombreUsuario(selectedDocumento.idUsuario)}</span>
                             </>
                         )}
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body className="text-center">
+                <Modal.Body className="text-center p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
                     {selectedImage ? (
                         <Image
                             src={getImageUrl(selectedDocumento)}
                             alt="Documento"
                             fluid
-                            style={{ maxHeight: '70vh' }}
+                            style={{ 
+                                maxHeight: '70vh',
+                                borderRadius: '8px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            }}
                             onError={(e) => {
                                 e.target.onerror = null;
                                 e.target.src = "https://via.placeholder.com/400x300?text=Error+al+cargar+imagen";
                             }}
                         />
                     ) : (
-                        <p>No hay imagen disponible</p>
+                        <p className="text-muted">No hay imagen disponible</p>
                     )}
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
+                <Modal.Footer style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
+                    <Button 
+                        variant="secondary" 
+                        onClick={handleCloseModal}
+                        style={{
+                            backgroundColor: '#6c757d',
+                            border: 'none',
+                            transition: 'all 0.2s'
+                        }}
+                    >
                         Cerrar
                     </Button>
                 </Modal.Footer>

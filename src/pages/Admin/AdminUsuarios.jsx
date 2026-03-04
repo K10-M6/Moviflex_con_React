@@ -151,13 +151,13 @@ function AdminUsuarios() {
         
         switch (nombre) {
             case "Administrador":
-                return <Badge bg="primary">Administrador</Badge>;
+                return <Badge bg="primary" className="px-3 py-1">Administrador</Badge>;
             case "Conductor":
-                return <Badge bg="info">Conductor</Badge>;
+                return <Badge bg="info" className="px-3 py-1">Conductor</Badge>;
             case "Viajero":
-                return <Badge bg="secondary">Viajero</Badge>;
+                return <Badge bg="secondary" className="px-3 py-1">Viajero</Badge>;
             default:
-                return <Badge bg="warning">{nombre}</Badge>;
+                return <Badge bg="warning" className="px-3 py-1">{nombre}</Badge>;
         }
     }
 
@@ -179,7 +179,7 @@ function AdminUsuarios() {
             case 'SUSPENDIDO':
                 return <Badge bg="warning" text="dark" className="px-3 py-1">Suspendido</Badge>;
             default:
-                return <Badge bg="light" text="dark" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
+                return <Badge bg="secondary" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
         }
     }
 
@@ -235,38 +235,45 @@ function AdminUsuarios() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* Capa de legibilidad */}
-            <div style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                backgroundColor: 'rgba(255, 255, 255, 0.92)', 
-                zIndex: 0 
-            }} />
+            {/* OVERLAY ELIMINADO - ahora se ve la imagen de fondo directamente */}
 
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
+                        <Card className="border-0 shadow" style={{ 
+                            borderRadius: '16px', 
+                            borderLeft: '6px solid #51cfbd',
+                            overflow: 'hidden',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}>
                             <Card.Body className="p-4">
-                                <h1 className="display-5 fw-bold mb-0" style={{ color: '#333' }}>Lista de Usuarios</h1>
-                                <p className="text-muted mb-0 small">Administra los usuarios registrados en la plataforma</p>
+                                <h1 className="display-5 fw-bold mb-0" style={{ 
+                                    color: '#2c3e50',
+                                    letterSpacing: '-0.02em'
+                                }}>
+                                    Lista de Usuarios
+                                </h1>
+                                <p className="text-muted mb-0 small">
+                                    <span style={{ color: '#51cfbd' }}>●</span> Administra los usuarios registrados en la plataforma
+                                </p>
                             </Card.Body>
                         </Card>
                         
                         <div className="d-flex gap-3 mt-3 flex-wrap">
-                            <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
+                            <Badge bg="primary" className="px-3 py-2" style={{ 
+                                backgroundColor: '#51cfbd', 
+                                border: 'none',
+                                fontSize: '0.9rem'
+                            }}>
                                 Total: {usuarios.length}
                             </Badge>
-                            <Badge bg="success" className="px-3 py-2">
+                            <Badge bg="success" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Activos: {usuarios.filter(u => u.estado === 'ACTIVO').length}
                             </Badge>
-                            <Badge bg="danger" className="px-3 py-2">
+                            <Badge bg="danger" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Inactivos: {usuarios.filter(u => u.estado === 'INACTIVO').length}
                             </Badge>
-                            <Badge bg="warning" text="dark" className="px-3 py-2">
+                            <Badge bg="warning" text="dark" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Suspendidos: {usuarios.filter(u => u.estado === 'SUSPENDIDO').length}
                             </Badge>
                         </div>
@@ -276,7 +283,7 @@ function AdminUsuarios() {
                 {error && (
                     <Row className="mb-3">
                         <Col>
-                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow-sm">
+                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow">
                                 <strong>Error:</strong> {error}
                             </Alert>
                         </Col>
@@ -285,85 +292,107 @@ function AdminUsuarios() {
                 
                 <Row>
                     <Col>
-                        <Card className="shadow-sm border-0" style={{ borderRadius: '12px' }}>
-                            <Card.Body>
+                        <Card className="shadow border-0" style={{ 
+                            borderRadius: '16px',
+                            overflow: 'hidden',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+                        }}>
+                            <Card.Body className="p-0">
                                 {loading ? (
                                     <div className="text-center py-5">
-                                        <Spinner animation="border" style={{ color: '#54c7b8' }} />
+                                        <Spinner animation="border" style={{ color: '#51cfbd' }} />
                                         <p className="mt-3 text-muted">Cargando usuarios...</p>
                                     </div>
                                 ) : (
-                                    <Table responsive hover className="align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nombre</th>
-                                                <th>Email</th>
-                                                <th>Teléfono</th>
-                                                <th>Rol</th>
-                                                <th>Estado</th>
-                                                <th>Registro</th>
-                                                <th>Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {usuarios.length === 0 ? (
+                                    <div className="table-responsive">
+                                        <Table hover className="align-middle mb-0">
+                                            <thead style={{ 
+                                                backgroundColor: 'rgba(248, 249, 250, 0.9)',
+                                                borderBottom: '2px solid #51cfbd'
+                                            }}>
                                                 <tr>
-                                                    <td colSpan="8" className="text-center py-4">
-                                                        No hay usuarios registrados
-                                                    </td>
+                                                    <th className="py-3 px-4">ID</th>
+                                                    <th className="py-3">Nombre</th>
+                                                    <th className="py-3">Email</th>
+                                                    <th className="py-3">Teléfono</th>
+                                                    <th className="py-3">Rol</th>
+                                                    <th className="py-3">Estado</th>
+                                                    <th className="py-3">Registro</th>
+                                                    <th className="py-3">Acciones</th>
                                                 </tr>
-                                            ) : (
-                                                usuarios.map((usuario) => (
-                                                    <tr key={usuario.idUsuarios}>
-                                                        <td className="fw-semibold">{usuario.idUsuarios}</td>
-                                                        <td>
-                                                            <div className="fw-medium">{usuario.nombre}</div>
-                                                            <small className="text-muted">ID: {usuario.idUsuarios}</small>
-                                                        </td>
-                                                        <td>{usuario.email}</td>
-                                                        <td>{usuario.telefono || <span className="text-muted">No especificado</span>}</td>
-                                                        <td>{getRolBadge(usuario.idRol, usuario.rol?.nombre)}</td>
-                                                        <td>
-                                                            <div>{getEstadoBadge(usuario.estado)}</div>
-                                                            <small className="text-muted">
-                                                                {getEstadoTexto(usuario.estado)}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div>{formatearFecha(usuario.creadoEn)}</div>
-                                                            <small className="text-muted">
-                                                                ID: {usuario.idUsuarios}
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex flex-column gap-2">
-                                                                <Button
-                                                                    variant={getBotonVariant(usuario.estado)}
-                                                                    size="sm"
-                                                                    onClick={() => cambiarEstadoUsuario(usuario.idUsuarios, usuario.estado)}
-                                                                    className="w-100"
-                                                                >
-                                                                    {getBotonTexto(usuario.estado)}
-                                                                </Button>
-                                                                
-                                                                {puedeSuspender(usuario.estado) && (
-                                                                    <Button
-                                                                        variant="outline-warning"
-                                                                        size="sm"
-                                                                        onClick={() => suspenderUsuario(usuario.idUsuarios)}
-                                                                        className="w-100"
-                                                                    >
-                                                                        Suspender
-                                                                    </Button>
-                                                                )}
-                                                            </div>
+                                            </thead>
+                                            <tbody style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+                                                {usuarios.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan="8" className="text-center py-4 text-muted">
+                                                            No hay usuarios registrados
                                                         </td>
                                                     </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </Table>
+                                                ) : (
+                                                    usuarios.map((usuario, index) => (
+                                                        <tr key={usuario.idUsuarios} style={{
+                                                            backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
+                                                        }}>
+                                                            <td className="fw-semibold px-4">{usuario.idUsuarios}</td>
+                                                            <td>
+                                                                <div className="fw-medium">{usuario.nombre}</div>
+                                                                <small className="text-muted">ID: {usuario.idUsuarios}</small>
+                                                            </td>
+                                                            <td>{usuario.email}</td>
+                                                            <td>
+                                                                {usuario.telefono || (
+                                                                    <span className="text-muted fst-italic">No especificado</span>
+                                                                )}
+                                                            </td>
+                                                            <td>{getRolBadge(usuario.idRol, usuario.rol?.nombre)}</td>
+                                                            <td>
+                                                                <div>{getEstadoBadge(usuario.estado)}</div>
+                                                            </td>
+                                                            <td>
+                                                                <div>{formatearFecha(usuario.creadoEn)}</div>
+                                                                {usuario.actualizadoEn && usuario.actualizadoEn !== usuario.creadoEn && (
+                                                                    <small className="text-muted d-block">
+                                                                        Actualizado: {formatearFecha(usuario.actualizadoEn)}
+                                                                    </small>
+                                                                )}
+                                                            </td>
+                                                            <td>
+                                                                <div className="d-flex flex-column gap-2" style={{ minWidth: '120px' }}>
+                                                                    <Button
+                                                                        variant={getBotonVariant(usuario.estado)}
+                                                                        size="sm"
+                                                                        onClick={() => cambiarEstadoUsuario(usuario.idUsuarios, usuario.estado)}
+                                                                        className="w-100"
+                                                                        style={{
+                                                                            transition: 'all 0.2s',
+                                                                            fontWeight: '500'
+                                                                        }}
+                                                                    >
+                                                                        {getBotonTexto(usuario.estado)}
+                                                                    </Button>
+                                                                    
+                                                                    {puedeSuspender(usuario.estado) && (
+                                                                        <Button
+                                                                            variant="outline-warning"
+                                                                            size="sm"
+                                                                            onClick={() => suspenderUsuario(usuario.idUsuarios)}
+                                                                            className="w-100"
+                                                                            style={{
+                                                                                transition: 'all 0.2s',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            Suspender
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                    </div>
                                 )}
                             </Card.Body>
                         </Card>

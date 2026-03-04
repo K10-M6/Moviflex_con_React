@@ -75,7 +75,7 @@ function HomeBase() {
           <Row className="justify-content-center text-center">
             <Col lg={10}>
                 <h1 className="display-4 fw-bold text-dark mb-3">Conectamos personas. Optimizamos trayectos.</h1>
-                <Button size="lg" style={{background: '#000', border: 'none'}} as={Link} to="/register">Comenzar Ahora</Button>
+                
             </Col>
           </Row>
         </Container>
@@ -101,8 +101,8 @@ function HomeBase() {
         </div>
       </div>
 
-      {/* SECCIÓN ¿CÓMO FUNCIONA? */}
-      <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '80px 0', marginTop: '50px' }}>
+      {/* SECCIÓN ¿CÓMO FUNCIONA? - AGREGADO EL ID AQUÍ */}
+      <div id="como-funciona-seccion" style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '80px 0', marginTop: '50px' }}>
         <Container>
           <Row className="text-center mb-5">
             <Col>
@@ -149,12 +149,12 @@ function HomeBase() {
         </Row>
       </Container>
 
-      {/* SECCIÓN EQUIPO (Actualizada con Verde Menta y ajuste de imagen de Kevin) */}
+      {/* SECCIÓN EQUIPO - CON AJUSTE ESPECÍFICO PARA KEVIN */}
       <Container className="py-5">
         <Row className="justify-content-center">
           <Col lg={10}>
             <div style={{ 
-              backgroundColor: verdeMenta, // Ahora el contenedor es verde menta
+              backgroundColor: verdeMenta,
               borderRadius: '40px',
               overflow: 'hidden',
               boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
@@ -167,18 +167,31 @@ function HomeBase() {
               <Row className="justify-content-center">
                 {autores.map((autor) => (
                   <Col key={autor.id} xs={6} md={4} lg={2} className="text-center mb-4">
-                    <Image 
-                      src={autor.img} 
-                      roundedCircle 
-                      className="mb-2 border border-2 border-white shadow bg-white" 
-                      style={{ 
-                        width: '90px', 
-                        height: '90px', 
-                        objectFit: autor.nombre === "Kevin" ? 'contain' : 'cover', // Ajuste para Kevin
-                        padding: autor.nombre === "Kevin" ? '5px' : '0' // Aleja la imagen de Kevin del borde
-                      }} 
-                    />
-                    <h6 className="fw-bold mb-0 small" style={{color: '#fff'}}>{autor.nombre}</h6>
+                    <div style={{
+                      width: '90px',
+                      height: '90px',
+                      margin: '0 auto',
+                      borderRadius: '50%',
+                      overflow: 'hidden',
+                      backgroundColor: 'white',
+                      border: '2px solid white',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Image 
+                        src={autor.img} 
+                        alt={autor.nombre}
+                        style={{ 
+                          width: autor.nombre === "Kevin" ? '110%' : '100%',
+                          height: autor.nombre === "Kevin" ? '110%' : '100%',
+                          objectFit: autor.nombre === "Kevin" ? 'contain' : 'cover',
+                          transform: autor.nombre === "Kevin" ? 'scale(1.1)' : 'none'
+                        }} 
+                      />
+                    </div>
+                    <h6 className="fw-bold mb-0 small mt-2" style={{color: '#fff'}}>{autor.nombre}</h6>
                     <p style={{ fontSize: '11px', color: '#000', fontWeight: '500' }}>{autor.rol}</p>
                   </Col>
                 ))}
