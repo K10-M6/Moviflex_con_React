@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Button, Image } from 'react-bootstrap';
 import Navbar from '../components/Navbar';
+import { useState } from 'react'; 
 import axios from 'axios';
-import { useState } from 'react';
 
 // --- IMPORTACIÓN DE IMÁGENES ---
 import imagencontacto from '../pages/Imagenes/AutoresContacto.png'; 
