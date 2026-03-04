@@ -1,4 +1,4 @@
-import { useState, useEffect,  useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
 import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaSearch, FaMapMarkerAlt, FaFilter } from "react-icons/fa";
 import {
@@ -48,7 +48,7 @@ const DriverHome = () => {
 
     // Nuevos estados para búsqueda y filtros
     const [busquedaViajes, setBusquedaViajes] = useState("");
-    const [filtroEstado, setFiltroEstado] = useState("TODOS");
+    const [filtroEstado, setFiltroEstado] = useState("FINALIZADO");
     const [viajeSeleccionado, setViajeSeleccionado] = useState(null);
     const [showDetalleViaje, setShowDetalleViaje] = useState(false);
 
@@ -192,11 +192,14 @@ const DriverHome = () => {
                     console.log("Viajes recibidos:", data);
 
                     const viajesData = Array.isArray(data) ? data : [];
-                    
-                    setTodosLosViajes(viajesData);
-                    setViajesRecientes(viajesData.slice(0, 3));
 
-                    const completados = viajesData.filter(v => v.estado === 'FINALIZADO').length;
+                    setTodosLosViajes(viajesData);
+
+                    // Solo mostrar viajes finalizados en la lista de recientes
+                    const viajesCompletados = viajesData.filter(v => v.estado === 'FINALIZADO');
+                    setViajesRecientes(viajesCompletados.slice(0, 3));
+
+                    const completados = viajesCompletados.length;
                     const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
                     const enCurso = viajesData.filter(v => v.estado === 'EN_CURSO').length;
 
@@ -231,13 +234,13 @@ const DriverHome = () => {
         return viajes.filter(viaje => {
             // Búsqueda por texto
             const textoBusqueda = busquedaViajes.toLowerCase();
-            const coincideBusqueda = textoBusqueda === '' || 
+            const coincideBusqueda = textoBusqueda === '' ||
                 viaje.idViajes.toString().includes(textoBusqueda) ||
                 (viaje.ruta?.nombre?.toLowerCase().includes(textoBusqueda));
-            
+
             // Filtro por estado
             const coincideEstado = filtroEstado === 'TODOS' || viaje.estado === filtroEstado;
-            
+
             return coincideBusqueda && coincideEstado;
         });
     };
@@ -531,7 +534,7 @@ const DriverHome = () => {
                 zIndex: 0
             }} />
 
-            <Navbar transparent={true}/>
+            <Navbar transparent={true} />
 
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
@@ -960,9 +963,9 @@ const DriverHome = () => {
                                     <>
                                         <ListGroup variant="flush">
                                             {viajesRecientes.map((viaje) => (
-                                                <ListGroup.Item 
-                                                    key={viaje.idViajes} 
-                                                    className="px-0 border-0 py-3" 
+                                                <ListGroup.Item
+                                                    key={viaje.idViajes}
+                                                    className="px-0 border-0 py-3"
                                                     style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
                                                     onClick={() => {
                                                         setViajeSeleccionado(viaje);
@@ -1040,7 +1043,7 @@ const DriverHome = () => {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1rem 1.5rem' }}>
-                    
+
                     {/* Barra de búsqueda y filtros */}
                     <Row className="mb-4 g-3">
                         <Col md={6}>
@@ -1111,9 +1114,9 @@ const DriverHome = () => {
                     ) : (
                         <ListGroup variant="flush">
                             {viajesFiltrados.map((viaje) => (
-                                <ListGroup.Item 
-                                    key={viaje.idViajes} 
-                                    className="py-3 border-0" 
+                                <ListGroup.Item
+                                    key={viaje.idViajes}
+                                    className="py-3 border-0"
                                     style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
                                     onClick={() => {
                                         setViajeSeleccionado(viaje);
