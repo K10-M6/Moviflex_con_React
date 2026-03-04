@@ -9,13 +9,42 @@ import { useSocket } from "../pages/context/SocketContext";
 import Logo from "../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png";
 import fondo from "../pages/Imagenes/AutoresContacto.png";
 
+// Helper para sessionStorage
+const STORAGE_KEY = "admin_badge_counts";
+const loadBadges = () => {
+  try {
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+};
+const saveBadges = (badges) => {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(badges)); } catch { }
+};
+
 function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { usuario, token, logout } = useAuth();
   const { socket } = useSocket();
-  const [pendingCount, setPendingCount] = useState(0);
 
+  // Badge counters per section
+  const [badges, setBadges] = useState(() => {
+    const saved = loadBadges();
+    return {
+      viajeros: saved.viajeros || 0,
+      conductores: saved.conductores || 0,
+      usuarios: saved.usuarios || 0,
+      documentos: saved.documentos || 0,
+      solicitudes: saved.solicitudes || 0,
+    };
+  });
+
+  // Persist badges to sessionStorage
+  useEffect(() => {
+    saveBadges(badges);
+  }, [badges]);
+
+  // Fetch initial solicitudes pendientes count
   const fetchPendingCount = useCallback(async () => {
     if (usuario?.rol === 'ADMIN' && token) {
       try {
@@ -24,7 +53,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
         });
         if (response.ok) {
           const data = await response.json();
-          setPendingCount(data.count);
+          setBadges(prev => ({ ...prev, solicitudes: data.count || 0 }));
         }
       } catch (err) {
         console.error("Error fetching pending requests count:", err);
@@ -34,45 +63,89 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
 
   useEffect(() => {
     fetchPendingCount();
+  }, [fetchPendingCount]);
 
-    if (socket && usuario?.rol === 'ADMIN') {
-      const handleNewRequest = () => setPendingCount(prev => prev + 1);
-      const handleRequestProcessed = () => fetchPendingCount();
+  // Socket event listeners
+  useEffect(() => {
+    if (socket && (usuario?.rol === 'ADMIN' || usuario?.rol?.nombre === 'ADMIN' || usuario?.idRol === 1)) {
 
+      // Nuevo usuario registrado
+      const handleNewUser = (data) => {
+        console.log("[SIDEBAR] new_user_registration:", data);
+        const rol = (data.rol || '').toUpperCase();
+        setBadges(prev => {
+          const updated = { ...prev, usuarios: prev.usuarios + 1 };
+          if (rol === 'CONDUCTOR' || rol === 'DRIVER') {
+            updated.conductores = prev.conductores + 1;
+          } else if (rol === 'PASAJERO' || rol === 'VIAJERO' || rol === 'PASSENGER') {
+            updated.viajeros = prev.viajeros + 1;
+          }
+          return updated;
+        });
+      };
+
+      // Nuevo documento subido
+      const handleNewDocument = (data) => {
+        console.log("[SIDEBAR] new_document_uploaded:", data);
+        setBadges(prev => ({ ...prev, documentos: prev.documentos + 1 }));
+      };
+
+      // Nueva solicitud de cambio de vehículo
+      const handleNewRequest = () => {
+        console.log("[SIDEBAR] new_vehicle_change_request");
+        setBadges(prev => ({ ...prev, solicitudes: prev.solicitudes + 1 }));
+      };
+
+      // Solicitud procesada → refetch count
+      const handleRequestProcessed = () => {
+        console.log("[SIDEBAR] vehicle_change_processed");
+        fetchPendingCount();
+      };
+
+      socket.on("new_user_registration", handleNewUser);
+      socket.on("new_document_uploaded", handleNewDocument);
       socket.on("new_vehicle_change_request", handleNewRequest);
       socket.on("vehicle_change_processed", handleRequestProcessed);
 
       return () => {
+        socket.off("new_user_registration", handleNewUser);
+        socket.off("new_document_uploaded", handleNewDocument);
         socket.off("new_vehicle_change_request", handleNewRequest);
         socket.off("vehicle_change_processed", handleRequestProcessed);
       };
     }
   }, [socket, usuario, fetchPendingCount]);
 
-  const handleNavigation = (path) => {
+  // Clear badge when navigating to a section
+  const handleNavigation = (path, badgeKey) => {
     navigate(path);
+    if (badgeKey) {
+      setBadges(prev => ({ ...prev, [badgeKey]: 0 }));
+    }
     if (window.innerWidth < 768) {
       OpenSidebar();
     }
   };
 
-
   const menuItems = [
-    { icon: <BsGrid1X2Fill />, label: "Dashboard", path: "/dashboard/home" },
-    { icon: <BsPeopleFill />, label: "Viajeros", path: "/admin/viajeros" },
-    { icon: <BsFillGrid3X3GapFill />, label: "Conductores", path: "/admin/conductores" },
-    { icon: <BsListCheck />, label: "Usuarios", path: "/admin/usuarios" },
-    { icon: <BsMenuButtonWideFill />, label: "Vehículos", path: "/admin/vehiculos" },
-    { icon: <BsFileEarmarkTextFill />, label: "Documentos", path: "/admin/documentos" },
-    {
-      icon: <BsArrowRepeat />,
-      label: "Solicitudes",
-      path: "/admin/solicitudes-vehiculos",
-      badge: pendingCount > 0 ? pendingCount : null
-    }
+    { icon: <BsGrid1X2Fill />, label: "Dashboard", path: "/dashboard/home", badgeKey: null },
+    { icon: <BsPeopleFill />, label: "Viajeros", path: "/admin/viajeros", badgeKey: "viajeros" },
+    { icon: <BsFillGrid3X3GapFill />, label: "Conductores", path: "/admin/conductores", badgeKey: "conductores" },
+    { icon: <BsListCheck />, label: "Usuarios", path: "/admin/usuarios", badgeKey: "usuarios" },
+    { icon: <BsMenuButtonWideFill />, label: "Vehículos", path: "/admin/vehiculos", badgeKey: null },
+    { icon: <BsFileEarmarkTextFill />, label: "Documentos", path: "/admin/documentos", badgeKey: "documentos" },
+    { icon: <BsArrowRepeat />, label: "Solicitudes", path: "/admin/solicitudes-vehiculos", badgeKey: "solicitudes" }
   ];
 
   const isActive = (path) => location.pathname === path;
+
+  // Clear badge automatically when user is already on that page
+  useEffect(() => {
+    const currentItem = menuItems.find(item => item.path === location.pathname);
+    if (currentItem?.badgeKey && badges[currentItem.badgeKey] > 0) {
+      setBadges(prev => ({ ...prev, [currentItem.badgeKey]: 0 }));
+    }
+  }, [location.pathname]);
 
   return (
     <>
@@ -126,30 +199,43 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
 
 
         <ul className="nav flex-column p-3 mt-3">
-          {menuItems.map((item, index) => (
-            <li className="nav-item mb-2" key={index}>
-              <button
-                className="nav-link d-flex align-items-center p-2 rounded-3 border-0 w-100 text-start position-relative"
-                onClick={() => handleNavigation(item.path)}
-                style={{
-                  background: isActive(item.path) ? 'rgba(84, 199, 184, 0.1)' : 'transparent',
-                  color: isActive(item.path) ? '#54c7b8' : '#666',
-                  fontSize: '0.9rem',
-                  borderLeft: isActive(item.path) ? '4px solid #54c7b8' : '4px solid transparent'
-                }}
-              >
-                <span className="me-3" style={{ fontSize: '1.2rem' }}>
-                  {item.icon}
-                </span>
-                <span className={isActive(item.path) ? 'fw-bold' : ''}>{item.label}</span>
-                {item.badge && (
-                  <span className="position-absolute end-0 me-3 badge rounded-pill bg-danger" style={{ fontSize: '0.7rem' }}>
-                    {item.badge}
+          {menuItems.map((item, index) => {
+            const badgeCount = item.badgeKey ? (badges[item.badgeKey] || 0) : 0;
+            return (
+              <li className="nav-item mb-2" key={index}>
+                <button
+                  className="nav-link d-flex align-items-center p-2 rounded-3 border-0 w-100 text-start position-relative"
+                  onClick={() => handleNavigation(item.path, item.badgeKey)}
+                  style={{
+                    background: isActive(item.path) ? 'rgba(84, 199, 184, 0.1)' : 'transparent',
+                    color: isActive(item.path) ? '#54c7b8' : '#666',
+                    fontSize: '0.9rem',
+                    borderLeft: isActive(item.path) ? '4px solid #54c7b8' : '4px solid transparent'
+                  }}
+                >
+                  <span className="me-3" style={{ fontSize: '1.2rem' }}>
+                    {item.icon}
                   </span>
-                )}
-              </button>
-            </li>
-          ))}
+                  <span className={isActive(item.path) ? 'fw-bold' : ''}>{item.label}</span>
+                  {badgeCount > 0 && (
+                    <span
+                      className="position-absolute end-0 me-3 badge rounded-pill"
+                      style={{
+                        fontSize: '0.65rem',
+                        backgroundColor: '#ff4757',
+                        color: 'white',
+                        minWidth: '20px',
+                        padding: '3px 6px',
+                        animation: 'badgePulse 2s infinite'
+                      }}
+                    >
+                      {badgeCount > 99 ? '99+' : badgeCount}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="p-2 mt-auto border-top aling-items-center d-flex justify-content-center">
@@ -170,7 +256,13 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
         </div>
       </aside>
 
-
+      <style>{`
+        @keyframes badgePulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.15); }
+          100% { transform: scale(1); }
+        }
+      `}</style>
     </>
   );
 }

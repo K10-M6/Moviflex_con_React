@@ -30,6 +30,14 @@ export const SocketProvider = ({ children }) => {
                     });
                 });
 
+                newSocket.on("new_document_uploaded", (data) => {
+                    toast.success(`📄 ${data.nombre} ha subido documentación`, {
+                        duration: 4000,
+                        position: 'top-right',
+                        icon: '📄'
+                    });
+                });
+
                 newSocket.on("user_connected", (data) => {
                     toast.success(`${data.nombre} se ha conectado`, {
                         duration: 3000,
