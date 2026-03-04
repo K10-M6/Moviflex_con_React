@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Button, Image } from 'react-bootstrap';
 import Navbar from '../components/Navbar';
+import axios from 'axios';
+import { useState } from 'react';
 
 // --- IMPORTACIÓN DE IMÁGENES ---
 import imagencontacto from '../pages/Imagenes/AutoresContacto.png'; 
@@ -17,6 +19,55 @@ import JuanOcampo from './Autores/JuanOcampo.PNG';
 import Kevin from './Autores/Kevin.PNG';
 
 function HomeBase() {
+    // =======================
+  // ESTADOS FORMULARIO
+  // =======================
+
+  const [formData, setFormData] = useState({
+    nombre: '',
+    correo: '',
+    tipo: '',
+    mensaje: ''
+  });
+
+  const [mensajeEstado, setMensajeEstado] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMensajeEstado('');
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        `https://backendmovi-production-c657.up.railway.app/api/contacto/`,
+        formData
+      );
+
+      setMensajeEstado(response.data.mensaje);
+
+      setFormData({
+        nombre: '',
+        correo: '',
+        tipo: '',
+        mensaje: ''
+      });
+
+    } catch (error) {
+      console.error(error);
+      setMensajeEstado('Error al enviar el mensaje');
+    }
+
+    setLoading(false);
+  };
+
   const autores = [
     { id: 1, nombre: "Arlys", rol: "Backend", img: Arlys },
     { id: 2, nombre: "Carlos", rol: "Desarrollador Móvil", img: Carlos },
@@ -222,6 +273,113 @@ function HomeBase() {
           </Col>
         </Row>
       </Container>
+      {/* SECCIÓN CONTACTO */}
+<Container className="py-5">
+  <Row className="justify-content-center">
+    <Col lg={8}>
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '30px',
+        padding: '50px',
+        boxShadow: '0 15px 35px rgba(0,0,0,0.1)'
+      }}>
+        <div className="text-center mb-4">
+          <h2 className="fw-bold" style={{ color: '#113d69' }}>
+            Contáctanos
+          </h2>
+          <p style={{ color: '#113d69' }}>
+            ¿Tienes dudas o sugerencias?
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+
+          <Row className="mb-3">
+            <Col md={6}>
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Nombre completo"
+                value={formData.nombre}
+                onChange={handleChange}
+                className="form-control"
+                required
+              />
+            </Col>
+
+            <Col md={6}>
+              <input
+                type="email"
+                name="correo"
+                placeholder="Correo electrónico"
+                value={formData.correo}
+                onChange={handleChange}
+                className="form-control"
+                required
+              />
+            </Col>
+          </Row>
+
+          <div className="mb-3">
+            <select
+              name="tipo"
+              value={formData.tipo}
+              onChange={handleChange}
+              className="form-select"
+              required
+            >
+              <option value="">Seleccione tipo</option>
+              <option value="Soporte">Soporte</option>
+              <option value="Sugerencia">Sugerencia</option>
+              <option value="Reclamo">Reclamo</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div className="mb-4">
+            <textarea
+              name="mensaje"
+              rows="4"
+              placeholder="Escribe tu mensaje..."
+              value={formData.mensaje}
+              onChange={handleChange}
+              className="form-control"
+              required
+            />
+          </div>
+
+          <div className="text-center">
+            <Button
+              type="submit"
+              style={{
+                backgroundColor: verdeMenta,
+                border: 'none',
+                padding: '10px 40px',
+                borderRadius: '30px'
+              }}
+              disabled={loading}
+            >
+              {loading ? 'Enviando...' : 'Enviar Mensaje'}
+            </Button>
+          </div>
+
+          {mensajeEstado && (
+            <p className="text-center mt-4 fw-semibold"
+              style={{
+                color: mensajeEstado.includes('Error')
+                  ? 'red'
+                  : verdeMenta
+              }}>
+              {mensajeEstado}
+            </p>
+          )}
+
+        </form>
+      </div>
+    </Col>
+  </Row>
+</Container>
+
 
       <footer className="py-5 text-white text-center mt-auto" style={{ background: '#cccbd2af' }}>
         <Container>
