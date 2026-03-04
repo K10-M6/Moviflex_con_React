@@ -341,9 +341,12 @@ function AdminConductores() {
                                         </InputGroup.Text>
                                         <Form.Control
                                             type="text"
-                                            placeholder="Buscar por nombre, email, placa o identificación..."
+                                            placeholder="Buscar por correo electrónico..."
                                             value={busqueda}
-                                            onChange={(e) => setBusqueda(e.target.value)}
+                                            onChange={(e) => {
+                                                setBusqueda(e.target.value);
+                                                setPaginaActual(1);
+                                            }}
                                             className="border-start-0"
                                         />
                                         {busqueda && (
@@ -364,7 +367,6 @@ function AdminConductores() {
                         </Card>
 
                         <div className="d-flex gap-3 mt-3 flex-wrap">
-
                             <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
                                 Total: {conductores.length}
                             </Badge>
@@ -382,26 +384,6 @@ function AdminConductores() {
                             <Badge bg="warning" text="dark" className="px-3 py-2">
                                 Suspendidos: {conductores.filter(c => c.estado === 'SUSPENDIDO').length}
                             </Badge>
-                        </div>
-
-                        <div className="mt-4">
-                            <input
-                                type="text"
-                                className="form-control form-control-lg"
-                                placeholder="Buscar por correo electrónico..."
-                                value={busqueda}
-                                onChange={(e) => {
-                                    setBusqueda(e.target.value);
-                                    setPaginaActual(1);
-                                }}
-                                style={{
-                                    borderRadius: '10px',
-                                    border: '2px solid #e0e0e0',
-                                    padding: '12px 20px',
-                                    fontSize: '1rem',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-                                }}
-                            />
                         </div>
                     </Col>
                 </Row>
