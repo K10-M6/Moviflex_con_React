@@ -13,14 +13,17 @@ import imagencontacto from "../Imagenes/AutoresContacto.png";
 const UserHome = () => {
     const { usuario, token } = useAuth();
     const navigate = useNavigate();
-    const brandColor = "#56bca7";
+    
+    // Colores exactos del DriverProfile
+    const brandColor = "#124c83"; // Azul oscuro del DriverProfile
+    const accentColor = "#54c7b8"; // Verde turquesa de los botones
     const darkBorder = "#1a1a1a";
 
     const cardStyle = {
-        background: "rgba(255, 255, 255, 0.85)",
+        background: "rgba(255, 255, 255, 0.95)",
         borderRadius: '16px',
-        border: `1.5px solid ${darkBorder}`,
-        boxShadow: "4px 4px 0px rgba(0,0,0,0.08)",
+        border: 'none',
+        boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
         overflow: "hidden"
     };
 
@@ -216,44 +219,44 @@ const UserHome = () => {
     };
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ 
+            minHeight: '100vh', 
+            backgroundImage: `url(${imagencontacto})`, 
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            position: 'relative', 
+            overflowX: 'hidden' 
+        }}>
+            {/* Overlay blanco semitransparente como en DriverProfile */}
+            <div style={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                backgroundColor: 'rgba(255, 255, 255, 0.65)', 
+                zIndex: 0 
+            }} />
 
-            <div style={{ backgroundColor: brandColor, borderBottom: `1.5px solid ${darkBorder}`, zIndex: 10 }}>
-                <Navbar />
-            </div>
-            <div style={{
-                flex: 1,
-                backgroundImage: `url(${imagencontacto})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
-                position: 'relative',
-                padding: '40px 0'
-            }}>
-
-                <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(255, 255, 255, 0.6)',
-                    zIndex: 1
-                }} />
-
-                <Container style={{ position: 'relative', zIndex: 2 }}>
-                    <Card className="mb-4" style={cardStyle}>
+            <div style={{ position: 'relative', zIndex: 2 }}>
+                {/* Navbar con fondo transparente como en DriverProfile */}
+                <Navbar transparent={true}/>
+                
+                <Container className="py-5">
+                    {/* Tarjeta de bienvenida - estilo DriverProfile */}
+                    <Card className="mb-4 border-0 rounded-4 shadow">
                         <Card.Body className="p-4 d-flex justify-content-between align-items-center">
                             <div>
-                                <h2 className="fw-bold mb-0" style={{ color: darkBorder }}>
-                                    ¡Bienvenido, <span style={{ color: brandColor }}>{usuario?.nombre?.split(' ')[0] || 'Usuario'}</span>!
+                                <h2 className="fw-bold mb-0" style={{ color: brandColor }}>
+                                    ¡Bienvenido, <span style={{ color: accentColor }}>{usuario?.nombre?.split(' ')[0] || 'Usuario'}</span>!
                                 </h2>
                                 <p className="text-muted mb-0">Explora y gestiona tus viajes como pasajero</p>
                             </div>
                             <div className="d-flex align-items-center gap-3">
                                 <div className="text-end d-none d-md-block">
                                     <span className="small text-uppercase fw-bold text-muted d-block">Gastado {periodo}</span>
-                                    <h3 className="fw-bold mb-0" style={{ color: brandColor }}>
+                                    <h3 className="fw-bold mb-0" style={{ color: accentColor }}>
                                         {formatearMoneda(statsAvanzadas.gastos.total)}
                                     </h3>
                                 </div>
@@ -262,50 +265,66 @@ const UserHome = () => {
                                         bg={periodo === 'diario' ? 'primary' : 'light'}
                                         text={periodo === 'diario' ? 'white' : 'dark'}
                                         onClick={() => setPeriodo('diario')}
-                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'diario' ? brandColor : '' }}
+                                        style={{ 
+                                            cursor: 'pointer', 
+                                            backgroundColor: periodo === 'diario' ? accentColor : '',
+                                            color: periodo === 'diario' ? 'white' : '#666'
+                                        }}
+                                        className="px-3 py-2"
                                     >Día</Badge>
                                     <Badge
                                         bg={periodo === 'mensual' ? 'primary' : 'light'}
                                         text={periodo === 'mensual' ? 'white' : 'dark'}
                                         onClick={() => setPeriodo('mensual')}
-                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'mensual' ? brandColor : '' }}
+                                        style={{ 
+                                            cursor: 'pointer', 
+                                            backgroundColor: periodo === 'mensual' ? accentColor : '',
+                                            color: periodo === 'mensual' ? 'white' : '#666'
+                                        }}
+                                        className="px-3 py-2"
                                     >Mes</Badge>
                                     <Badge
                                         bg={periodo === 'anual' ? 'primary' : 'light'}
                                         text={periodo === 'anual' ? 'white' : 'dark'}
                                         onClick={() => setPeriodo('anual')}
-                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'anual' ? brandColor : '' }}
+                                        style={{ 
+                                            cursor: 'pointer', 
+                                            backgroundColor: periodo === 'anual' ? accentColor : '',
+                                            color: periodo === 'anual' ? 'white' : '#666'
+                                        }}
+                                        className="px-3 py-2"
                                     >Año</Badge>
                                 </div>
                             </div>
                         </Card.Body>
                     </Card>
 
+                    {/* Gráfico de hábitos de gasto - estilo DriverProfile */}
                     <Row className="g-4 mt-2 mb-4">
                         <Col lg={12}>
-                            <Card style={cardStyle}>
+                            <Card className="border-0 rounded-4 shadow">
                                 <Card.Body className="p-4">
                                     <div className="d-flex justify-content-between align-items-center mb-4">
                                         <div className="d-flex align-items-center">
-                                            <FaChartLine size={20} style={{ color: brandColor }} className="me-2" />
-                                            <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Hábitos de Gasto</h5>
+                                            <FaChartLine size={20} style={{ color: accentColor }} className="me-2" />
+                                            <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Hábitos de Gasto</h5>
                                         </div>
-                                        <Badge bg="light" text="dark" className="border">Gastos en el tiempo ({periodo})</Badge>
+                                        <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill">Gastos en el tiempo ({periodo})</Badge>
                                     </div>
                                     <div style={{ height: '250px' }}>
                                         <ResponsiveContainer width="100%" height="100%">
                                             <AreaChart data={statsAvanzadas.gastos.historial}>
                                                 <defs>
                                                     <linearGradient id="colorGastos" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor={brandColor} stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor={brandColor} stopOpacity={0} />
+                                                        <stop offset="5%" stopColor={accentColor} stopOpacity={0.8} />
+                                                        <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
                                                     </linearGradient>
                                                 </defs>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
                                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
                                                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
                                                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                                <Area type="monotone" dataKey="value" stroke={brandColor} fillOpacity={1} fill="url(#colorGastos)" name="Gastado ($)" />
+                                                <Area type="monotone" dataKey="value" stroke={accentColor} fillOpacity={1} fill="url(#colorGastos)" name="Gastado ($)" />
                                             </AreaChart>
                                         </ResponsiveContainer>
                                     </div>
@@ -315,23 +334,24 @@ const UserHome = () => {
                     </Row>
 
                     <Row className="g-4 mb-4">
+                        {/* Mi Actividad - estilo DriverProfile */}
                         <Col lg={7}>
-                            <Card className="h-100" style={cardStyle}>
+                            <Card className="h-100 border-0 rounded-4 shadow">
                                 <Card.Body className="p-4">
                                     <div className="d-flex align-items-center mb-4">
-                                        <FaUser size={22} style={{ color: brandColor }} className="me-2" />
-                                        <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Mi Actividad</h5>
+                                        <FaUser size={22} style={{ color: accentColor }} className="me-2" />
+                                        <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Mi Actividad</h5>
                                     </div>
                                     <Row className="g-3">
                                         <Col xs={6}>
-                                            <div className="p-3 rounded-3 text-center" style={{ border: `1.5px solid ${darkBorder}`, backgroundColor: '#fff' }}>
-                                                <h3 className="fw-bold mb-0" style={{ color: brandColor }}>{estadisticas.totalViajes}</h3>
+                                            <div className="p-3 rounded-3 text-center" style={{ backgroundColor: '#f8f9fa', border: 'none' }}>
+                                                <h3 className="fw-bold mb-0" style={{ color: accentColor }}>{estadisticas.totalViajes}</h3>
                                                 <small className="text-muted">Viajes totales</small>
                                             </div>
                                         </Col>
                                         <Col xs={6}>
-                                            <div className="p-3 rounded-3 text-center" style={{ border: `1.5px solid ${darkBorder}`, backgroundColor: '#fff' }}>
-                                                <h3 className="fw-bold mb-0" style={{ color: brandColor }}>{estadisticas.viajesCompletados}</h3>
+                                            <div className="p-3 rounded-3 text-center" style={{ backgroundColor: '#f8f9fa', border: 'none' }}>
+                                                <h3 className="fw-bold mb-0" style={{ color: accentColor }}>{estadisticas.viajesCompletados}</h3>
                                                 <small className="text-muted">Completados</small>
                                             </div>
                                         </Col>
@@ -339,24 +359,27 @@ const UserHome = () => {
                                     <Button
                                         variant="link"
                                         className="mt-4 p-0 text-decoration-none fw-bold small shadow-none"
-                                        style={{ color: darkBorder }}
+                                        style={{ color: brandColor }}
                                         onClick={() => navigate(`/profile`)}
                                     >
-                                        VER PERFIL COMPLETO <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
+                                        VER PERFIL COMPLETO <FaArrowRight size={12} className="ms-1" style={{ color: accentColor }} />
                                     </Button>
                                 </Card.Body>
                             </Card>
                         </Col>
 
+                        {/* Pagos Recientes - estilo DriverProfile */}
                         <Col lg={5}>
-                            <Card className="h-100" style={cardStyle}>
+                            <Card className="h-100 border-0 rounded-4 shadow">
                                 <Card.Body className="p-4 d-flex flex-column">
                                     <div className="d-flex align-items-center mb-4">
-                                        <FaWallet size={22} style={{ color: brandColor }} className="me-2" />
-                                        <h5 className="mb-0 fw-bold" style={{ color: darkBorder }}>Pagos Recientes</h5>
+                                        <FaWallet size={22} style={{ color: accentColor }} className="me-2" />
+                                        <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Pagos Recientes</h5>
                                     </div>
                                     {cargandoPagos ? (
-                                        <div className="text-center py-4"><div className="spinner-border spinner-border-sm" style={{ color: brandColor }} /></div>
+                                        <div className="text-center py-4">
+                                            <div className="spinner-border spinner-border-sm" style={{ color: accentColor }} />
+                                        </div>
                                     ) : (
                                         <ListGroup variant="flush" className="mb-auto">
                                             {pagosRecientes.slice(0, 4).map((pago) => (
@@ -366,7 +389,7 @@ const UserHome = () => {
                                                         <small className="text-muted">{formatearFecha(pago.fechaPago)}</small>
                                                     </div>
                                                     <div className="text-end">
-                                                        <div className="fw-bold" style={{ color: brandColor }}>{formatearMoneda(pago.monto)}</div>
+                                                        <div className="fw-bold" style={{ color: accentColor }}>{formatearMoneda(pago.monto)}</div>
                                                         <Badge bg={getPagoEstadoColor(pago.estado)} className="rounded-pill" style={{ fontSize: '0.6rem' }}>
                                                             {pago.estado || 'PENDIENTE'}
                                                         </Badge>
@@ -375,9 +398,9 @@ const UserHome = () => {
                                             ))}
                                         </ListGroup>
                                     )}
-                                    <Button
-                                        className="w-100 mt-4 fw-bold py-2 shadow-sm"
-                                        style={{ backgroundColor: darkBorder, color: 'white', border: 'none', borderRadius: '8px' }}
+                                    <Button 
+                                        className="w-100 mt-4 border-0 fw-bold py-2 rounded-pill" 
+                                        style={{ backgroundColor: accentColor, color: 'white' }}
                                         onClick={() => navigate("/pagos")}
                                     >
                                         VER TODOS LOS PAGOS
@@ -387,28 +410,29 @@ const UserHome = () => {
                         </Col>
                     </Row>
 
+                    {/* Viajes Recientes - estilo DriverProfile */}
                     <Row>
                         <Col lg={12}>
-                            <Card style={cardStyle}>
+                            <Card className="border-0 rounded-4 shadow">
                                 <Card.Body className="p-4">
                                     <div className="d-flex align-items-center justify-content-between mb-3">
-                                        <div className="d-flex align-items-center" style={{ color: brandColor }}>
-                                            <FaHistory size={24} className="me-2" />
-                                            <h5 className="mb-0 fw-bold">Viajes Recientes</h5>
+                                        <div className="d-flex align-items-center">
+                                            <FaHistory size={24} style={{ color: accentColor }} className="me-2" />
+                                            <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Viajes Recientes</h5>
                                         </div>
                                     </div>
                                     <ListGroup variant="flush">
                                         {viajesRecientes.map((viaje) => (
                                             <ListGroup.Item key={viaje.idViajes} className="px-0 bg-transparent">
                                                 <Row className="align-items-center">
-                                                    <Col xs={1}><FaRoute size={20} color={brandColor} /></Col>
+                                                    <Col xs={1}><FaRoute size={20} color={accentColor} /></Col>
                                                     <Col xs={4}>
                                                         <p className="mb-0 fw-bold">Viaje a {viaje.destino}</p>
                                                         <small className="text-muted">{formatearFecha(viaje.fechaHoraSalida)}</small>
                                                     </Col>
-                                                    <Col xs={3} className="fw-bold" style={{ color: brandColor }}>{formatearMoneda(viaje.precioFinal)}</Col>
+                                                    <Col xs={3} className="fw-bold" style={{ color: accentColor }}>{formatearMoneda(viaje.precioFinal)}</Col>
                                                     <Col xs={4} className="text-end">
-                                                        <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill">
+                                                        <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2">
                                                             {getEstadoTexto(viaje.estado)}
                                                         </Badge>
                                                     </Col>
@@ -421,8 +445,8 @@ const UserHome = () => {
                         </Col>
                     </Row>
                 </Container>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 };
 

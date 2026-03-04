@@ -9,7 +9,6 @@ import EscenaHomeBase from '../Imagenes/HomeBaseImage.png';
 import FondoPantalla from '../Imagenes/AutoresContacto.png';
 import toast, { Toaster } from 'react-hot-toast';
 
-// Estilos personalizados para el botón de tomar foto
 const customStyles = `
   .custom-tomar-foto-btn {
     border-radius: 12px !important;

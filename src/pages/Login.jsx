@@ -130,8 +130,7 @@ function Login() {
 
             <Container className="d-flex flex-column justify-content-center flex-grow-1 py-4">
                 <Row className="justify-content-center align-items-center g-0">
-                    
-                    {/* COLUMNA IZQUIERDA: Ilustración */}
+
                     <Col md={7} lg={6} className="d-none d-md-flex justify-content-center p-4">
                         <img 
                             src={EscenaHomeBase} 
@@ -140,7 +139,6 @@ function Login() {
                         />
                     </Col>
 
-                    {/* COLUMNA DERECHA: Tarjeta */}
                     <Col xs={12} md={5} lg={5} xl={4}>
                         <Card className="shadow-lg border-0" style={{ borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                             <Card.Body className="p-4 p-md-5">

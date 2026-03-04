@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// Eliminamos las importaciones de imágenes de fondo previas
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
@@ -12,7 +11,6 @@ function Profile() {
   const { usuario, token } = useAuth();
   const navigate = useNavigate();
   
-  // Color solicitado
   const brandColor = "#56bca7";
 
   const [showQRModal, setShowQRModal] = useState(false);
@@ -32,25 +30,46 @@ function Profile() {
     pagos: true
   });
 
-  // Efectos de carga de datos (Se mantienen igual para no romper la lógica)
+  // CORREGIDO: URL correcta para obtener viajes
   useEffect(() => {
     const obtenerViajes = async () => {
       if (!token || !usuario?.idUsuarios) return;
       try {
         setCargando(prev => ({ ...prev, viajes: true }));
         const respuesta = await fetch(
-          `https://backendmovi-production-c657.up.railway.app/api/usuario-viajes/mis-viajes`,
-          { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+          `https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`,
+          { 
+            headers: { 
+              'Authorization': `Bearer ${token}`, 
+              'Content-Type': 'application/json' 
+            } 
+          }
         );
+        
         if (respuesta.ok) {
           const data = await respuesta.json();
           const viajesData = Array.isArray(data) ? data : [];
           const completados = viajesData.filter(v => v.estado === 'COMPLETADO').length;
+          const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
           const totalGastado = viajesData.reduce((sum, v) => sum + (v.precioFinal || 0), 0);
-          setEstadisticas(prev => ({ ...prev, totalViajes: viajesData.length, viajesCompletados: completados, totalGastado }));
+          
+          setEstadisticas(prev => ({ 
+            ...prev, 
+            totalViajes: viajesData.length, 
+            viajesCompletados: completados,
+            viajesCancelados: cancelados,
+            totalGastado 
+          }));
+        } else {
+          console.error("Error al obtener viajes:", respuesta.status);
+          toast.error("Error al cargar viajes");
         }
-      } catch (error) { toast.error("Error al cargar viajes"); }
-      finally { setCargando(prev => ({ ...prev, viajes: false })); }
+      } catch (error) { 
+        console.error("Error en obtenerViajes:", error);
+        toast.error("Error al cargar viajes"); 
+      } finally { 
+        setCargando(prev => ({ ...prev, viajes: false })); 
+      }
     };
     obtenerViajes();
   }, [token, usuario?.idUsuarios]);
@@ -62,24 +81,56 @@ function Profile() {
         setCargando(prev => ({ ...prev, calificaciones: true }));
         const respuesta = await fetch(
           `https://backendmovi-production-c657.up.railway.app/api/calificaciones/${usuario.idUsuarios}/promedio`,
-          { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
+          { 
+            headers: { 
+              'Authorization': `Bearer ${token}`, 
+              'Content-Type': 'application/json' 
+            } 
+          }
         );
+        
         if (respuesta.ok) {
           const data = await respuesta.json();
-          setEstadisticas(prev => ({ ...prev, promedioCalificacion: data.promedio || 0, totalCalificaciones: data.totalCalificaciones || 0 }));
+          // CORREGIDO: Asegurarnos de que los valores sean números
+          setEstadisticas(prev => ({ 
+            ...prev, 
+            promedioCalificacion: Number(data.promedio) || 0, 
+            totalCalificaciones: Number(data.totalCalificaciones) || 0 
+          }));
         }
-      } catch (error) { console.error(error); }
-      finally { setCargando(prev => ({ ...prev, calificaciones: false })); }
+      } catch (error) { 
+        console.error("Error al obtener calificaciones:", error);
+      } finally { 
+        setCargando(prev => ({ ...prev, calificaciones: false })); 
+      }
     };
     obtenerCalificaciones();
   }, [token, usuario?.idUsuarios]);
 
   const formatearFecha = (fecha) => {
     if (!fecha) return '---';
-    return new Date(fecha).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    try {
+      return new Date(fecha).toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      return '---';
+    }
   };
 
-  const formatearMoneda = (valor) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(valor || 0);
+  const formatearMoneda = (valor) => {
+    try {
+      return new Intl.NumberFormat('es-CO', { 
+        style: 'currency', 
+        currency: 'COP', 
+        minimumFractionDigits: 0 
+      }).format(valor || 0);
+    } catch (error) {
+      return '$0';
+    }
+  };
 
   const generarQr = () => {
     if (!token) return toast.error("No hay Token disponible.");
@@ -89,13 +140,19 @@ function Profile() {
 
   const estaCargando = cargando.viajes || cargando.calificaciones;
 
+  // CORREGIDO: Función segura para formatear calificación
+  const formatearCalificacion = (valor) => {
+    if (valor === null || valor === undefined) return '0.0';
+    const num = Number(valor);
+    return isNaN(num) ? '0.0' : num.toFixed(1);
+  };
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}> {/* Fondo neutro sin imágenes */}
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
       <Toaster position="top-right" />
       
-      {/* Navbar con el nuevo color verde */}
       <div style={{ background: brandColor, width: '100%', position: 'relative', zIndex: 10 }}>
-        <Navbar />
+        <Navbar transparent={true}/>
       </div>
       
       <Container className="py-5">
@@ -128,8 +185,9 @@ function Profile() {
                   ) : (
                     <Badge style={{ backgroundColor: brandColor }} className="px-3 rounded-pill mb-3">
                       <FaStar className="me-1" /> 
-                      {estadisticas.promedioCalificacion.toFixed(1)} 
-                      ({estadisticas.totalCalificaciones})
+                      {/* CORREGIDO: Usamos la función segura */}
+                      {formatearCalificacion(estadisticas.promedioCalificacion)} 
+                      ({estadisticas.totalCalificaciones || 0})
                     </Badge>
                   )}
                   
@@ -145,13 +203,19 @@ function Profile() {
                   
                   <hr />
                   <div className="text-start px-3">
-                    <p className="small text-muted mb-1 uppercase fw-bold"> <FaCalendarAlt className="me-2" /> Miembro desde </p>
+                    <p className="small text-muted mb-1 uppercase fw-bold"> 
+                      <FaCalendarAlt className="me-2" /> Miembro desde 
+                    </p>
                     <p className="fw-bold">{formatearFecha(usuario?.creadoEn)}</p>
                     
-                    <p className="small text-muted mb-1 mt-3 uppercase fw-bold"> <FaRoute className="me-2" /> Viajes realizados </p>
+                    <p className="small text-muted mb-1 mt-3 uppercase fw-bold"> 
+                      <FaRoute className="me-2" /> Viajes realizados 
+                    </p>
                     <p className="fw-bold">{estadisticas.totalViajes} viajes</p>
                     
-                    <p className="small text-muted mb-1 mt-3 uppercase fw-bold"> <FaWallet className="me-2" /> Total Gastado </p>
+                    <p className="small text-muted mb-1 mt-3 uppercase fw-bold"> 
+                      <FaWallet className="me-2" /> Total Gastado 
+                    </p>
                     <p className="fw-bold" style={{ color: brandColor }}>
                       {formatearMoneda(estadisticas.totalGastado)}
                     </p>
@@ -199,7 +263,8 @@ function Profile() {
                       <Card className="p-3 border-0 rounded-3 h-100 text-center shadow-sm" style={{ backgroundColor: '#fff' }}>
                         <h5 className="fw-bold mb-0 d-flex align-items-center justify-content-center" style={{ color: brandColor, fontSize: '2rem' }}>
                           <FaStar className="me-2" size={24} />
-                          {estadisticas.promedioCalificacion.toFixed(1)}
+                          {/* CORREGIDO: Usamos la función segura aquí también */}
+                          {formatearCalificacion(estadisticas.promedioCalificacion)}
                         </h5>
                         <small className="text-muted fw-bold">CALIFICACIÓN PROMEDIO</small>
                       </Card>
@@ -235,4 +300,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default Profile; 
