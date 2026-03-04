@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Button, Alert } from 'react-bootstrap';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { FaQrcode, FaCamera, FaUpload } from 'react-icons/fa';
+import { FaQrcode, FaCamera, FaUpload, FaTimes, FaInfoCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../pages/context/AuthContext';
 
@@ -14,6 +14,12 @@ function QRScanner({ show, onHide }) {
     const scannerRef = useRef(null);
     const navigate = useNavigate();
     const { login } = useAuth();
+
+    const colores = {
+        primary: '#113d69',    // Azul oscuro institucional
+        secondary: '#62d8d9',  // Celeste/verde agua
+        accent: '#ffffff'
+    };
 
     const ROLES = {
         ADMIN: 1,
@@ -109,7 +115,6 @@ function QRScanner({ show, onHide }) {
             scanner.render(
                 (decodedText) => {
                     console.log("✅ QR escaneado con cámara");
-                    // Guardamos la promesa de limpieza
                     const clearPromise = (scanner && scanner.getState() === 2)
                         ? scanner.clear()
                         : Promise.resolve();
@@ -195,15 +200,29 @@ function QRScanner({ show, onHide }) {
     }, []);
 
     return (
-        <Modal show={show} onHide={handleClose} size="lg" centered>
-            <Modal.Header closeButton style={{ backgroundColor: '#124c83', color: 'white' }}>
-                <Modal.Title>
-                    <FaQrcode className="me-2" />
+        <Modal 
+            show={show} 
+            onHide={handleClose} 
+            size="lg" 
+            centered
+            style={{ fontFamily: "'Segoe UI', Roboto, sans-serif" }}
+        >
+            <Modal.Header 
+                closeButton 
+                style={{ 
+                    background: `linear-gradient(135deg, ${colores.primary} 0%, ${colores.secondary} 100%)`,
+                    color: 'white',
+                    borderBottom: 'none',
+                    padding: '1.5rem 2rem'
+                }}
+            >
+                <Modal.Title className="d-flex align-items-center fw-bold">
+                    <FaQrcode className="me-3" size={28} />
                     Escanear Código QR
                 </Modal.Title>
             </Modal.Header>
 
-            <Modal.Body>
+            <Modal.Body className="p-5">
                 <div className="d-flex justify-content-center mb-4">
                     <Button
                         variant={scanMethod === 'camera' ? 'primary' : 'outline-primary'}
@@ -212,8 +231,26 @@ function QRScanner({ show, onHide }) {
                             stopScanning();
                         }}
                         className="me-2"
-                        style={{ borderRadius: '30px' }}
+                        style={{ 
+                            borderRadius: '50px',
+                            padding: '10px 25px',
+                            fontWeight: '500',
+                            backgroundColor: scanMethod === 'camera' ? colores.primary : 'transparent',
+                            borderColor: colores.primary,
+                            color: scanMethod === 'camera' ? 'white' : colores.primary,
+                            transition: 'all 0.3s ease'
+                        }}
                         disabled={loading}
+                        onMouseEnter={(e) => {
+                            if (scanMethod !== 'camera') {
+                                e.target.style.backgroundColor = colores.primary + '10';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (scanMethod !== 'camera') {
+                                e.target.style.backgroundColor = 'transparent';
+                            }
+                        }}
                     >
                         <FaCamera className="me-2" />
                         Usar Cámara
@@ -224,8 +261,26 @@ function QRScanner({ show, onHide }) {
                             setScanMethod('upload');
                             stopScanning();
                         }}
-                        style={{ borderRadius: '30px' }}
+                        style={{ 
+                            borderRadius: '50px',
+                            padding: '10px 25px',
+                            fontWeight: '500',
+                            backgroundColor: scanMethod === 'upload' ? colores.primary : 'transparent',
+                            borderColor: colores.primary,
+                            color: scanMethod === 'upload' ? 'white' : colores.primary,
+                            transition: 'all 0.3s ease'
+                        }}
                         disabled={loading}
+                        onMouseEnter={(e) => {
+                            if (scanMethod !== 'upload') {
+                                e.target.style.backgroundColor = colores.primary + '10';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (scanMethod !== 'upload') {
+                                e.target.style.backgroundColor = 'transparent';
+                            }
+                        }}
                     >
                         <FaUpload className="me-2" />
                         Subir Imagen
@@ -233,16 +288,32 @@ function QRScanner({ show, onHide }) {
                 </div>
 
                 {loading && (
-                    <div className="text-center mb-3">
-                        <div className="spinner-border text-primary" role="status">
+                    <div className="text-center mb-4 p-4">
+                        <div 
+                            className="spinner-border" 
+                            style={{ color: colores.secondary }} 
+                            role="status"
+                        >
                             <span className="visually-hidden">Procesando...</span>
                         </div>
-                        <p className="mt-2">Procesando QR...</p>
+                        <p className="mt-3" style={{ color: colores.primary, fontWeight: '500' }}>
+                            Procesando QR...
+                        </p>
                     </div>
                 )}
 
                 {error && (
-                    <Alert variant="danger" className="text-center">
+                    <Alert 
+                        variant="danger" 
+                        className="text-center rounded-4 mb-4"
+                        style={{ 
+                            background: 'linear-gradient(135deg, #f8d7da, #f5c6cb)',
+                            border: 'none',
+                            borderLeft: `4px solid ${colores.primary}`,
+                            color: '#721c24'
+                        }}
+                    >
+                        <FaInfoCircle className="me-2" />
                         {error}
                     </Alert>
                 )}
@@ -250,13 +321,40 @@ function QRScanner({ show, onHide }) {
                 {scanMethod === 'camera' && !loading && (
                     <div>
                         {!scanning ? (
-                            <div className="text-center">
-                                <p className="mb-3">Haz clic en "Iniciar Cámara" para comenzar a escanear</p>
+                            <div className="text-center p-4">
+                                <div 
+                                    className="mb-4 p-4 rounded-4"
+                                    style={{ 
+                                        background: `linear-gradient(135deg, ${colores.primary}08, ${colores.secondary}08)`,
+                                        border: `1px solid ${colores.secondary}30`
+                                    }}
+                                >
+                                    <FaCamera size={48} style={{ color: colores.primary }} className="mb-3" />
+                                    <p className="mb-3" style={{ color: colores.primary }}>
+                                        Haz clic en "Iniciar Cámara" para comenzar a escanear
+                                    </p>
+                                </div>
                                 <Button
                                     onClick={startCameraScan}
                                     variant="success"
                                     size="lg"
-                                    style={{ borderRadius: '30px' }}
+                                    style={{ 
+                                        borderRadius: '50px',
+                                        padding: '12px 35px',
+                                        background: `linear-gradient(135deg, ${colores.primary}, ${colores.secondary})`,
+                                        border: 'none',
+                                        fontWeight: '500',
+                                        boxShadow: `0 10px 20px -5px ${colores.primary}60`,
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.transform = 'translateY(-2px)';
+                                        e.target.style.boxShadow = `0 15px 30px -5px ${colores.primary}80`;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = `0 10px 20px -5px ${colores.primary}60`;
+                                    }}
                                 >
                                     <FaCamera className="me-2" />
                                     Iniciar Cámara
@@ -264,12 +362,29 @@ function QRScanner({ show, onHide }) {
                             </div>
                         ) : (
                             <div>
-                                <div id="qr-reader" style={{ width: '100%' }}></div>
-                                <div className="text-center mt-3">
+                                <div 
+                                    id="qr-reader" 
+                                    style={{ 
+                                        width: '100%',
+                                        borderRadius: '20px',
+                                        overflow: 'hidden',
+                                        border: `2px solid ${colores.secondary}`,
+                                        boxShadow: `0 20px 40px -10px ${colores.primary}40`
+                                    }}
+                                ></div>
+                                <div className="text-center mt-4">
                                     <Button
                                         onClick={stopScanning}
                                         variant="danger"
+                                        style={{ 
+                                            borderRadius: '50px',
+                                            padding: '10px 30px',
+                                            background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                                            border: 'none',
+                                            fontWeight: '500'
+                                        }}
                                     >
+                                        <FaTimes className="me-2" />
                                         Detener Escaneo
                                     </Button>
                                 </div>
@@ -281,17 +396,37 @@ function QRScanner({ show, onHide }) {
                 {scanMethod === 'upload' && !loading && (
                     <div className="text-center">
                         <div
-                            className="border rounded p-5 mb-3"
+                            className="rounded-4 p-5 mb-4"
                             style={{
-                                border: '2px dashed #124c83',
+                                border: `2px dashed ${colores.secondary}`,
                                 cursor: 'pointer',
-                                backgroundColor: '#f8f9fa'
+                                background: `linear-gradient(135deg, ${colores.primary}05, ${colores.secondary}05)`,
+                                transition: 'all 0.3s ease'
                             }}
                             onClick={() => fileInputRef.current?.click()}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = `${colores.primary}10`;
+                                e.currentTarget.style.borderColor = colores.primary;
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.borderColor = colores.secondary;
+                            }}
                         >
-                            <FaUpload size={40} className="mb-3" style={{ color: '#124c83' }} />
-                            <p>Haz clic para seleccionar una imagen con código QR</p>
-                            <p className="text-muted small">Formatos soportados: PNG, JPG, JPEG</p>
+                            <FaUpload 
+                                size={50} 
+                                className="mb-3" 
+                                style={{ color: colores.primary }} 
+                            />
+                            <h5 style={{ color: colores.primary, fontWeight: '500' }}>
+                                Haz clic para seleccionar una imagen
+                            </h5>
+                            <p className="text-muted mb-0">
+                                Arrastra o selecciona una imagen con código QR
+                            </p>
+                            <p className="text-muted small mt-2">
+                                Formatos soportados: PNG, JPG, JPEG
+                            </p>
                         </div>
 
                         <input
@@ -303,12 +438,44 @@ function QRScanner({ show, onHide }) {
                         />
 
                         <div id="qr-reader-file" style={{ display: 'none' }}></div>
+
+                        <Alert 
+                            variant="info" 
+                            className="text-start rounded-4 mt-3"
+                            style={{ 
+                                background: `linear-gradient(135deg, ${colores.primary}08, ${colores.secondary}08)`,
+                                border: `1px solid ${colores.secondary}30`,
+                                color: colores.primary
+                            }}
+                        >
+                            <FaInfoCircle className="me-2" style={{ color: colores.secondary }} />
+                            Asegúrate de que el código QR esté bien iluminado y enfocado para una mejor lectura.
+                        </Alert>
                     </div>
                 )}
             </Modal.Body>
 
-            <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose} disabled={loading}>
+            <Modal.Footer className="border-0 pt-0">
+                <Button 
+                    variant="secondary" 
+                    onClick={handleClose} 
+                    disabled={loading}
+                    style={{ 
+                        borderRadius: '50px',
+                        padding: '10px 30px',
+                        background: '#e0e0e0',
+                        border: 'none',
+                        color: '#666',
+                        fontWeight: '500',
+                        transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = '#d0d0d0';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = '#e0e0e0';
+                    }}
+                >
                     Cancelar
                 </Button>
             </Modal.Footer>

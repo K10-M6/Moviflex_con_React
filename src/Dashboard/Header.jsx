@@ -4,17 +4,54 @@ import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Logo from "../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png";
 import Notificaciones from "../components/Notificaciones";
+import { useSocket } from "../pages/context/SocketContext";
+import { BsBellFill } from "react-icons/bs";
 
 function Header() {
   const navigate = useNavigate();
   const { usuario, logout, token } = useAuth();
+  const { socket } = useSocket();
   const [notificaciones, setNotificaciones] = useState([]);
   const [noLeidas, setNoLeidas] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      if (usuario?.rol === 'ADMIN' && token) {
+        try {
+          const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/pendientes/count", {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setPendingRequests(data.count);
+          }
+        } catch (err) {
+          console.error("Error fetching pending requests count:", err);
+        }
+      }
+    };
+
+    fetchPendingCount();
+
+    if (socket && usuario?.rol === 'ADMIN') {
+      const handleNewRequest = () => setPendingRequests(prev => prev + 1);
+      const handleRequestProcessed = () => fetchPendingCount();
+
+      socket.on("new_vehicle_change_request", handleNewRequest);
+      socket.on("vehicle_change_processed", handleRequestProcessed);
+
+      return () => {
+        socket.off("new_vehicle_change_request", handleNewRequest);
+        socket.off("vehicle_change_processed", handleRequestProcessed);
+      };
+    }
+  }, [socket, usuario, token]);
 
   useEffect(() => {
     const fetchNotificaciones = async () => {
       if (!usuario?.idUsuarios || !token) return;
-      
+
       try {
         const response = await fetch(
           `https://backendmovi-production-c657.up.railway.app/api/notificaciones/usuario/${usuario.idUsuarios}`,
@@ -25,18 +62,18 @@ function Header() {
             }
           }
         );
-        
+
         if (response.ok) {
           const data = await response.json();
           console.log("📬 Notificaciones recibidas en Header:", data);
-          
+
           const notificacionesArray = Array.isArray(data) ? data : (data.notificaciones || []);
-          
+
           setNotificaciones(notificacionesArray);
-          
+
           const noLeidasCount = notificacionesArray.filter(n => !n.leido).length;
           setNoLeidas(noLeidasCount);
-          
+
         } else if (response.status === 404) {
           setNotificaciones([]);
           setNoLeidas(0);
@@ -82,8 +119,8 @@ function Header() {
         <div className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
             <div className="text-center mb-2">
-              <img 
-                src={Logo} 
+              <img
+                src={Logo}
                 alt="Logo Moviflexx"
                 style={{
                   width: '100px',
@@ -95,10 +132,36 @@ function Header() {
           </div>
 
           <div className="d-flex align-items-center gap-3">
+            {usuario?.rol === 'ADMIN' && pendingRequests > 0 && (
+              <div
+                className="d-flex align-items-center justify-content-center p-2 rounded-circle"
+                style={{
+                  backgroundColor: '#fffbeb',
+                  color: '#f59e0b',
+                  cursor: 'pointer',
+                  border: '1px solid #fef3c7',
+                  animation: 'pulse 2s infinite'
+                }}
+                onClick={() => navigate('/admin/solicitudes-vehiculos')}
+                title={`${pendingRequests} solicitudes pendientes`}
+              >
+                <BsBellFill size={20} />
+                <span className="ms-1 fw-bold" style={{ fontSize: '0.8rem' }}>{pendingRequests}</span>
+                <style>
+                  {`
+                    @keyframes pulse {
+                      0% { transform: scale(1); }
+                      50% { transform: scale(1.1); }
+                      100% { transform: scale(1); }
+                    }
+                  `}
+                </style>
+              </div>
+            )}
             <Notificaciones />
 
             <Dropdown align="end">
-              <Dropdown.Toggle 
+              <Dropdown.Toggle
                 as="div"
                 className="d-flex align-items-center"
                 style={{
@@ -141,7 +204,7 @@ function Header() {
                   <small className="text-muted">{getUserEmail()}</small>
                 </Dropdown.Header>
 
-                <Dropdown.Item 
+                <Dropdown.Item
                   onClick={handleLogout}
                   className="py-2 text-danger d-flex justify-content-center"
                 >

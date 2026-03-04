@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge, Table } f
 import { FaIdCard, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaCalendarAlt, FaUser } from "react-icons/fa";
 import { useAuth } from "./context/AuthContext";
 import Navbar from '../components/Navbar';
-import Logo from './Imagenes/TODO_MOVI.png';
+import Logo from './Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import toast, { Toaster } from 'react-hot-toast';
 
 function Documents() {
