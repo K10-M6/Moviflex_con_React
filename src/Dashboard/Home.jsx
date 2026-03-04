@@ -160,13 +160,24 @@ function Home() {
         fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-viajeros", { headers })
       ]);
 
+      console.log("[DASHBOARD] Top Conductores status:", resConductores.status);
+      console.log("[DASHBOARD] Top Viajeros status:", resViajeros.status);
+
       if (resConductores.ok) {
         const data = await resConductores.json();
+        console.log("[DASHBOARD] Top Conductores data:", data);
         setTopConductores(Array.isArray(data) ? data : []);
+      } else {
+        const errorText = await resConductores.text();
+        console.error("[DASHBOARD] Error en top-conductores:", resConductores.status, errorText);
       }
       if (resViajeros.ok) {
         const data = await resViajeros.json();
+        console.log("[DASHBOARD] Top Viajeros data:", data);
         setTopViajeros(Array.isArray(data) ? data : []);
+      } else {
+        const errorText = await resViajeros.text();
+        console.error("[DASHBOARD] Error en top-viajeros:", resViajeros.status, errorText);
       }
     } catch (error) {
       console.error("Error al traer rankings:", error);
@@ -366,7 +377,7 @@ function Home() {
                                 </div>
                                 <div className="d-flex align-items-center mt-1">
                                   {renderStars(c.promedioEstrellas || 0)}
-                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({c.totalReseñas} reseñas)</small>
+                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({c.totalResenas || c.totalReseñas} reseñas)</small>
                                 </div>
                               </div>
                             </div>
@@ -410,7 +421,7 @@ function Home() {
                                 </div>
                                 <div className="d-flex align-items-center mt-1">
                                   {renderStars(v.promedioEstrellas || 0)}
-                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({v.totalReseñas} reseñas)</small>
+                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({v.totalResenas || v.totalReseñas} reseñas)</small>
                                 </div>
                               </div>
                             </div>
