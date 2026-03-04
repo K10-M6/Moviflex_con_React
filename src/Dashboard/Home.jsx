@@ -246,19 +246,19 @@ function Home() {
       backgroundAttachment: 'fixed',
       position: 'relative'
     }}>
-
-      <div style={{ 
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
-        backgroundColor: 'rgba(255, 255, 255, 0.88)', 
-        zIndex: 0 
-      }} />
+      {/* Eliminamos completamente la capa blanca superpuesta */}
 
       <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
         <Row className="mb-4">
           <Col>
-            <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
+            {/* Tarjeta de bienvenida - CON FONDO BLANCO */}
+            <Card className="border-0 shadow-sm" style={{ 
+              borderRadius: '12px', 
+              borderLeft: '5px solid #54c7b8',
+              backgroundColor: 'white'
+            }}>
               <Card.Body className="p-4">
-                <h2 className="fw-bold mb-2" style={{ color: '#333' }}>
+                <h2 className="fw-bold mb-2" style={{ color: '#54c7b8' }}>
                   Hola, {getNombreUsuario()}
                 </h2>
                 <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>
@@ -270,42 +270,45 @@ function Home() {
         </Row>
 
         {error && (
-          <Alert variant="danger" className="mt-3 border-0 shadow-sm">
+          <Alert variant="danger" className="mt-3 border-0 shadow-sm" style={{ backgroundColor: 'rgba(248, 215, 218, 0.9)' }}>
             {error}
           </Alert>
         )}
 
         {loading ? (
-          <div className="text-center py-5">
+          <div className="text-center py-5" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: '12px', padding: '2rem', backdropFilter: 'blur(5px)' }}>
             <Spinner animation="border" style={{ color: '#54c7b8' }} />
-            <p className="mt-3 text-muted">Cargando estadísticas...</p>
+            <p className="mt-3 text-white">Cargando estadísticas...</p>
           </div>
         ) : (
           <>
             <Row className="g-4 mb-4">
               {statCards.map((stat, index) => (
                 <Col key={index} xs={12} sm={6} lg={3}>
-                  <Card className="shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '12px' }}>
-                    <Card.Body className="d-flex align-items-center">
-                      <div 
-                        className="rounded-circle d-flex align-items-center justify-content-center me-3" 
-                        style={{ width: '50px', height: '50px', backgroundColor: '#54c7b8', color: 'white' }}
-                      >
-                        {stat.icon}
-                      </div>
-                      <div>
-                        <h6 className="text-muted mb-0 small">{stat.title}</h6>
-                        <h3 className="fw-bold mb-0" style={{ color: '#333' }}>{stat.value}</h3>
-                      </div>
-                    </Card.Body>
-                  </Card>
+                  {/* Tarjetas de estadísticas - SIN FONDO, SOLO TEXTO */}
+                  <div className="d-flex align-items-center" style={{ padding: '1rem' }}>
+                    <div 
+                      className="rounded-circle d-flex align-items-center justify-content-center me-3" 
+                      style={{ width: '50px', height: '50px', backgroundColor: '#54c7b8', color: 'white', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}
+                    >
+                      {stat.icon}
+                    </div>
+                    <div>
+                      <h6 className="mb-0 small" style={{ color: '#fff', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>{stat.title}</h6>
+                      <h3 className="fw-bold mb-0" style={{ color: '#fff', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>{stat.value}</h3>
+                    </div>
+                  </div>
                 </Col>
               ))}
             </Row>
 
             <Row className="g-4">
               <Col lg={8}>
-                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
+                {/* Tarjeta completa para Actividad Semanal - CON FONDO BLANCO */}
+                <Card className="shadow-sm border-0 h-100" style={{ 
+                  borderRadius: '12px',
+                  backgroundColor: 'white'
+                }}>
                   <Card.Body className="p-4">
                     <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
                       Actividad Semanal
@@ -314,13 +317,13 @@ function Home() {
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
-                          <YAxis axisLine={false} tickLine={false} tick={{fill: '#999', fontSize: 12}} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fill: '#666', fontSize: 12}} />
                           <Tooltip 
-                            cursor={{fill: 'rgba(84, 199, 184, 0.05)'}} 
+                            cursor={{fill: 'rgba(84, 199, 184, 0.1)'}} 
                             contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} 
                           />
-                          <Legend />
+                          <Legend wrapperStyle={{ color: '#333' }} />
                           <Bar dataKey="usuarios" fill="#68bdc4" name="Usuarios" radius={[4, 4, 0, 0]} barSize={28}/>
                           <Bar dataKey="viajes" fill="#43d699" name="Viajes" radius={[4, 4, 0, 0]} barSize={28} />
                         </BarChart>
@@ -331,79 +334,83 @@ function Home() {
               </Col>
 
               <Col lg={4}>
-                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4 d-flex flex-column">
-                    <Card.Title className="fw-bold mb-4" style={{ color: '#333' }}>
-                      Estado de Usuarios
-                    </Card.Title>
-                    
-                    <div style={{ height: '250px', position: 'relative' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={donutData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={70}
-                            outerRadius={90}
-                            paddingAngle={2}
-                            dataKey="value"
-                            startAngle={90}
-                            endAngle={-270}
-                          >
-                            {donutData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip 
-                            formatter={(value, name, props) => {
-                              const total = donutData.reduce((sum, item) => sum + item.value, 0);
-                              const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                              return [`${value} usuarios (${porcentaje}%)`, name];
-                            }}
-                            contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-  
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        textAlign: 'center',
-                        pointerEvents: 'none'
-                      }}>
-                        <h3 className="fw-bold mb-0" style={{ color: '#333', fontSize: '1.8rem' }}>
-                          {donutData.reduce((sum, item) => sum + item.value, 0)}
-                        </h3>
-                        <small className="text-muted">Total</small>
-                      </div>
+                {/* Tarjeta de gráfico de donut - SIN FONDO */}
+                <div style={{ padding: '0' }}>
+                  <h5 className="fw-bold mb-4" style={{ color: '#fff', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+                    Estado de Usuarios
+                  </h5>
+                  
+                  <div style={{ height: '250px', position: 'relative' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={donutData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={70}
+                          outerRadius={90}
+                          paddingAngle={2}
+                          dataKey="value"
+                          startAngle={90}
+                          endAngle={-270}
+                        >
+                          {donutData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value, name, props) => {
+                            const total = donutData.reduce((sum, item) => sum + item.value, 0);
+                            const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return [`${value} usuarios (${porcentaje}%)`, name];
+                          }}
+                          contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', backgroundColor: 'rgba(0, 0, 0, 0.8)', color: '#fff' }}
+                          labelStyle={{ color: '#fff' }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      textAlign: 'center',
+                      pointerEvents: 'none',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      padding: '8px 16px',
+                      borderRadius: '30px',
+                      backdropFilter: 'blur(3px)'
+                    }}>
+                      <h3 className="fw-bold mb-0" style={{ color: '#fff', fontSize: '1.8rem' }}>
+                        {donutData.reduce((sum, item) => sum + item.value, 0)}
+                      </h3>
+                      <small style={{ color: '#ddd' }}>Total</small>
                     </div>
-                    
-                    <div className="d-flex justify-content-center gap-4 mt-3 flex-wrap">
-                      {donutData.map((item, index) => {
-                        const total = donutData.reduce((sum, item) => sum + item.value, 0) || 1;
-                        const porcentaje = Math.round((item.value / total) * 100);
-                        return (
-                          <div key={index} className="d-flex align-items-center">
-                            <div style={{
-                              width: '12px',
-                              height: '12px',
-                              backgroundColor: item.color,
-                              borderRadius: '4px',
-                              marginRight: '8px'
-                            }} />
-                            <div>
-                              <small className="text-muted d-block">{item.name}</small>
-                              <strong>{item.value} ({porcentaje}%)</strong>
-                            </div>
+                  </div>
+                  
+                  <div className="d-flex justify-content-center gap-4 mt-3 flex-wrap">
+                    {donutData.map((item, index) => {
+                      const total = donutData.reduce((sum, item) => sum + item.value, 0) || 1;
+                      const porcentaje = Math.round((item.value / total) * 100);
+                      return (
+                        <div key={index} className="d-flex align-items-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: '5px 10px', borderRadius: '20px', backdropFilter: 'blur(3px)' }}>
+                          <div style={{
+                            width: '12px',
+                            height: '12px',
+                            backgroundColor: item.color,
+                            borderRadius: '4px',
+                            marginRight: '8px'
+                          }} />
+                          <div>
+                            <small style={{ color: '#ddd' }} className="d-block">{item.name}</small>
+                            <strong style={{ color: '#fff' }}>{item.value} ({porcentaje}%)</strong>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </Card.Body>
-                </Card>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </Col>
             </Row>
           </>
