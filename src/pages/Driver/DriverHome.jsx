@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
-import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaSearch, FaMapMarkerAlt, FaFilter } from "react-icons/fa";
+import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner, Form, InputGroup, Image } from "react-bootstrap";
+import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaSearch, FaMapMarkerAlt, FaFilter, FaEye, FaList } from "react-icons/fa";
 import {
     BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
@@ -12,19 +12,116 @@ import { useNavigate } from "react-router-dom";
 import fondo from "../Imagenes/AutoresContacto.png";
 import toast from "react-hot-toast";
 
+// Componente para mostrar la imagen del vehículo o un placeholder
+const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#54c7b8" }) => {
+    const [imageError, setImageError] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
+    
+    useEffect(() => {
+        if (vehiculo?.fotoVehiculo) {
+            const url = vehiculo.fotoVehiculo.startsWith('http') 
+                ? vehiculo.fotoVehiculo 
+                : `https://backendmovi-production-c657.up.railway.app${vehiculo.fotoVehiculo}`;
+            setImageUrl(url);
+            setImageError(false);
+        } else {
+            setImageUrl(null);
+        }
+    }, [vehiculo]);
+
+    if (!vehiculo) {
+        return (
+            <div style={{
+                width: size,
+                height: size,
+                borderRadius: '12px',
+                backgroundColor: `${brandColor}15`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <FaCar size={size * 0.4} color={brandColor} />
+            </div>
+        );
+    }
+
+    if (vehiculo.fotoVehiculo && !imageError && imageUrl) {
+        return (
+            <div style={{
+                width: size,
+                height: size,
+                borderRadius: '12px',
+                overflow: 'hidden',
+                border: `2px solid ${brandColor}`,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                cursor: 'pointer'
+            }}
+            onClick={() => {
+                if (window.open) {
+                    window.open(imageUrl, '_blank');
+                }
+            }}>
+                <Image 
+                    src={imageUrl}
+                    alt={`${vehiculo.marca} ${vehiculo.modelo}`}
+                    fluid
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                    }}
+                    onError={() => {
+                        console.log("Error cargando imagen:", imageUrl);
+                        setImageError(true);
+                    }}
+                />
+            </div>
+        );
+    }
+
+    // Placeholder con iniciales
+    return (
+        <div style={{
+            width: size,
+            height: size,
+            borderRadius: '12px',
+            backgroundColor: `${brandColor}15`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            fontSize: size * 0.2,
+            fontWeight: 'bold',
+            color: brandColor
+        }}>
+            {vehiculo.marca && vehiculo.modelo ? (
+                <>
+                    <span>{vehiculo.marca.charAt(0)}{vehiculo.modelo.charAt(0)}</span>
+                    <FaCar size={size * 0.3} color={brandColor} style={{ marginTop: 2 }} />
+                </>
+            ) : (
+                <FaCar size={size * 0.4} color={brandColor} />
+            )}
+        </div>
+    );
+};
+
 const DriverHome = () => {
     const { usuario, token } = useAuth();
     const { socket } = useSocket();
     const navigate = useNavigate();
 
     const brandColor = "#54c7b8";
-    const darkBorder = "#000000";
 
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [vehiculos, setVehiculos] = useState([]);
     const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
     const [errorVehiculo, setErrorVehiculo] = useState("");
+
+    // NUEVO: Estado para el modal de lista de vehículos
+    const [showVehiculosModal, setShowVehiculosModal] = useState(false);
+    const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
 
     const [ganancias, setGanancias] = useState({
         hoy: 0,
@@ -46,13 +143,14 @@ const DriverHome = () => {
         enCurso: 0
     });
 
-    // Nuevos estados para búsqueda y filtros
+    const [showPhotoModal, setShowPhotoModal] = useState(false);
+    const [selectedPhoto, setSelectedPhoto] = useState("");
+
     const [busquedaViajes, setBusquedaViajes] = useState("");
-    const [filtroEstado, setFiltroEstado] = useState("FINALIZADO");
+    const [filtroEstado, setFiltroEstado] = useState("TODOS");
     const [viajeSeleccionado, setViajeSeleccionado] = useState(null);
     const [showDetalleViaje, setShowDetalleViaje] = useState(false);
 
-    // Nuevos estados para analíticas avanzadas
     const [statsAvanzadas, setStatsAvanzadas] = useState({
         ganancias: { total: 0, historial: [] },
         tiempoEnLinea: { totalHoras: 0, historial: [] },
@@ -62,7 +160,6 @@ const DriverHome = () => {
     const [periodo, setPeriodo] = useState('mensual');
     const [cargandoStats, setCargandoStats] = useState(false);
 
-    // Estados para solicitud de cambio de vehículo
     const [showSolicitudModal, setShowSolicitudModal] = useState(false);
     const [formDataSolicitud, setFormDataSolicitud] = useState({
         marca: '',
@@ -80,10 +177,7 @@ const DriverHome = () => {
 
     useEffect(() => {
         const obtenerGanancias = async () => {
-            if (!token || !usuario?.idUsuarios) {
-                console.log("No hay token disponible para obtener ganancias");
-                return;
-            }
+            if (!token || !usuario?.idUsuarios) return;
             try {
                 const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/`, {
                     headers: {
@@ -98,11 +192,9 @@ const DriverHome = () => {
                         estaSemana: data.estaSemana || 0,
                         esteMes: data.esteMes || 0
                     });
-                } else {
-                    console.log("Error al obtener ganancias:", respuesta.status);
                 }
             } catch (error) {
-                console.error("Error de conexión al obtener ganancias:", error);
+                console.error("Error al obtener ganancias:", error);
             }
         };
         obtenerGanancias();
@@ -111,10 +203,7 @@ const DriverHome = () => {
     }, [token, usuario?.idUsuarios]);
 
     async function obtenerDocumentos() {
-        if (!token || !usuario?.idUsuarios) {
-            console.log("No hay token disponible para obtener documentos");
-            return;
-        }
+        if (!token || !usuario?.idUsuarios) return;
 
         try {
             setCargandoDocumentos(true);
@@ -171,10 +260,7 @@ const DriverHome = () => {
 
     useEffect(() => {
         const obtenerViajes = async () => {
-            if (!token || !usuario?.idUsuarios) {
-                console.log("No hay token disponible para obtener viajes");
-                return;
-            }
+            if (!token || !usuario?.idUsuarios) return;
 
             try {
                 setCargandoViajes(true);
@@ -192,14 +278,11 @@ const DriverHome = () => {
                     console.log("Viajes recibidos:", data);
 
                     const viajesData = Array.isArray(data) ? data : [];
-
+                    
                     setTodosLosViajes(viajesData);
+                    setViajesRecientes(viajesData.slice(0, 3));
 
-                    // Solo mostrar viajes finalizados en la lista de recientes
-                    const viajesCompletados = viajesData.filter(v => v.estado === 'FINALIZADO');
-                    setViajesRecientes(viajesCompletados.slice(0, 3));
-
-                    const completados = viajesCompletados.length;
+                    const completados = viajesData.filter(v => v.estado === 'FINALIZADO').length;
                     const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
                     const enCurso = viajesData.filter(v => v.estado === 'EN_CURSO').length;
 
@@ -229,25 +312,21 @@ const DriverHome = () => {
 
     }, [token, usuario?.idUsuarios]);
 
-    // Función para filtrar viajes
     const filtrarViajes = (viajes) => {
         return viajes.filter(viaje => {
-            // Búsqueda por texto
             const textoBusqueda = busquedaViajes.toLowerCase();
-            const coincideBusqueda = textoBusqueda === '' ||
+            const coincideBusqueda = textoBusqueda === '' || 
                 viaje.idViajes.toString().includes(textoBusqueda) ||
                 (viaje.ruta?.nombre?.toLowerCase().includes(textoBusqueda));
-
-            // Filtro por estado
+            
             const coincideEstado = filtroEstado === 'TODOS' || viaje.estado === filtroEstado;
-
+            
             return coincideBusqueda && coincideEstado;
         });
     };
 
     const viajesFiltrados = filtrarViajes(todosLosViajes);
 
-    // Función para traer estadísticas avanzadas desde el nuevo service
     const traerEstadisticasAvanzadas = async () => {
         if (!token) return;
         try {
@@ -280,11 +359,14 @@ const DriverHome = () => {
         traerEstadisticasAvanzadas();
     }, [token, periodo]);
 
+    // Función mejorada para obtener TODOS los vehículos del usuario
     const obtenerVehiculos = useCallback(async () => {
         if (!token) return;
         try {
             setCargandoVehiculo(true);
             setErrorVehiculo("");
+            console.log("Obteniendo vehículos del usuario ID:", usuario?.idUsuarios);
+            
             const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -292,26 +374,58 @@ const DriverHome = () => {
                 }
             });
 
+            console.log("Respuesta status:", respuesta.status);
+
             if (respuesta.ok) {
                 const data = await respuesta.json();
-                if (Array.isArray(data)) setVehiculos(data);
-                else if (data && typeof data === 'object') setVehiculos([data]);
-                else setVehiculos([]);
+                console.log("Todos los vehículos recibidos:", data);
+                
+                // Asegurarse de que siempre sea un array
+                let vehiculosArray = [];
+                if (Array.isArray(data)) {
+                    vehiculosArray = data;
+                } else if (data && typeof data === 'object') {
+                    vehiculosArray = [data];
+                }
+                
+                // Filtrar solo los del usuario actual (por si acaso)
+                const vehiculosUsuario = vehiculosArray.filter(v => v.idUsuario === usuario?.idUsuarios);
+                console.log("Vehículos filtrados del usuario:", vehiculosUsuario);
+                
+                setVehiculos(vehiculosUsuario);
             } else if (respuesta.status === 404) {
+                console.log("No se encontraron vehículos");
                 setVehiculos([]);
             } else {
+                const errorText = await respuesta.text();
+                console.error("Error response:", errorText);
                 setErrorVehiculo(`Error ${respuesta.status}: No se pudieron cargar los datos`);
             }
         } catch (error) {
+            console.error("Error en obtenerVehiculos:", error);
             setErrorVehiculo("Error de conexión con el servidor");
         } finally {
             setCargandoVehiculo(false);
         }
-    }, [token]);
+    }, [token, usuario?.idUsuarios]);
 
     useEffect(() => {
         obtenerVehiculos();
     }, [obtenerVehiculos]);
+
+    // NUEVA: Función para ver todos los vehículos
+    const verTodosLosVehiculos = () => {
+        setShowVehiculosModal(true);
+    };
+
+    // NUEVA: Función para seleccionar un vehículo como principal
+    const seleccionarVehiculoPrincipal = (vehiculo) => {
+        setVehiculoSeleccionado(vehiculo);
+        // Aquí puedes guardar en localStorage o en el estado global cuál es el vehículo principal
+        localStorage.setItem('vehiculoPrincipalId', vehiculo.idVehiculos);
+        toast.success(`Vehículo ${vehiculo.marca} ${vehiculo.modelo} seleccionado como principal`);
+        setShowVehiculosModal(false);
+    };
 
     useEffect(() => {
         if (socket) {
@@ -329,7 +443,7 @@ const DriverHome = () => {
     }, [socket, obtenerVehiculos]);
 
     const handleAbrirSolicitud = () => {
-        const v = vehiculos.length > 0 ? vehiculos[0] : null;
+        const v = vehiculoPrincipal || (vehiculos.length > 0 ? vehiculos[0] : null);
         if (v) {
             setFormDataSolicitud({
                 marca: v.marca || '',
@@ -344,7 +458,7 @@ const DriverHome = () => {
 
     const enviarSolicitudCambio = async (e) => {
         e.preventDefault();
-        const v = vehiculos.length > 0 ? vehiculos[0] : null;
+        const v = vehiculoPrincipal || (vehiculos.length > 0 ? vehiculos[0] : null);
         if (!v) return;
 
         try {
@@ -421,13 +535,11 @@ const DriverHome = () => {
         }
     };
 
-    // Función para fechas de expedición (STRING) - se muestra directamente
     const formatearFechaExpedicion = (fecha) => {
         if (!fecha) return 'No disponible';
-        return fecha; // Es string, lo mostramos directamente
+        return fecha;
     };
 
-    // Función para fecha de subida (DATETIME)
     const formatearFechaSubida = (fecha) => {
         if (!fecha) return 'No disponible';
         try {
@@ -505,7 +617,6 @@ const DriverHome = () => {
         zIndex: 1
     });
 
-    // Estilo de tarjetas sin bordes oscuros, solo sombras
     const cardStyle = {
         background: "#ffffff",
         borderRadius: '20px',
@@ -515,7 +626,15 @@ const DriverHome = () => {
         transition: "transform 0.2s ease, box-shadow 0.2s ease"
     };
 
-    const vehiculoPrincipal = vehiculos.length > 0 ? vehiculos[0] : null;
+    // Determinar el vehículo principal (primero de la lista o el guardado en localStorage)
+    const vehiculoPrincipalId = localStorage.getItem('vehiculoPrincipalId');
+    const vehiculoPrincipal = vehiculoSeleccionado || 
+        (vehiculoPrincipalId ? vehiculos.find(v => v.idVehiculos === parseInt(vehiculoPrincipalId)) : null) ||
+        (vehiculos.length > 0 ? vehiculos[0] : null);
+
+    console.log("Usuario actual:", usuario);
+    console.log("Todos los vehículos:", vehiculos);
+    console.log("Vehículo principal:", vehiculoPrincipal);
 
     return (
         <div style={{
@@ -527,15 +646,13 @@ const DriverHome = () => {
             position: 'relative',
             overflowX: 'hidden'
         }}>
-            {/* Capa de legibilidad (Overlay) */}
             <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                 backgroundColor: 'rgba(255, 255, 255, 0.88)',
                 zIndex: 0
             }} />
 
-            <Navbar transparent={true} />
-
+            <Navbar transparent={true}/>
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 {/* Tarjeta de bienvenida */}
@@ -696,25 +813,41 @@ const DriverHome = () => {
                         </Card>
                     </Col>
                 </Row>
+                
                 <Row className="g-4 mb-4">
                     {/* Tarjeta de Vehículo */}
                     <Col lg={7}>
                         <Card className="h-100" style={cardStyle}>
                             <Card.Body className="p-4">
-                                <div className="d-flex align-items-center mb-4">
-                                    <div style={{
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '12px',
-                                        backgroundColor: `${brandColor}15`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        marginRight: '12px'
-                                    }}>
-                                        <FaCar size={20} style={{ color: brandColor }} />
+                                <div className="d-flex align-items-center justify-content-between mb-4">
+                                    <div className="d-flex align-items-center">
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '12px',
+                                            backgroundColor: `${brandColor}15`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginRight: '12px'
+                                        }}>
+                                            <FaCar size={20} style={{ color: brandColor }} />
+                                        </div>
+                                        <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Vehículo Activo</h5>
                                     </div>
-                                    <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Vehículo Activo</h5>
+                                    
+                                    {/* NUEVO: Botón para ver todos los vehículos */}
+                                    {vehiculos.length > 1 && (
+                                        <Button
+                                            variant="outline-info"
+                                            size="sm"
+                                            className="rounded-pill"
+                                            onClick={verTodosLosVehiculos}
+                                            style={{ borderColor: brandColor, color: brandColor }}
+                                        >
+                                            <FaList className="me-1" /> Ver todos ({vehiculos.length})
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {cargandoVehiculo ? (
@@ -735,15 +868,7 @@ const DriverHome = () => {
                                     }}>
                                         <Row className="align-items-center">
                                             <Col xs={3} className="text-center">
-                                                <div style={{
-                                                    fontSize: '2.5rem',
-                                                    backgroundColor: '#fff',
-                                                    borderRadius: '12px',
-                                                    padding: '8px',
-                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                                                }}>
-                                                    🚘
-                                                </div>
+                                                <VehiculoImage vehiculo={vehiculoPrincipal} size={60} brandColor={brandColor} />
                                             </Col>
                                             <Col xs={9}>
                                                 <h6 className="fw-semibold mb-1" style={{ color: '#333', fontSize: '1.1rem' }}>
@@ -751,6 +876,27 @@ const DriverHome = () => {
                                                 </h6>
                                                 <p className="mb-1 text-muted small">Placa: <span className="text-dark fw-semibold">{vehiculoPrincipal.placa}</span></p>
                                                 <p className="mb-0 text-muted small">Capacidad: {vehiculoPrincipal.capacidad} pasajeros</p>
+                                                {vehiculoPrincipal.placaValidada && (
+                                                    <Badge bg="success" className="mt-2 rounded-pill">
+                                                        <FaCheckCircle className="me-1" size={10} /> Placa validada
+                                                    </Badge>
+                                                )}
+                                                {vehiculoPrincipal.fotoVehiculo && (
+                                                    <Button
+                                                        variant="link"
+                                                        size="sm"
+                                                        className="p-0 text-decoration-none mt-2"
+                                                        onClick={() => {
+                                                            const url = vehiculoPrincipal.fotoVehiculo.startsWith('http') 
+                                                                ? vehiculoPrincipal.fotoVehiculo 
+                                                                : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`;
+                                                            setSelectedPhoto(url);
+                                                            setShowPhotoModal(true);
+                                                        }}
+                                                    >
+                                                        <FaEye className="me-1" /> Ver foto completa
+                                                    </Button>
+                                                )}
                                             </Col>
                                         </Row>
                                     </div>
@@ -963,9 +1109,9 @@ const DriverHome = () => {
                                     <>
                                         <ListGroup variant="flush">
                                             {viajesRecientes.map((viaje) => (
-                                                <ListGroup.Item
-                                                    key={viaje.idViajes}
-                                                    className="px-0 border-0 py-3"
+                                                <ListGroup.Item 
+                                                    key={viaje.idViajes} 
+                                                    className="px-0 border-0 py-3" 
                                                     style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
                                                     onClick={() => {
                                                         setViajeSeleccionado(viaje);
@@ -974,17 +1120,21 @@ const DriverHome = () => {
                                                 >
                                                     <Row className="align-items-center">
                                                         <Col xs={1} className="text-center">
-                                                            <div style={{
-                                                                width: '32px',
-                                                                height: '32px',
-                                                                borderRadius: '10px',
-                                                                backgroundColor: `${brandColor}10`,
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center'
-                                                            }}>
-                                                                <FaCar size={16} color={brandColor} />
-                                                            </div>
+                                                            {vehiculoPrincipal ? (
+                                                                <VehiculoImage vehiculo={vehiculoPrincipal} size={32} brandColor={brandColor} />
+                                                            ) : (
+                                                                <div style={{
+                                                                    width: '32px',
+                                                                    height: '32px',
+                                                                    borderRadius: '10px',
+                                                                    backgroundColor: `${brandColor}10`,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}>
+                                                                    <FaCar size={16} color={brandColor} />
+                                                                </div>
+                                                            )}
                                                         </Col>
                                                         <Col xs={3}>
                                                             <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
@@ -1035,6 +1185,103 @@ const DriverHome = () => {
                 </Row>
             </Container>
 
+            {/* NUEVO: Modal para ver todos los vehículos */}
+            <Modal show={showVehiculosModal} onHide={() => setShowVehiculosModal(false)} size="lg" centered>
+                <Modal.Header closeButton style={{ background: brandColor, color: 'white', borderBottom: 'none' }}>
+                    <Modal.Title className="fw-semibold">
+                        <FaCar className="me-2" /> Mis Vehículos ({vehiculos.length})
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1.5rem' }}>
+                    {vehiculos.length === 0 ? (
+                        <div className="text-center py-5">
+                            <FaCar size={50} className="text-muted mb-3" />
+                            <p className="text-muted">No tienes vehículos registrados</p>
+                            <Button
+                                style={{ backgroundColor: brandColor, border: 'none' }}
+                                onClick={() => {
+                                    setShowVehiculosModal(false);
+                                    navigate("/registrar-vehiculo");
+                                }}
+                            >
+                                Registrar Vehículo
+                            </Button>
+                        </div>
+                    ) : (
+                        <Row>
+                            {vehiculos.map((vehiculo, index) => (
+                                <Col md={6} key={vehiculo.idVehiculos} className="mb-3">
+                                    <Card style={{ 
+                                        border: vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos ? `2px solid ${brandColor}` : '1px solid #e0e0e0',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => seleccionarVehiculoPrincipal(vehiculo)}>
+                                        <Card.Body>
+                                            <div className="d-flex align-items-center gap-3">
+                                                <VehiculoImage vehiculo={vehiculo} size={50} brandColor={brandColor} />
+                                                <div className="flex-grow-1">
+                                                    <h6 className="fw-semibold mb-1">
+                                                        {vehiculo.marca} {vehiculo.modelo}
+                                                        {vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos && (
+                                                            <Badge bg="success" className="ms-2">Activo</Badge>
+                                                        )}
+                                                    </h6>
+                                                    <p className="mb-1 small text-muted">Placa: {vehiculo.placa}</p>
+                                                    <p className="mb-0 small text-muted">Capacidad: {vehiculo.capacidad} pasajeros</p>
+                                                    {vehiculo.placaValidada && (
+                                                        <Badge bg="success" className="mt-1" pill>Placa validada</Badge>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            ))}
+                        </Row>
+                    )}
+                </Modal.Body>
+                <Modal.Footer style={{ borderTop: 'none' }}>
+                    <Button variant="secondary" onClick={() => setShowVehiculosModal(false)}>
+                        Cerrar
+                    </Button>
+                    <Button
+                        style={{ backgroundColor: brandColor, border: 'none' }}
+                        onClick={() => {
+                            setShowVehiculosModal(false);
+                            navigate("/registrar-vehiculo");
+                        }}
+                    >
+                        Registrar Nuevo Vehículo
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal para ver la foto del vehículo */}
+            <Modal show={showPhotoModal} onHide={() => setShowPhotoModal(false)} size="lg" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title><FaCar className="me-2" /> Foto del Vehículo</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center bg-dark p-0">
+                    {selectedPhoto && (
+                        <Image 
+                            src={selectedPhoto} 
+                            fluid 
+                            style={{ maxHeight: '70vh', objectFit: 'contain' }}
+                            onError={(e) => {
+                                console.log("Error cargando imagen en modal:", selectedPhoto);
+                                e.target.style.display = 'none';
+                            }}
+                        />
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowPhotoModal(false)}>
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
             {/* Modal de Historial Completo con Búsqueda */}
             <Modal show={showHistorialCompleto} onHide={() => setShowHistorialCompleto(false)} size="xl" centered>
                 <Modal.Header closeButton style={{ borderBottom: 'none', padding: '1.5rem 1.5rem 0.5rem' }}>
@@ -1043,8 +1290,7 @@ const DriverHome = () => {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1rem 1.5rem' }}>
-
-                    {/* Barra de búsqueda y filtros */}
+                    
                     <Row className="mb-4 g-3">
                         <Col md={6}>
                             <InputGroup>
@@ -1114,9 +1360,9 @@ const DriverHome = () => {
                     ) : (
                         <ListGroup variant="flush">
                             {viajesFiltrados.map((viaje) => (
-                                <ListGroup.Item
-                                    key={viaje.idViajes}
-                                    className="py-3 border-0"
+                                <ListGroup.Item 
+                                    key={viaje.idViajes} 
+                                    className="py-3 border-0" 
                                     style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
                                     onClick={() => {
                                         setViajeSeleccionado(viaje);
@@ -1125,17 +1371,21 @@ const DriverHome = () => {
                                 >
                                     <Row className="align-items-center">
                                         <Col xs={1} className="text-center">
-                                            <div style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '12px',
-                                                backgroundColor: `${brandColor}10`,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <FaCar size={20} color={brandColor} />
-                                            </div>
+                                            {vehiculoPrincipal ? (
+                                                <VehiculoImage vehiculo={vehiculoPrincipal} size={40} brandColor={brandColor} />
+                                            ) : (
+                                                <div style={{
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '12px',
+                                                    backgroundColor: `${brandColor}10`,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <FaCar size={20} color={brandColor} />
+                                                </div>
+                                            )}
                                         </Col>
                                         <Col xs={2}>
                                             <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
@@ -1348,7 +1598,26 @@ const DriverHome = () => {
                                     justifyContent: 'center',
                                     margin: '0 auto 20px'
                                 }}>
-                                    <FaCar size={40} style={{ color: brandColor }} />
+                                    {vehiculoPrincipal?.fotoVehiculo ? (
+                                        <Image 
+                                            src={vehiculoPrincipal.fotoVehiculo.startsWith('http') 
+                                                ? vehiculoPrincipal.fotoVehiculo 
+                                                : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`}
+                                            alt="Vehículo"
+                                            style={{
+                                                width: '60px',
+                                                height: '60px',
+                                                borderRadius: '50%',
+                                                objectFit: 'cover'
+                                            }}
+                                            onError={(e) => {
+                                                console.error("Error en imagen del tutorial:", e);
+                                                e.target.style.display = 'none';
+                                            }}
+                                        />
+                                    ) : (
+                                        <FaCar size={40} style={{ color: brandColor }} />
+                                    )}
                                 </div>
                                 <h3 className="fw-semibold mb-3" style={{ color: '#333' }}>Vehículo</h3>
                                 <p className="text-muted">Seguridad garantizada para ti y tus pasajeros.</p>
@@ -1482,7 +1751,7 @@ const DriverHome = () => {
                     </form>
                 </Modal.Body>
             </Modal>
-        </div >
+        </div>
     );
 };
 
