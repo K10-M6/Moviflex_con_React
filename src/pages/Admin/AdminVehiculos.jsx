@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Image, Form, InputGroup } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Image, Form, InputGroup, Pagination } from "react-bootstrap";
 import { FaCheckCircle, FaTimesCircle, FaEye, FaCar } from "react-icons/fa";
 import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
-
 
 function AdminVehiculos() {
     const { token } = useAuth();
@@ -17,7 +16,10 @@ function AdminVehiculos() {
     const [validatingPlate, setValidatingPlate] = useState(false);
     const [busqueda, setBusqueda] = useState("");
     const [buscando, setBuscando] = useState(false);
-
+    
+    // Estados para paginación
+    const [paginaActual, setPaginaActual] = useState(1);
+    const elementosPorPagina = 10;
 
     const traerUsuarios = useCallback(async () => {
         try {
@@ -73,6 +75,7 @@ function AdminVehiculos() {
             }
 
             setVehiculos(data);
+            setPaginaActual(1); 
 
         } catch (error) {
             console.error("Error al traer vehículos:", error);
@@ -99,7 +102,7 @@ function AdminVehiculos() {
             if (!response.ok) throw new Error("Error en la búsqueda");
             const data = await response.json();
 
-            // Reconstruir lista de vehículos a partir de los usuarios encontrados
+
             const vehiculosEncontrados = [];
             data.forEach(usuario => {
                 if (usuario.vehiculos && usuario.vehiculos.length > 0) {
@@ -107,14 +110,14 @@ function AdminVehiculos() {
                         vehiculosEncontrados.push({
                             ...v,
                             idUsuario: usuario.idUsuarios,
-                            // Asegurar que idVehiculos exista si no viene del search (el backend debe incluirlo)
-                            idVehiculos: v.idVehiculos || v.id // Fallback
+                            idVehiculos: v.idVehiculos || v.id
                         });
                     });
                 }
             });
 
             setVehiculos(vehiculosEncontrados);
+            setPaginaActual(1);
         } catch (error) {
             setError("Error al buscar vehículos");
         } finally {
@@ -128,11 +131,33 @@ function AdminVehiculos() {
         traerVehiculos();
     }
 
-
     useEffect(() => {
         traerUsuarios();
         traerVehiculos();
     }, [traerUsuarios, traerVehiculos]);
+
+    const vehiculosFiltrados = vehiculos.filter(vehiculo => {
+        const terminoBusqueda = busqueda.toLowerCase();
+        const nombrePropietario = obtenerNombreUsuario(vehiculo.idUsuario).toLowerCase();
+        
+        return (
+            vehiculo.placa?.toLowerCase().includes(terminoBusqueda) ||
+            nombrePropietario.includes(terminoBusqueda) ||
+            vehiculo.marca?.toLowerCase().includes(terminoBusqueda) ||
+            vehiculo.modelo?.toLowerCase().includes(terminoBusqueda) ||
+            vehiculo.idVehiculos?.toString().includes(terminoBusqueda)
+        );
+    });
+
+    const indiceUltimoElemento = paginaActual * elementosPorPagina;
+    const indicePrimerElemento = indiceUltimoElemento - elementosPorPagina;
+    const vehiculosPaginados = vehiculosFiltrados.slice(indicePrimerElemento, indiceUltimoElemento);
+    const totalPaginas = Math.ceil(vehiculosFiltrados.length / elementosPorPagina);
+
+    const cambiarPagina = (numeroPagina) => {
+        setPaginaActual(numeroPagina);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     async function cambiarEstadoVehiculo(id, estadoActual) {
         try {
@@ -222,17 +247,6 @@ function AdminVehiculos() {
         }
     }
 
-    function getEstadoTexto(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return "Activo";
-            case 'INACTIVO':
-                return "Inactivo";
-            default:
-                return estado || "Sin estado";
-        }
-    }
-
     function getBotonTexto(estado) {
         switch (estado) {
             case 'ACTIVO':
@@ -288,6 +302,79 @@ function AdminVehiculos() {
         }
     }
 
+    const Paginacion = () => {
+        if (totalPaginas <= 1) return null;
+
+        let items = [];
+        const maxBotones = 5;
+        let inicio = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
+        let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
+
+        if (fin - inicio + 1 < maxBotones) {
+            inicio = Math.max(1, fin - maxBotones + 1);
+        }
+
+        items.push(
+            <Pagination.Prev
+                key="prev"
+                onClick={() => cambiarPagina(paginaActual - 1)}
+                disabled={paginaActual === 1}
+            />
+        );
+
+        if (inicio > 1) {
+            items.push(
+                <Pagination.Item key={1} onClick={() => cambiarPagina(1)}>
+                    1
+                </Pagination.Item>
+            );
+            if (inicio > 2) {
+                items.push(<Pagination.Ellipsis key="ellipsis1" disabled />);
+            }
+        }
+
+        for (let numero = inicio; numero <= fin; numero++) {
+            items.push(
+                <Pagination.Item
+                    key={numero}
+                    active={numero === paginaActual}
+                    onClick={() => cambiarPagina(numero)}
+                >
+                    {numero}
+                </Pagination.Item>
+            );
+        }
+
+        if (fin < totalPaginas) {
+            if (fin < totalPaginas - 1) {
+                items.push(<Pagination.Ellipsis key="ellipsis2" disabled />);
+            }
+            items.push(
+                <Pagination.Item key={totalPaginas} onClick={() => cambiarPagina(totalPaginas)}>
+                    {totalPaginas}
+                </Pagination.Item>
+            );
+        }
+
+        items.push(
+            <Pagination.Next
+                key="next"
+                onClick={() => cambiarPagina(paginaActual + 1)}
+                disabled={paginaActual === totalPaginas}
+            />
+        );
+
+        return (
+            <div className="d-flex justify-content-between align-items-center mt-4 px-4 pb-4">
+                <div className="text-muted">
+                    Mostrando {indicePrimerElemento + 1} - {Math.min(indiceUltimoElemento, vehiculosFiltrados.length)} de {vehiculosFiltrados.length} vehículos
+                    {busqueda && ` (filtrados de ${vehiculos.length} totales)`}
+                </div>
+                <Pagination>{items}</Pagination>
+            </div>
+        );
+    };
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -297,7 +384,6 @@ function AdminVehiculos() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* Capa de legibilidad */}
             <div style={{
                 position: 'absolute',
                 top: 0,
@@ -341,7 +427,10 @@ function AdminVehiculos() {
                                             type="text"
                                             placeholder="Buscar por placa, propietario o marca/modelo..."
                                             value={busqueda}
-                                            onChange={(e) => setBusqueda(e.target.value)}
+                                            onChange={(e) => {
+                                                setBusqueda(e.target.value);
+                                                setPaginaActual(1);
+                                            }}
                                             className="border-start-0"
                                         />
                                         {busqueda && (
@@ -362,10 +451,14 @@ function AdminVehiculos() {
                         </Card>
 
                         <div className="d-flex gap-3 mt-3 flex-wrap">
-
                             <Badge bg="primary" className="px-3 py-2" style={{ backgroundColor: '#54c7b8', border: 'none' }}>
                                 Total: {vehiculos.length}
                             </Badge>
+                            {busqueda && (
+                                <Badge bg="info" className="px-3 py-2">
+                                    Resultados: {vehiculosFiltrados.length}
+                                </Badge>
+                            )}
                             <Badge bg="success" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
                                 Activos: {vehiculos.filter(v => v.estado === 'ACTIVO').length}
                             </Badge>
@@ -400,123 +493,126 @@ function AdminVehiculos() {
                                         <p className="mt-3 text-muted">Cargando vehículos...</p>
                                     </div>
                                 ) : (
-                                    <div className="table-responsive">
-                                        <Table hover className="align-middle mb-0">
-                                            <thead style={{ 
-                                                backgroundColor: 'rgba(248, 249, 250, 0.9)',
-                                                borderBottom: '2px solid #51cfbd'
-                                            }}>
-                                                <tr>
-                                                    <th className="py-3 px-4">ID</th>
-                                                    <th className="py-3">Propietario</th>
-                                                    <th className="py-3">Vehículo</th>
-                                                    <th className="py-3">Placa / Foto</th>
-                                                    <th className="py-3">Capacidad</th>
-                                                    <th className="py-3">Estado</th>
-                                                    <th className="py-3">Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
-                                                {vehiculos.length === 0 ? (
+                                    <>
+                                        <div className="table-responsive">
+                                            <Table hover className="align-middle mb-0">
+                                                <thead style={{ 
+                                                    backgroundColor: 'rgba(248, 249, 250, 0.9)',
+                                                    borderBottom: '2px solid #51cfbd'
+                                                }}>
                                                     <tr>
-                                                        <td colSpan="7" className="text-center py-4 text-muted">
-                                                            No hay vehículos registrados
-                                                        </td>
+                                                        <th className="py-3 px-4">ID</th>
+                                                        <th className="py-3">Propietario</th>
+                                                        <th className="py-3">Vehículo</th>
+                                                        <th className="py-3">Placa / Foto</th>
+                                                        <th className="py-3">Capacidad</th>
+                                                        <th className="py-3">Estado</th>
+                                                        <th className="py-3">Acciones</th>
                                                     </tr>
-                                                ) : (
-                                                    vehiculos.map((vehiculo, index) => (
-                                                        <tr key={vehiculo.idVehiculos} style={{
-                                                            backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
-                                                        }}>
-                                                            <td className="fw-semibold px-4">{vehiculo.idVehiculos}</td>
-                                                            <td>
-                                                                <div className="fw-medium">
-                                                                    {obtenerNombreUsuario(vehiculo.idUsuario)}
-                                                                </div>
-                                                                <small className="text-muted">
-                                                                    ID: {vehiculo.idUsuario}
-                                                                </small>
-                                                            </td>
-                                                            <td>
-                                                                <div className="fw-medium">
-                                                                    {vehiculo.marca} {vehiculo.modelo}
-                                                                </div>
-                                                                <div className="d-flex gap-1 mt-1 align-items-center">
-                                                                    {getTipoVehiculoBadge(vehiculo.tipo)}
-                                                                    {vehiculo.anio && (
-                                                                        <small className="text-muted ms-1">({vehiculo.anio})</small>
-                                                                    )}
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                                <div className="d-flex align-items-center gap-2">
-                                                                    <span className="fw-semibold" style={{ fontSize: '1.05rem' }}>
-                                                                        {vehiculo.placa}
-                                                                    </span>
-                                                                    {vehiculo.placaValidada ? (
-                                                                        <FaCheckCircle className="text-success" title="Placa Validada" size={18} />
-                                                                    ) : (
-                                                                        <FaTimesCircle className="text-danger" title="Placa No Validada" size={18} />
-                                                                    )}
-                                                                </div>
-                                                                {vehiculo.fotoVehiculo && (
-                                                                    <Button
-                                                                        variant="link"
-                                                                        size="sm"
-                                                                        className="p-0 text-decoration-none mt-1"
-                                                                        onClick={() => {
-                                                                            setSelectedPhoto(vehiculo.fotoVehiculo);
-                                                                            setShowPhotoModal(true);
-                                                                        }}
-                                                                        style={{
-                                                                            color: '#51cfbd',
-                                                                            transition: 'all 0.2s',
-                                                                            fontWeight: '500'
-                                                                        }}
-                                                                    >
-                                                                        <FaEye className="me-1" /> Ver Foto
-                                                                    </Button>
-                                                                )}
-                                                            </td>
-                                                            <td>{formatearCapacidad(vehiculo.capacidad)}</td>
-                                                            <td>
-                                                                <div>{getEstadoBadge(vehiculo.estado)}</div>
-                                                            </td>
-                                                            <td>
-                                                                <div className="d-flex flex-column gap-2" style={{ minWidth: '130px' }}>
-                                                                    <Button
-                                                                        variant={getBotonVariant(vehiculo.estado)}
-                                                                        size="sm"
-                                                                        onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos, vehiculo.estado)}
-                                                                        className="w-100"
-                                                                        style={{
-                                                                            transition: 'all 0.2s',
-                                                                            fontWeight: '500'
-                                                                        }}
-                                                                    >
-                                                                        {getBotonTexto(vehiculo.estado)}
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant={vehiculo.placaValidada ? "outline-warning" : "outline-success"}
-                                                                        size="sm"
-                                                                        onClick={() => validarPlaca(vehiculo.idVehiculos, vehiculo.placaValidada)}
-                                                                        className="w-100"
-                                                                        disabled={validatingPlate}
-                                                                        style={{
-                                                                            transition: 'all 0.2s',
-                                                                            fontWeight: '500'
-                                                                        }}
-                                                                    >
-                                                                        {vehiculo.placaValidada ? "Invalidar Placa" : "Validar Placa"}
-                                                                    </Button>
-                                                                </div>
+                                                </thead>
+                                                <tbody style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+                                                    {vehiculosFiltrados.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan="7" className="text-center py-4 text-muted">
+                                                                {busqueda ? "No se encontraron vehículos con esos criterios" : "No hay vehículos registrados"}
                                                             </td>
                                                         </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </Table>
-                                    </div>
+                                                    ) : (
+                                                        vehiculosPaginados.map((vehiculo, index) => (
+                                                            <tr key={vehiculo.idVehiculos} style={{
+                                                                backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
+                                                            }}>
+                                                                <td className="fw-semibold px-4">{vehiculo.idVehiculos}</td>
+                                                                <td>
+                                                                    <div className="fw-medium">
+                                                                        {obtenerNombreUsuario(vehiculo.idUsuario)}
+                                                                    </div>
+                                                                    <small className="text-muted">
+                                                                        ID: {vehiculo.idUsuario}
+                                                                    </small>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="fw-medium">
+                                                                        {vehiculo.marca} {vehiculo.modelo}
+                                                                    </div>
+                                                                    <div className="d-flex gap-1 mt-1 align-items-center">
+                                                                        {getTipoVehiculoBadge(vehiculo.tipo)}
+                                                                        {vehiculo.anio && (
+                                                                            <small className="text-muted ms-1">({vehiculo.anio})</small>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="d-flex align-items-center gap-2">
+                                                                        <span className="fw-semibold" style={{ fontSize: '1.05rem' }}>
+                                                                            {vehiculo.placa}
+                                                                        </span>
+                                                                        {vehiculo.placaValidada ? (
+                                                                            <FaCheckCircle className="text-success" title="Placa Validada" size={18} />
+                                                                        ) : (
+                                                                            <FaTimesCircle className="text-danger" title="Placa No Validada" size={18} />
+                                                                        )}
+                                                                    </div>
+                                                                    {vehiculo.fotoVehiculo && (
+                                                                        <Button
+                                                                            variant="link"
+                                                                            size="sm"
+                                                                            className="p-0 text-decoration-none mt-1"
+                                                                            onClick={() => {
+                                                                                setSelectedPhoto(vehiculo.fotoVehiculo);
+                                                                                setShowPhotoModal(true);
+                                                                            }}
+                                                                            style={{
+                                                                                color: '#51cfbd',
+                                                                                transition: 'all 0.2s',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            <FaEye className="me-1" /> Ver Foto
+                                                                        </Button>
+                                                                    )}
+                                                                </td>
+                                                                <td>{formatearCapacidad(vehiculo.capacidad)}</td>
+                                                                <td>
+                                                                    <div>{getEstadoBadge(vehiculo.estado)}</div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="d-flex flex-column gap-2" style={{ minWidth: '130px' }}>
+                                                                        <Button
+                                                                            variant={getBotonVariant(vehiculo.estado)}
+                                                                            size="sm"
+                                                                            onClick={() => cambiarEstadoVehiculo(vehiculo.idVehiculos, vehiculo.estado)}
+                                                                            className="w-100"
+                                                                            style={{
+                                                                                transition: 'all 0.2s',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            {getBotonTexto(vehiculo.estado)}
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant={vehiculo.placaValidada ? "outline-warning" : "outline-success"}
+                                                                            size="sm"
+                                                                            onClick={() => validarPlaca(vehiculo.idVehiculos, vehiculo.placaValidada)}
+                                                                            className="w-100"
+                                                                            disabled={validatingPlate}
+                                                                            style={{
+                                                                                transition: 'all 0.2s',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            {vehiculo.placaValidada ? "Invalidar Placa" : "Validar Placa"}
+                                                                        </Button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </Table>
+                                        </div>
+                                        <Paginacion />
+                                    </>
                                 )}
                             </Card.Body>
                         </Card>
@@ -524,7 +620,7 @@ function AdminVehiculos() {
                 </Row>
             </Container>
 
-            {/* Modal para ver la foto del vehículo - con estilo mejorado */}
+            {/* Modal para ver la foto del vehículo */}
             <Modal 
                 show={showPhotoModal} 
                 onHide={() => setShowPhotoModal(false)} 

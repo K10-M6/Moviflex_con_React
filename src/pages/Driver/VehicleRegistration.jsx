@@ -4,8 +4,35 @@ import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge } from "re
 import { FaCar, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaIdCard } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import Navbar from '../../components/Navbar';
-import Logo from '../Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
+import LogoMoviflex from '../Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
+import EscenaHomeBase from '../Imagenes/HomeBaseImage.png';
+import FondoPantalla from '../Imagenes/AutoresContacto.png';
 import toast, { Toaster } from 'react-hot-toast';
+
+// Estilos personalizados para el botón de tomar foto
+const customStyles = `
+  .custom-tomar-foto-btn {
+    border-radius: 12px !important;
+    border-color: #62d8d9 !important;
+    color: #62d8d9 !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    padding: 1rem 0 !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .custom-tomar-foto-btn:hover {
+    background-color: #62d8d9 !important;
+    border-color: #62d8d9 !important;
+    color: white !important;
+  }
+  
+  .custom-tomar-foto-btn:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+`;
 
 function VehicleRegistration() {
   const navigate = useNavigate();
@@ -178,7 +205,6 @@ function VehicleRegistration() {
       toast.success('¡Foto tomada correctamente!');
       detenerCamara();
 
-      // EXTRAER PLACA AUTOMÁTICAMENTE
       extraerPlacaDeFoto(comprimida);
     }
   };
@@ -199,7 +225,7 @@ function VehicleRegistration() {
       const data = await resp.json();
       if (data.plate_text) {
         setPlaca(data.plate_text);
-        setFotoComprimida(base64); // Por si acaso
+        setFotoComprimida(base64);
         toast.success(`Placa detectada: ${data.plate_text}`, { id: toastId });
       } else {
         toast.error("No se pudo leer la placa automáticamente. Por favor ingrésala manual.", { id: toastId });
@@ -271,7 +297,6 @@ function VehicleRegistration() {
     const toastId = toast.loading('Registrando vehículo...');
 
     try {
-      // Datos exactamente como los espera el modelo
       const datosEnviar = {
         marca: marca.trim(),
         modelo: modelo.trim(),
@@ -305,7 +330,6 @@ function VehicleRegistration() {
           toast.success('Vehículo registrado. Placa en revisión.', { duration: 6000 });
         }
 
-        // Limpiar formulario
         setMarca("");
         setModelo("");
         setPlaca("");
@@ -315,7 +339,6 @@ function VehicleRegistration() {
         setFotoComprimida("");
         setImagenValida(null);
 
-        // Redirigir después de 3 segundos
         setTimeout(() => {
           navigate("/driver-profile");
         }, 3000);
@@ -344,292 +367,305 @@ function VehicleRegistration() {
   }
 
   return (
-    <div style={{
-      backgroundImage: `linear-gradient(rgba(117, 192, 177, 0.55), rgba(117, 192, 177, 0.31)), url('https://vazquezauto.com.ar/wp-content/uploads/2024/01/tips1.png.jpeg')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed',
-      minHeight: '100vh',
-      minWidth: '100vw',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-            padding: '16px',
-            borderRadius: '10px',
-          },
-          success: {
-            duration: 3000,
-            iconTheme: { primary: '#4acfbd', secondary: '#fff' },
-          },
-          error: {
+    <>
+      <style>{customStyles}</style>
+      <div style={{
+        backgroundImage: `url(${FondoPantalla})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <Toaster
+          position="top-right"
+          toastOptions={{
             duration: 4000,
-            iconTheme: { primary: '#ff4b4b', secondary: '#fff' },
-          },
-        }}
-      />
+            style: {
+              background: '#363636',
+              color: '#fff',
+              padding: '16px',
+              borderRadius: '10px',
+            },
+            success: {
+              duration: 3000,
+              iconTheme: { primary: '#4acfbd', secondary: '#fff' },
+            },
+            error: {
+              duration: 4000,
+              iconTheme: { primary: '#ff4b4b', secondary: '#fff' },
+            },
+          }}
+        />
 
-      <Navbar />
+        <Navbar />
 
-      <Container className="d-flex flex-column justify-content-center" style={{ flexGrow: 1, padding: '20px' }}>
-        <Row className="justify-content-center">
-          <Col xs={12} md={8} lg={6}>
-            <Card className="shadow border-2">
-              <Card.Body className="p-4">
+        <Container className="d-flex flex-column justify-content-center flex-grow-1 py-4">
+          <Row className="justify-content-center align-items-center g-0">
+        
+            <Col md={6} className="d-none d-md-flex justify-content-center p-4">
+              <img 
+                src={EscenaHomeBase} 
+                alt="Moviflex Home" 
+                style={{ width: '100%', maxWidth: '500px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }} 
+              />
+            </Col>
+            <Col xs={12} md={6}>
+              <Card className="shadow-lg border-0" style={{ borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
+                <Card.Body className="p-4 p-md-5">
+                  
+                  <div className="text-center mb-4">
+                    <img src={LogoMoviflex} alt="Logo" style={{ width: '120px' }} />
+                  </div>
 
-                <div className="text-center mb-4">
-                  <img src={Logo} alt="Logo" style={{ width: '180px' }} />
-                </div>
+                  <h3 className="text-center mb-4" style={{ color: '#62d8d9', fontWeight: '600' }}>
+                    <FaCar className="me-2" />
+                    Registro de Vehículo
+                  </h3>
 
-                <h3 className="text-center mb-4" style={{ color: '#347064' }}>
-                  <FaCar className="me-2" />
-                  Registro de Vehículo
-                </h3>
+                  {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
+                  {success && <Alert variant="success" className="py-2 small">{success}</Alert>}
 
-                {error && <Alert variant="danger">{error}</Alert>}
-                {success && <Alert variant="success">{success}</Alert>}
-
-                {errorBackend && (
-                  <Alert variant="danger" className="py-2 small">
-                    <FaExclamationTriangle className="me-2" />
-                    {errorBackend}
-                  </Alert>
-                )}
-
-                {placaValidada && (
-                  <Alert variant="success" className="py-2 small d-flex align-items-center">
-                    <FaCheckCircle className="me-2" />
-                    ¡Placa validada correctamente!
-                  </Alert>
-                )}
-
-                <Form onSubmit={guardarVehiculo}>
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Marca <span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={marca}
-                          onChange={(e) => setMarca(e.target.value)}
-                          placeholder="Ej: Toyota, Renault"
-                          disabled={loading}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Modelo <span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={modelo}
-                          onChange={(e) => setModelo(e.target.value)}
-                          placeholder="Ej: Corolla, Logan"
-                          disabled={loading}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">
-                          <FaIdCard className="me-1" /> Placa <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                          type="text"
-                          value={placa}
-                          onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-                          placeholder="ABC123"
-                          maxLength="6"
-                          style={{ textTransform: 'uppercase' }}
-                          disabled={loading}
-                          readOnly
-                        />
-                        <Form.Text className="text-muted">
-                          3 letras + 3 números (ej: ABC123)
-                        </Form.Text>
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Capacidad <span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                          type="number"
-                          value={capacidad}
-                          onChange={(e) => setCapacidad(e.target.value)}
-                          placeholder="Ej: 4"
-                          min="1"
-                          disabled={loading}
-                        />
-                        <Form.Text className="text-muted">Número de pasajeros</Form.Text>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  {/* Foto del vehículo (debe mostrar la placa) */}
-                  <Form.Group className="mb-4">
-                    <Form.Label className="d-flex align-items-center fw-bold">
-                      <FaFileImage className="me-2" />
-                      Foto del Vehículo <span className="text-danger">*</span>
-                      {fotoBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
-                      {fotoBase64 && imagenValida === true && (
-                        <Badge bg="success" className="ms-2">Válida</Badge>
-                      )}
-                      {fotoBase64 && imagenValida === false && (
-                        <Badge bg="warning" className="ms-2">Revisar</Badge>
-                      )}
-                    </Form.Label>
-                    <Form.Text className="text-muted d-block mb-2">
-                      La foto debe mostrar el vehículo completo con la placa visible
-                    </Form.Text>
-
-                    <Button
-                      variant="outline-success"
-                      onClick={iniciarCamara}
-                      className="w-100 py-3 mb-3"
-                      disabled={cameraActive || verificandoImagen || loading}
-                      size="lg"
-                    >
-                      <FaVideo className="me-2" />
-                      {fotoBase64 ? 'Tomar otra foto' : 'Tomar foto del vehículo'}
-                    </Button>
-
-                    {fotoPreview && (
-                      <div className="text-center mt-3">
-                        <div style={{
-                          maxHeight: '200px',
-                          border: `2px solid ${imagenValida === true ? '#4acfbd' : imagenValida === false ? '#ffc107' : '#ddd'}`,
-                          borderRadius: '8px',
-                          overflow: 'hidden',
-                          display: 'inline-block'
-                        }}>
-                          <img
-                            src={fotoPreview}
-                            alt="Vista previa del vehículo"
-                            style={{ maxHeight: '200px', width: 'auto' }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </Form.Group>
-
-                  {verificandoImagen && (
-                    <Alert variant="info" className="py-2 small d-flex align-items-center">
-                      <div className="spinner-border spinner-border-sm me-2" />
-                      Verificando calidad de imagen...
+                  {errorBackend && (
+                    <Alert variant="danger" className="py-2 small d-flex align-items-center">
+                      <FaExclamationTriangle className="me-2" />
+                      {errorBackend}
                     </Alert>
                   )}
 
-                  {!verificandoImagen && imagenValida === true && (
+                  {placaValidada && (
                     <Alert variant="success" className="py-2 small d-flex align-items-center">
-                      <FaSmile className="me-2" />
-                      {mensajeImagen}
+                      <FaCheckCircle className="me-2" />
+                      ¡Placa validada correctamente!
                     </Alert>
                   )}
 
-                  {!verificandoImagen && imagenValida === false && (
-                    <Alert variant="warning" className="py-2 small d-flex align-items-center">
-                      <FaFrown className="me-2" />
-                      {mensajeImagen}
-                    </Alert>
-                  )}
+                  <Form onSubmit={guardarVehiculo}>
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold small">Marca <span className="text-danger">*</span></Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={marca}
+                            onChange={(e) => setMarca(e.target.value)}
+                            placeholder="Ej: Toyota, Renault"
+                            disabled={loading}
+                            style={{ borderRadius: '12px', backgroundColor: '#f8fafb', border: '1px solid #eee', padding: '10px 15px' }}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold small">Modelo <span className="text-danger">*</span></Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={modelo}
+                            onChange={(e) => setModelo(e.target.value)}
+                            placeholder="Ej: Corolla, Logan"
+                            disabled={loading}
+                            style={{ borderRadius: '12px', backgroundColor: '#f8fafb', border: '1px solid #eee', padding: '10px 15px' }}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
 
-                  {/* Recomendaciones */}
-                  <div className="mt-3 p-2 bg-light rounded-3 small">
-                    <div className="fw-bold mb-1">
-                      <FaExclamationTriangle className="me-1 text-warning" />
-                      Recomendaciones
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold small">
+                            <FaIdCard className="me-1" /> Placa <span className="text-danger">*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={placa}
+                            onChange={(e) => setPlaca(e.target.value.toUpperCase())}
+                            placeholder="ABC123"
+                            maxLength="6"
+                            style={{ borderRadius: '12px', backgroundColor: '#f8fafb', border: '1px solid #eee', padding: '10px 15px', textTransform: 'uppercase' }}
+                            disabled={loading}
+                            readOnly
+                          />
+                          <Form.Text className="text-muted small">
+                            3 letras + 3 números (ej: ABC123)
+                          </Form.Text>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="mb-3">
+                          <Form.Label className="fw-bold small">Capacidad <span className="text-danger">*</span></Form.Label>
+                          <Form.Control
+                            type="number"
+                            value={capacidad}
+                            onChange={(e) => setCapacidad(e.target.value)}
+                            placeholder="Ej: 4"
+                            min="1"
+                            disabled={loading}
+                            style={{ borderRadius: '12px', backgroundColor: '#f8fafb', border: '1px solid #eee', padding: '10px 15px' }}
+                          />
+                          <Form.Text className="text-muted small">Número de pasajeros</Form.Text>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+
+                    <Form.Group className="mb-4">
+                      <Form.Label className="d-flex align-items-center fw-bold small">
+                        <FaFileImage className="me-2" />
+                        Foto del Vehículo <span className="text-danger">*</span>
+                        {fotoBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
+                        {fotoBase64 && imagenValida === true && (
+                          <Badge bg="success" className="ms-2 small">Válida</Badge>
+                        )}
+                        {fotoBase64 && imagenValida === false && (
+                          <Badge bg="warning" className="ms-2 small">Revisar</Badge>
+                        )}
+                      </Form.Label>
+                      <Form.Text className="text-muted d-block mb-2 small">
+                        La foto debe mostrar el vehículo completo con la placa visible
+                      </Form.Text>
+
+                      <Button
+                        variant="outline-success"
+                        onClick={iniciarCamara}
+                        className="custom-tomar-foto-btn"
+                        disabled={cameraActive || verificandoImagen || loading}
+                      >
+                        <FaVideo className="me-2" />
+                        {fotoBase64 ? 'Tomar otra foto' : 'Tomar foto del vehículo'}
+                      </Button>
+
+                      {fotoPreview && (
+                        <div className="text-center mt-3">
+                          <div style={{
+                            maxHeight: '200px',
+                            border: `2px solid ${imagenValida === true ? '#4acfbd' : imagenValida === false ? '#ffc107' : '#ddd'}`,
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            display: 'inline-block'
+                          }}>
+                            <img
+                              src={fotoPreview}
+                              alt="Vista previa del vehículo"
+                              style={{ maxHeight: '200px', width: 'auto' }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </Form.Group>
+
+                    {verificandoImagen && (
+                      <Alert variant="info" className="py-2 small d-flex align-items-center">
+                        <div className="spinner-border spinner-border-sm me-2" />
+                        Verificando calidad de imagen...
+                      </Alert>
+                    )}
+
+                    {!verificandoImagen && imagenValida === true && (
+                      <Alert variant="success" className="py-2 small d-flex align-items-center">
+                        <FaSmile className="me-2" />
+                        {mensajeImagen}
+                      </Alert>
+                    )}
+
+                    {!verificandoImagen && imagenValida === false && (
+                      <Alert variant="warning" className="py-2 small d-flex align-items-center">
+                        <FaFrown className="me-2" />
+                        {mensajeImagen}
+                      </Alert>
+                    )}
+
+                    <div className="mt-3 p-3 bg-light rounded-4 small" style={{ backgroundColor: '#f8fafb' }}>
+                      <div className="fw-bold mb-2">
+                        <FaExclamationTriangle className="me-1 text-warning" />
+                        Recomendaciones
+                      </div>
+                      <ul className="mb-0 ps-3" style={{ color: '#666' }}>
+                        <li>La placa debe ser claramente visible</li>
+                        <li>Buena iluminación, sin reflejos</li>
+                        <li>El vehículo debe ocupar la mayor parte de la foto</li>
+                        <li>Evita fotos borrosas o movidas</li>
+                      </ul>
                     </div>
-                    <ul className="mb-0 ps-3">
-                      <li>La placa debe ser claramente visible</li>
-                      <li>Buena iluminación, sin reflejos</li>
-                      <li>El vehículo debe ocupar la mayor parte de la foto</li>
-                      <li>Evita fotos borrosas o movidas</li>
-                    </ul>
-                  </div>
 
-                  {/* Botones */}
-                  <div className="d-flex gap-2 mt-4">
-                    <Button
-                      type="submit"
-                      className="flex-fill py-3"
-                      style={{
-                        background: fotoComprimida ? 'linear-gradient(20deg, #4acfbd, #59c2ff)' : '#6c757d',
-                        border: 'none',
-                        fontSize: '1.1rem'
-                      }}
-                      disabled={loading || !fotoComprimida || verificandoImagen}
-                    >
-                      {loading ? 'Registrando...' : 'Registrar vehículo'}
-                    </Button>
+                    <div className="d-flex gap-2 mt-4">
+                      <Button
+                        type="submit"
+                        className="flex-fill py-3 border-0"
+                        style={{
+                          background: fotoComprimida ? '#62d8d9' : '#6c757d',
+                          borderRadius: '12px',
+                          fontWeight: 'bold',
+                          fontSize: '1rem'
+                        }}
+                        disabled={loading || !fotoComprimida || verificandoImagen}
+                      >
+                        {loading ? 'Registrando...' : 'Registrar vehículo'}
+                      </Button>
 
-                    <Button variant="outline-secondary" onClick={() => navigate("/driver-profile")} className="px-4">
-                      <FaArrowLeft />
-                    </Button>
-                  </div>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+                      <Button 
+                        variant="outline-secondary" 
+                        onClick={() => navigate("/driver-profile")} 
+                        className="px-4"
+                        style={{ borderRadius: '12px' }}
+                      >
+                        <FaArrowLeft />
+                      </Button>
+                    </div>
+                  </Form>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
 
-      {/* Modal de cámara - sin recuadros que estorben */}
-      <Modal show={showCamera} onHide={detenerCamara} size="lg" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Tomar Foto del Vehículo</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="text-center p-0">
-          <div style={{ backgroundColor: '#000', minHeight: '450px' }}>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              style={{ width: '100%', height: 'auto', maxHeight: '500px' }}
-            />
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
+        <Modal show={showCamera} onHide={detenerCamara} size="lg" centered>
+          <Modal.Header closeButton className="border-0">
+            <Modal.Title className="fw-bold">Tomar Foto del Vehículo</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-center p-0">
+            <div style={{ backgroundColor: '#000', minHeight: '450px', borderRadius: '0' }}>
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                style={{ width: '100%', height: 'auto', maxHeight: '500px' }}
+              />
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-            {!cameraActive && (
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                color: 'white'
-              }}>
-                <p>Iniciando cámara...</p>
-              </div>
-            )}
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={detenerCamara} size="lg">
-            Cancelar
-          </Button>
-          <Button
-            variant="success"
-            onClick={tomarFoto}
-            disabled={!cameraActive}
-            size="lg"
-          >
-            <FaCamera className="me-2" /> Tomar Foto
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+              {!cameraActive && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(0,0,0,0.7)',
+                  color: 'white'
+                }}>
+                  <p>Iniciando cámara...</p>
+                </div>
+              )}
+            </div>
+          </Modal.Body>
+          <Modal.Footer className="border-0">
+            <Button variant="secondary" onClick={detenerCamara} style={{ borderRadius: '12px' }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="success"
+              onClick={tomarFoto}
+              disabled={!cameraActive}
+              style={{ background: '#4acfbd', border: 'none', borderRadius: '12px' }}
+            >
+              <FaCamera className="me-2" /> Tomar Foto
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </div>
+    </>
   );
 }
 

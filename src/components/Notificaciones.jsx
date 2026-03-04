@@ -229,14 +229,14 @@ function Notificaciones() {
         <FaBell size={20} />
         {noLeidas > 0 && (
           <Badge 
-            bg="danger" 
+            bg="" 
             className="position-absolute top-0 start-100 translate-middle rounded-pill"
             style={{ 
               fontSize: '0.7rem',
               padding: '0.25rem 0.45rem',
               minWidth: '20px',
-              boxShadow: '0 2px 6px rgba(239, 68, 68, 0.3)',
-              backgroundColor: '#ef4444'
+              boxShadow: '0 2px 6px #11283e',
+              backgroundColor: '#113d69'
             }}
           >
             {noLeidas > 9 ? '9+' : noLeidas}
