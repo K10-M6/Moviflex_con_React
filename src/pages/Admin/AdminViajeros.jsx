@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Pagination, Form, InputGroup } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
 import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
 
@@ -11,7 +11,6 @@ function AdminViajeros() {
     const [error, setError] = useState("");
     const [paginaActual, setPaginaActual] = useState(1);
     const [busqueda, setBusqueda] = useState("");
-    const [buscando, setBuscando] = useState(false);
     
     const elementosPorPagina = 10;
 
@@ -93,7 +92,6 @@ function AdminViajeros() {
 
         try {
             setLoading(true);
-            setBuscando(true);
             const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/search?q=${busqueda}`, {
                 headers: { "Authorization": "Bearer " + token }
             });
@@ -118,7 +116,6 @@ function AdminViajeros() {
 
     function limpiarBusqueda() {
         setBusqueda("");
-        setBuscando(false);
         traerViajeros();
     }
     
@@ -190,7 +187,7 @@ function AdminViajeros() {
     
     const EstadoBadge = ({ estado }) => {
         const estilos = {
-            ACTIVO: { backgroundColor: '#62d8d9', color: '#113d69' },
+            ACTIVO: { backgroundColor: '#62d8d9', color: '#ffffff' },
             INACTIVO: { backgroundColor: '#cccbd2af', color: '#113d69' },
             SUSPENDIDO: { backgroundColor: '#113d69', color: '#ffffff' }
         };
@@ -340,85 +337,231 @@ function AdminViajeros() {
     const Paginacion = () => {
         if (totalPaginas <= 1) return null;
 
-        let items = [];
-        const maxBotones = 5;
-        let inicio = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
-        let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
+        const generarBotones = () => {
+            const botones = [];
+            const maxBotones = window.innerWidth < 768 ? 3 : 5;
+            let inicio = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
+            let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
 
-        if (fin - inicio + 1 < maxBotones) {
-            inicio = Math.max(1, fin - maxBotones + 1);
-        }
-
-        items.push(
-            <Pagination.Prev
-                key="prev"
-                onClick={() => cambiarPagina(paginaActual - 1)}
-                disabled={paginaActual === 1}
-                style={{ color: '#62d8d9 !important' }}
-            />
-        );
-        if (inicio > 1) {
-            items.push(
-                <Pagination.Item 
-                    key={1} 
-                    onClick={() => cambiarPagina(1)}
-                    style={{ color: '#62d8d9 !important' }}
-                >
-                    1
-                </Pagination.Item>
-            );
-            if (inicio > 2) {
-                items.push(<Pagination.Ellipsis key="ellipsis1" disabled style={{ color: '#62d8d9 !important' }} />);
+            if (fin - inicio + 1 < maxBotones) {
+                inicio = Math.max(1, fin - maxBotones + 1);
             }
-        }
 
-        for (let numero = inicio; numero <= fin; numero++) {
-            items.push(
-                <Pagination.Item
-                    key={numero}
-                    active={numero === paginaActual}
-                    onClick={() => cambiarPagina(numero)}
-                    style={{ 
-                        color: numero === paginaActual ? '#ffffff !important' : '#62d8d9 !important',
-                        backgroundColor: numero === paginaActual ? '#62d8d9 !important' : 'transparent',
-                        borderColor: '#62d8d9 !important'
+            const buttonStyle = {
+                padding: window.innerWidth < 768 ? '0.4rem 0.6rem' : '0.5rem 0.75rem',
+                fontSize: window.innerWidth < 768 ? '0.8rem' : '0.9rem',
+            };
+
+            botones.push(
+                <button
+                    key="prev"
+                    onClick={() => paginaActual > 1 && cambiarPagina(paginaActual - 1)}
+                    disabled={paginaActual === 1}
+                    style={{
+                        ...buttonStyle,
+                        backgroundColor: paginaActual === 1 ? '#e9ecef' : 'white',
+                        color: paginaActual === 1 ? '#6c757d' : '#62d8d9',
+                        border: `1px solid ${paginaActual === 1 ? '#dee2e6' : '#62d8d9'}`,
+                        margin: '0 2px',
+                        borderRadius: '0.375rem 0 0 0.375rem',
+                        cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                        opacity: paginaActual === 1 ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                        if (paginaActual !== 1) {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (paginaActual !== 1) {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }
                     }}
                 >
-                    {numero}
-                </Pagination.Item>
+                    {window.innerWidth < 768 ? '‹' : 'Anterior'}
+                </button>
             );
-        }
 
-        if (fin < totalPaginas) {
-            if (fin < totalPaginas - 1) {
-                items.push(<Pagination.Ellipsis key="ellipsis2" disabled style={{ color: '#62d8d9 !important' }} />);
+            if (inicio > 1) {
+                botones.push(
+                    <button
+                        key={1}
+                        onClick={() => cambiarPagina(1)}
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: 'white',
+                            color: '#62d8d9',
+                            border: '1px solid #62d8d9',
+                            margin: '0 2px',
+                            borderRadius: '0.375rem',
+                            cursor: 'pointer',
+                            fontWeight: '500',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }}
+                    >
+                        1
+                    </button>
+                );
+                if (inicio > 2) {
+                    botones.push(
+                        <span
+                            key="ellipsis1"
+                            style={{
+                                ...buttonStyle,
+                                backgroundColor: 'transparent',
+                                color: '#113d69',
+                                border: 'none',
+                                margin: '0 2px',
+                                fontWeight: '500'
+                            }}
+                        >
+                            ...
+                        </span>
+                    );
+                }
             }
-            items.push(
-                <Pagination.Item 
-                    key={totalPaginas} 
-                    onClick={() => cambiarPagina(totalPaginas)}
-                    style={{ color: '#62d8d9 !important' }}
+
+            for (let numero = inicio; numero <= fin; numero++) {
+                const esActivo = numero === paginaActual;
+                botones.push(
+                    <button
+                        key={numero}
+                        onClick={() => !esActivo && cambiarPagina(numero)}
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: esActivo ? '#62d8d9' : 'white',
+                            color: esActivo ? 'white' : '#62d8d9',
+                            border: '1px solid #62d8d9',
+                            margin: '0 2px',
+                            borderRadius: '0.375rem',
+                            cursor: esActivo ? 'default' : 'pointer',
+                            fontWeight: esActivo ? '600' : '500',
+                            transition: 'all 0.2s',
+                            boxShadow: esActivo ? '0 2px 4px rgba(98, 216, 217, 0.3)' : 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!esActivo) {
+                                e.target.style.backgroundColor = '#62d8d9';
+                                e.target.style.color = 'white';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!esActivo) {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.color = '#62d8d9';
+                            }
+                        }}
+                    >
+                        {numero}
+                    </button>
+                );
+            }
+
+            if (fin < totalPaginas) {
+                if (fin < totalPaginas - 1) {
+                    botones.push(
+                        <span
+                            key="ellipsis2"
+                            style={{
+                                ...buttonStyle,
+                                backgroundColor: 'transparent',
+                                color: '#113d69',
+                                border: 'none',
+                                margin: '0 2px',
+                                fontWeight: '500'
+                            }}
+                        >
+                            ...
+                        </span>
+                    );
+                }
+                botones.push(
+                    <button
+                        key={totalPaginas}
+                        onClick={() => cambiarPagina(totalPaginas)}
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: 'white',
+                            color: '#62d8d9',
+                            border: '1px solid #62d8d9',
+                            margin: '0 2px',
+                            borderRadius: '0.375rem',
+                            cursor: 'pointer',
+                            fontWeight: '500',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }}
+                    >
+                        {totalPaginas}
+                    </button>
+                );
+            }
+
+            botones.push(
+                <button
+                    key="next"
+                    onClick={() => paginaActual < totalPaginas && cambiarPagina(paginaActual + 1)}
+                    disabled={paginaActual === totalPaginas}
+                    style={{
+                        ...buttonStyle,
+                        backgroundColor: paginaActual === totalPaginas ? '#e9ecef' : 'white',
+                        color: paginaActual === totalPaginas ? '#6c757d' : '#62d8d9',
+                        border: `1px solid ${paginaActual === totalPaginas ? '#dee2e6' : '#62d8d9'}`,
+                        margin: '0 2px',
+                        borderRadius: '0 0.375rem 0.375rem 0',
+                        cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                        opacity: paginaActual === totalPaginas ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                        if (paginaActual !== totalPaginas) {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (paginaActual !== totalPaginas) {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }
+                    }}
                 >
-                    {totalPaginas}
-                </Pagination.Item>
+                    {window.innerWidth < 768 ? '›' : 'Siguiente'}
+                </button>
             );
-        }
-        items.push(
-            <Pagination.Next
-                key="next"
-                onClick={() => cambiarPagina(paginaActual + 1)}
-                disabled={paginaActual === totalPaginas}
-                style={{ color: '#62d8d9 !important' }}
-            />
-        );
+
+            return botones;
+        };
 
         return (
-            <div className="d-flex justify-content-between align-items-center mt-4 px-4 pb-4">
-                <div className="text-muted" style={{ color: '#113d69' }}>
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 px-4 pb-4" style={{ gap: '1rem' }}>
+                <div className="text-muted text-center text-md-start" style={{ color: '#113d69', fontSize: window.innerWidth < 768 ? '0.8rem' : '0.9rem' }}>
                     Mostrando {indicePrimerElemento + 1} - {Math.min(indiceUltimoElemento, viajerosFiltrados.length)} de {viajerosFiltrados.length} viajeros
                     {busqueda && ` (filtrados de ${viajeros.length} totales)`}
                 </div>
-                <Pagination>{items}</Pagination>
+                <div style={{ display: 'flex', gap: '2px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {generarBotones()}
+                </div>
             </div>
         );
     };
@@ -480,7 +623,7 @@ function AdminViajeros() {
                                         <Button
                                             variant="primary"
                                             type="submit"
-                                            style={{ backgroundColor: '#62d8d9', border: 'none', color: '#113d69' }}
+                                            style={{ backgroundColor: '#62d8d9', border: 'none', color: '#ffffff' }}
                                         >
                                             Buscar
                                         </Button>
@@ -576,11 +719,6 @@ function AdminViajeros() {
                                                                 </td>
                                                                 <td>
                                                                     <div style={{ color: '#113d69' }}>{formatearFecha(viajero.creadoEn)}</div>
-                                                                    {viajero.actualizadoEn && viajero.actualizadoEn !== viajero.creadoEn && (
-                                                                        <small className="text-muted d-block">
-                                                                            Actualizado: {formatearFecha(viajero.actualizadoEn)}
-                                                                        </small>
-                                                                    )}
                                                                 </td>
                                                                 <td>
                                                                     <div className="d-flex flex-column gap-2" style={{ minWidth: '120px' }}>

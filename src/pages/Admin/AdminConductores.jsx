@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Pagination, Form, InputGroup } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
 import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
-
 
 function AdminConductores() {
     const { token } = useAuth();
@@ -12,17 +11,22 @@ function AdminConductores() {
     const [error, setError] = useState("");
     const [paginaActual, setPaginaActual] = useState(1);
     const [busqueda, setBusqueda] = useState("");
-    const [buscando, setBuscando] = useState(false);
-
+    
     const elementosPorPagina = 10;
 
     useEffect(() => {
         traerConductores();
     }, []);
 
-    const conductoresFiltrados = conductores.filter(conductor =>
-        conductor.email.toLowerCase().includes(busqueda.toLowerCase())
-    );
+    const conductoresFiltrados = conductores.filter(conductor => {
+        const terminoBusqueda = busqueda.toLowerCase();
+        return (
+            conductor.email?.toLowerCase().includes(terminoBusqueda) ||
+            conductor.nombre?.toLowerCase().includes(terminoBusqueda) ||
+            conductor.idUsuarios?.toString().includes(terminoBusqueda) ||
+            conductor.telefono?.toLowerCase().includes(terminoBusqueda)
+        );
+    });
     
     const indiceUltimoElemento = paginaActual * elementosPorPagina;
     const indicePrimerElemento = indiceUltimoElemento - elementosPorPagina;
@@ -81,14 +85,12 @@ function AdminConductores() {
 
         try {
             setLoading(true);
-            setBuscando(true);
             const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/search?q=${busqueda}`, {
                 headers: { "Authorization": "Bearer " + token }
             });
             if (!response.ok) throw new Error("Error en la búsqueda");
             const data = await response.json();
 
-            // Filtrar para mostrar solo conductores
             const soloConductores = data.filter(u =>
                 u.rol?.nombre === 'CONDUCTOR' || u.idRol === 2
             );
@@ -104,10 +106,8 @@ function AdminConductores() {
 
     function limpiarBusqueda() {
         setBusqueda("");
-        setBuscando(false);
         traerConductores();
     }
-
 
     async function cambiarEstadoConductor(id, estadoActual) {
         try {
@@ -174,18 +174,123 @@ function AdminConductores() {
         }
     }
 
-    function getEstadoBadge(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return <Badge bg="success" className="px-3 py-1">Activo</Badge>;
-            case 'INACTIVO':
-                return <Badge bg="danger" className="px-3 py-1">Inactivo</Badge>;
-            case 'SUSPENDIDO':
-                return <Badge bg="warning" text="dark" className="px-3 py-1">Suspendido</Badge>;
-            default:
-                return <Badge bg="secondary" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
+    const EstadoBadge = ({ estado }) => {
+        const estilos = {
+            ACTIVO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+            INACTIVO: { backgroundColor: '#cccbd2af', color: '#113d69' },
+            SUSPENDIDO: { backgroundColor: '#113d69', color: '#ffffff' }
+        };
+
+        const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+        
+        return (
+            <span style={{
+                ...estilo,
+                padding: '0.25rem 0.75rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                display: 'inline-block'
+            }}>
+                {estado === 'ACTIVO' && 'Activo'}
+                {estado === 'INACTIVO' && 'Inactivo'}
+                {estado === 'SUSPENDIDO' && 'Suspendido'}
+                {!estado && 'Sin estado'}
+            </span>
+        );
+    };
+
+    const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
+        if (isWhite) {
+            return (
+                <span style={{
+                    backgroundColor: '#ffffff',
+                    color: '#62d8d9',
+                    border: '1px solid #62d8d9',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    display: 'inline-block'
+                }}>
+                    {children}
+                </span>
+            );
         }
-    }
+        
+        return (
+            <span style={{
+                backgroundColor: bgColor,
+                color: color,
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                display: 'inline-block'
+            }}>
+                {children}
+            </span>
+        );
+    };
+
+    const AccionButton = ({ estado, onClick, children }) => {
+        if (children === "Suspender") {
+            return (
+                <Button
+                    variant="outline-warning"
+                    size="sm"
+                    onClick={onClick}
+                    className="w-100"
+                    style={{
+                        transition: 'all 0.2s',
+                        fontWeight: '500',
+                        color: '#113d69',
+                        borderColor: '#113d69',
+                        backgroundColor: estado === 'SUSPENDIDO' ? '#113d69' : 'transparent',
+                    }}
+                >
+                    Suspender
+                </Button>
+            );
+        }
+
+        const getButtonStyle = () => {
+            if (estado === 'ACTIVO') {
+                return {
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            } else if (estado === 'INACTIVO' || estado === 'SUSPENDIDO') {
+                return {
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            }
+            return {
+                backgroundColor: 'transparent',
+                color: '#62d8d9',
+                borderColor: '#62d8d9'
+            };
+        };
+
+        return (
+            <Button
+                variant={estado === 'ACTIVO' ? "primary" : "outline-primary"}
+                size="sm"
+                onClick={onClick}
+                className="w-100"
+                style={{
+                    transition: 'all 0.2s',
+                    fontWeight: '500',
+                    ...getButtonStyle()
+                }}
+            >
+                {children}
+            </Button>
+        );
+    };
 
     function getBotonTexto(estado) {
         switch (estado) {
@@ -197,19 +302,6 @@ function AdminConductores() {
                 return "Reactivar";
             default:
                 return "Cambiar Estado";
-        }
-    }
-
-    function getBotonVariant(estado) {
-        switch (estado) {
-            case 'ACTIVO':
-                return "outline-danger";
-            case 'INACTIVO':
-                return "outline-success";
-            case 'SUSPENDIDO':
-                return "outline-success";
-            default:
-                return "outline-warning";
         }
     }
 
@@ -227,77 +319,238 @@ function AdminConductores() {
     }
 
     function formatearTelefono(telefono) {
-        if (!telefono) return <span className="text-muted">No especificado</span>;
+        if (!telefono) return <span className="text-muted fst-italic">No especificado</span>;
         return telefono;
     }
 
     const Paginacion = () => {
         if (totalPaginas <= 1) return null;
 
-        let items = [];
-        const maxBotones = 5;
-        let inicio = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
-        let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
+        const generarBotones = () => {
+            const botones = [];
+            const maxBotones = window.innerWidth < 768 ? 3 : 5;
+            let inicio = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
+            let fin = Math.min(totalPaginas, inicio + maxBotones - 1);
 
-        if (fin - inicio + 1 < maxBotones) {
-            inicio = Math.max(1, fin - maxBotones + 1);
-        }
-
-        items.push(
-            <Pagination.Prev
-                key="prev"
-                onClick={() => cambiarPagina(paginaActual - 1)}
-                disabled={paginaActual === 1}
-            />
-        );
-        if (inicio > 1) {
-            items.push(
-                <Pagination.Item key={1} onClick={() => cambiarPagina(1)}>
-                    1
-                </Pagination.Item>
-            );
-            if (inicio > 2) {
-                items.push(<Pagination.Ellipsis key="ellipsis1" disabled />);
+            if (fin - inicio + 1 < maxBotones) {
+                inicio = Math.max(1, fin - maxBotones + 1);
             }
-        }
 
-        for (let numero = inicio; numero <= fin; numero++) {
-            items.push(
-                <Pagination.Item
-                    key={numero}
-                    active={numero === paginaActual}
-                    onClick={() => cambiarPagina(numero)}
+            const buttonStyle = {
+                padding: window.innerWidth < 768 ? '0.4rem 0.6rem' : '0.5rem 0.75rem',
+                fontSize: window.innerWidth < 768 ? '0.8rem' : '0.9rem',
+            };
+
+            botones.push(
+                <button
+                    key="prev"
+                    onClick={() => paginaActual > 1 && cambiarPagina(paginaActual - 1)}
+                    disabled={paginaActual === 1}
+                    style={{
+                        ...buttonStyle,
+                        backgroundColor: paginaActual === 1 ? '#e9ecef' : 'white',
+                        color: paginaActual === 1 ? '#6c757d' : '#62d8d9',
+                        border: `1px solid ${paginaActual === 1 ? '#dee2e6' : '#62d8d9'}`,
+                        margin: '0 2px',
+                        borderRadius: '0.375rem 0 0 0.375rem',
+                        cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                        opacity: paginaActual === 1 ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                        if (paginaActual !== 1) {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (paginaActual !== 1) {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }
+                    }}
                 >
-                    {numero}
-                </Pagination.Item>
+                    {window.innerWidth < 768 ? '‹' : 'Anterior'}
+                </button>
             );
-        }
 
-        if (fin < totalPaginas) {
-            if (fin < totalPaginas - 1) {
-                items.push(<Pagination.Ellipsis key="ellipsis2" disabled />);
+            if (inicio > 1) {
+                botones.push(
+                    <button
+                        key={1}
+                        onClick={() => cambiarPagina(1)}
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: 'white',
+                            color: '#62d8d9',
+                            border: '1px solid #62d8d9',
+                            margin: '0 2px',
+                            borderRadius: '0.375rem',
+                            cursor: 'pointer',
+                            fontWeight: '500',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }}
+                    >
+                        1
+                    </button>
+                );
+                if (inicio > 2) {
+                    botones.push(
+                        <span
+                            key="ellipsis1"
+                            style={{
+                                ...buttonStyle,
+                                backgroundColor: 'transparent',
+                                color: '#113d69',
+                                border: 'none',
+                                margin: '0 2px',
+                                fontWeight: '500'
+                            }}
+                        >
+                            ...
+                        </span>
+                    );
+                }
             }
-            items.push(
-                <Pagination.Item key={totalPaginas} onClick={() => cambiarPagina(totalPaginas)}>
-                    {totalPaginas}
-                </Pagination.Item>
+
+            for (let numero = inicio; numero <= fin; numero++) {
+                const esActivo = numero === paginaActual;
+                botones.push(
+                    <button
+                        key={numero}
+                        onClick={() => !esActivo && cambiarPagina(numero)}
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: esActivo ? '#62d8d9' : 'white',
+                            color: esActivo ? 'white' : '#62d8d9',
+                            border: '1px solid #62d8d9',
+                            margin: '0 2px',
+                            borderRadius: '0.375rem',
+                            cursor: esActivo ? 'default' : 'pointer',
+                            fontWeight: esActivo ? '600' : '500',
+                            transition: 'all 0.2s',
+                            boxShadow: esActivo ? '0 2px 4px rgba(98, 216, 217, 0.3)' : 'none'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (!esActivo) {
+                                e.target.style.backgroundColor = '#62d8d9';
+                                e.target.style.color = 'white';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (!esActivo) {
+                                e.target.style.backgroundColor = 'white';
+                                e.target.style.color = '#62d8d9';
+                            }
+                        }}
+                    >
+                        {numero}
+                    </button>
+                );
+            }
+
+            if (fin < totalPaginas) {
+                if (fin < totalPaginas - 1) {
+                    botones.push(
+                        <span
+                            key="ellipsis2"
+                            style={{
+                                ...buttonStyle,
+                                backgroundColor: 'transparent',
+                                color: '#113d69',
+                                border: 'none',
+                                margin: '0 2px',
+                                fontWeight: '500'
+                            }}
+                        >
+                            ...
+                        </span>
+                    );
+                }
+                botones.push(
+                    <button
+                        key={totalPaginas}
+                        onClick={() => cambiarPagina(totalPaginas)}
+                        style={{
+                            ...buttonStyle,
+                            backgroundColor: 'white',
+                            color: '#62d8d9',
+                            border: '1px solid #62d8d9',
+                            margin: '0 2px',
+                            borderRadius: '0.375rem',
+                            cursor: 'pointer',
+                            fontWeight: '500',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }}
+                    >
+                        {totalPaginas}
+                    </button>
+                );
+            }
+
+            botones.push(
+                <button
+                    key="next"
+                    onClick={() => paginaActual < totalPaginas && cambiarPagina(paginaActual + 1)}
+                    disabled={paginaActual === totalPaginas}
+                    style={{
+                        ...buttonStyle,
+                        backgroundColor: paginaActual === totalPaginas ? '#e9ecef' : 'white',
+                        color: paginaActual === totalPaginas ? '#6c757d' : '#62d8d9',
+                        border: `1px solid ${paginaActual === totalPaginas ? '#dee2e6' : '#62d8d9'}`,
+                        margin: '0 2px',
+                        borderRadius: '0 0.375rem 0.375rem 0',
+                        cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
+                        fontWeight: '500',
+                        transition: 'all 0.2s',
+                        opacity: paginaActual === totalPaginas ? 0.6 : 1
+                    }}
+                    onMouseEnter={(e) => {
+                        if (paginaActual !== totalPaginas) {
+                            e.target.style.backgroundColor = '#62d8d9';
+                            e.target.style.color = 'white';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (paginaActual !== totalPaginas) {
+                            e.target.style.backgroundColor = 'white';
+                            e.target.style.color = '#62d8d9';
+                        }
+                    }}
+                >
+                    {window.innerWidth < 768 ? '›' : 'Siguiente'}
+                </button>
             );
-        }
-        items.push(
-            <Pagination.Next
-                key="next"
-                onClick={() => cambiarPagina(paginaActual + 1)}
-                disabled={paginaActual === totalPaginas}
-            />
-        );
+
+            return botones;
+        };
 
         return (
-            <div className="d-flex justify-content-between align-items-center mt-4">
-                <div className="text-muted">
+            <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 px-4 pb-4" style={{ gap: '1rem' }}>
+                <div className="text-muted text-center text-md-start" style={{ color: '#113d69', fontSize: window.innerWidth < 768 ? '0.8rem' : '0.9rem' }}>
                     Mostrando {indicePrimerElemento + 1} - {Math.min(indiceUltimoElemento, conductoresFiltrados.length)} de {conductoresFiltrados.length} conductores
                     {busqueda && ` (filtrados de ${conductores.length} totales)`}
                 </div>
-                <Pagination>{items}</Pagination>
+                <div style={{ display: 'flex', gap: '2px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {generarBotones()}
+                </div>
             </div>
         );
     };
@@ -311,26 +564,24 @@ function AdminConductores() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* OVERLAY ELIMINADO - ahora se ve la imagen de fondo directamente */}
-
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
                         <Card className="border-0 shadow" style={{ 
                             borderRadius: '16px', 
-                            borderLeft: '6px solid #51cfbd',
+                            borderLeft: '6px solid #62d8d9',
                             overflow: 'hidden',
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)' // Ligera transparencia para ver el fondo
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}>
                             <Card.Body className="p-4">
                                 <h1 className="display-5 fw-bold mb-0" style={{ 
-                                    color: '#2c3e50',
+                                    color: '#113d69',
                                     letterSpacing: '-0.02em'
                                 }}>
                                     Lista de Conductores
                                 </h1>
-                                <p className="text-muted mb-0 small">
-                                    <span style={{ color: '#51cfbd' }}>●</span> Administra los conductores registrados en la plataforma
+                                <p className="mb-0 small" style={{ color: '#113d69' }}>
+                                    <span style={{ color: '#62d8d9' }}>●</span> Administra los conductores registrados en la plataforma
                                 </p>
                             </Card.Body>
                         </Card>
@@ -340,27 +591,28 @@ function AdminConductores() {
                                 <Form onSubmit={handleSearch}>
                                     <InputGroup>
                                         <InputGroup.Text className="bg-white border-end-0">
-                                            <BsSearch />
+                                            <BsSearch style={{ color: '#113d69' }} />
                                         </InputGroup.Text>
                                         <Form.Control
                                             type="text"
-                                            placeholder="Buscar por correo electrónico..."
+                                            placeholder="Buscar por nombre, email, teléfono o ID..."
                                             value={busqueda}
                                             onChange={(e) => {
                                                 setBusqueda(e.target.value);
                                                 setPaginaActual(1);
                                             }}
                                             className="border-start-0"
+                                            style={{ color: '#113d69' }}
                                         />
                                         {busqueda && (
                                             <Button variant="outline-secondary" className="border-start-0 border-end-0 bg-white" onClick={limpiarBusqueda}>
-                                                <BsXCircle />
+                                                <BsXCircle style={{ color: '#113d69' }} />
                                             </Button>
                                         )}
                                         <Button
                                             variant="primary"
                                             type="submit"
-                                            style={{ backgroundColor: '#54c7b8', border: 'none' }}
+                                            style={{ backgroundColor: '#62d8d9', border: 'none', color: '#ffffff' }}
                                         >
                                             Buscar
                                         </Button>
@@ -368,128 +620,120 @@ function AdminConductores() {
                                 </Form>
                             </Card.Body>
                         </Card>
-
+                        
                         <div className="d-flex gap-3 mt-3 flex-wrap">
-                            <Badge bg="primary" className="px-3 py-2" style={{ 
-                                backgroundColor: '#51cfbd', 
-                                border: 'none',
-                                fontSize: '0.9rem'
-                            }}>
+                            <StatsBadge bgColor="transparent" color="#113d69">
                                 Total: {conductores.length}
-                            </Badge>
+                            </StatsBadge>
                             {busqueda && (
-                                <Badge bg="info" className="px-3 py-2">
+                                <StatsBadge isWhite>
                                     Resultados: {conductoresFiltrados.length}
-                                </Badge>
+                                </StatsBadge>
                             )}
-                            <Badge bg="success" className="px-3 py-2">
-                                Activos: {conductores.filter(c => c.estado === 'ACTIVO').length}
-                            </Badge>
-                            <Badge bg="danger" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
-                                Inactivos: {conductores.filter(c => c.estado === 'INACTIVO').length}
-                            </Badge>
-                            <Badge bg="warning" text="dark" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
-                                Suspendidos: {conductores.filter(c => c.estado === 'SUSPENDIDO').length}
-                            </Badge>
+                            <StatsBadge bgColor="#62d8d9" color="#ffffff">
+                                Activos: {conductores.filter(v => v.estado === 'ACTIVO').length}
+                            </StatsBadge>
+                            <StatsBadge bgColor="#cccbd2af" color="#113d69">
+                                Inactivos: {conductores.filter(v => v.estado === 'INACTIVO').length}
+                            </StatsBadge>
+                            <StatsBadge bgColor="#113d69" color="#ffffff">
+                                Suspendidos: {conductores.filter(v => v.estado === 'SUSPENDIDO').length}
+                            </StatsBadge>
                         </div>
                     </Col>
                 </Row>
-
+                
                 {error && (
                     <Row className="mb-3">
                         <Col>
-                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow">
-                                <strong>Error:</strong> {error}
+                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow" style={{ backgroundColor: '#cccbd2af', color: '#113d69' }}>
+                                <strong style={{ color: '#113d69' }}>Error:</strong> <span style={{ color: '#113d69' }}>{error}</span>
                             </Alert>
                         </Col>
                     </Row>
                 )}
-
+                
                 <Row>
                     <Col>
                         <Card className="shadow border-0" style={{ 
                             borderRadius: '16px',
                             overflow: 'hidden',
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)' // Ligera transparencia
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}>
                             <Card.Body className="p-0">
                                 {loading ? (
                                     <div className="text-center py-5">
-                                        <Spinner animation="border" style={{ color: '#51cfbd' }} />
-                                        <p className="mt-3 text-muted">Cargando conductores...</p>
+                                        <Spinner animation="border" style={{ color: '#62d8d9' }} />
+                                        <p className="mt-3" style={{ color: '#113d69' }}>Cargando conductores...</p>
                                     </div>
                                 ) : (
                                     <>
-                                        <Table responsive hover className="align-middle">
-                                            <thead className="table-light">
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Nombre</th>
-                                                    <th>Email</th>
-                                                    <th>Teléfono</th>
-                                                    <th>Estado</th>
-                                                    <th>Registro</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {conductoresFiltrados.length === 0 ? (
+                                        <div className="table-responsive">
+                                            <Table hover className="align-middle mb-0">
+                                                <thead style={{ 
+                                                    backgroundColor: 'rgba(248, 249, 250, 0.9)',
+                                                    borderBottom: '2px solid #62d8d9'
+                                                }}>
                                                     <tr>
-                                                        <td colSpan="7" className="text-center py-4">
-                                                            {busqueda ? "No se encontraron conductores con ese correo" : "No hay conductores registrados"}
-                                                        </td>
+                                                        <th className="py-3 px-4" style={{ color: '#113d69' }}>ID</th>
+                                                        <th className="py-3" style={{ color: '#113d69' }}>Nombre</th>
+                                                        <th className="py-3" style={{ color: '#113d69' }}>Email</th>
+                                                        <th className="py-3" style={{ color: '#113d69' }}>Teléfono</th>
+                                                        <th className="py-3" style={{ color: '#113d69' }}>Estado</th>
+                                                        <th className="py-3" style={{ color: '#113d69' }}>Registro</th>
+                                                        <th className="py-3" style={{ color: '#113d69' }}>Acciones</th>
                                                     </tr>
-                                                ) : (
-                                                    conductoresPaginados.map((conductor) => (
-                                                        <tr key={conductor.idUsuarios}>
-                                                            <td className="fw-semibold">{conductor.idUsuarios}</td>
-                                                            <td>
-                                                                <div className="fw-medium">{conductor.nombre}</div>
-                                                                <small className="text-muted">ID: {conductor.idUsuarios}</small>
-                                                            </td>
-                                                            <td>{conductor.email}</td>
-                                                            <td>{formatearTelefono(conductor.telefono)}</td>
-                                                            <td>{getEstadoBadge(conductor.estado)}</td>
-                                                            <td>
-                                                                <div>{formatearFecha(conductor.creadoEn)}</div>
-                                                                {conductor.actualizadoEn && conductor.actualizadoEn !== conductor.creadoEn && (
-                                                                    <small className="text-muted">
-                                                                        Actualizado: {formatearFecha(conductor.actualizadoEn)}
-                                                                    </small>
-                                                                )}
-                                                            </td>
-                                                            <td>
-                                                                <div className="d-flex flex-column gap-2" style={{ minWidth: '120px' }}>
-                                                                    <Button
-                                                                        variant={getBotonVariant(conductor.estado)}
-                                                                        size="sm"
-                                                                        onClick={() => cambiarEstadoConductor(conductor.idUsuarios, conductor.estado)}
-                                                                        className="w-100"
-                                                                    >
-                                                                        {getBotonTexto(conductor.estado)}
-                                                                    </Button>
-
-                                                                    {puedeSuspender(conductor.estado) && (
-                                                                        <Button
-                                                                            variant="outline-warning"
-                                                                            size="sm"
-                                                                            onClick={() => suspenderConductor(conductor.idUsuarios)}
-                                                                            className="w-100"
-                                                                            style={{
-                                                                                transition: 'all 0.2s',
-                                                                                fontWeight: '500'
-                                                                            }}
-                                                                        >
-                                                                            Suspender
-                                                                        </Button>
-                                                                    )}
-                                                                </div>
+                                                </thead>
+                                                <tbody style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
+                                                    {conductoresFiltrados.length === 0 ? (
+                                                        <tr>
+                                                            <td colSpan="7" className="text-center py-4" style={{ color: '#113d69' }}>
+                                                                {busqueda ? "No se encontraron conductores con esos criterios" : "No hay conductores registrados"}
                                                             </td>
                                                         </tr>
-                                                    ))
-                                                )}
-                                            </tbody>
-                                        </Table>
+                                                    ) : (
+                                                        conductoresPaginados.map((conductor, index) => (
+                                                            <tr key={conductor.idUsuarios} style={{
+                                                                backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
+                                                            }}>
+                                                                <td className="fw-semibold px-4" style={{ color: '#113d69' }}>{conductor.idUsuarios}</td>
+                                                                <td>
+                                                                    <div className="fw-medium" style={{ color: '#113d69' }}>{conductor.nombre}</div>
+                                                                    <small className="text-muted">ID: {conductor.idUsuarios}</small>
+                                                                </td>
+                                                                <td style={{ color: '#113d69' }}>{conductor.email}</td>
+                                                                <td style={{ color: '#113d69' }}>{formatearTelefono(conductor.telefono)}</td>
+                                                                <td>
+                                                                    <EstadoBadge estado={conductor.estado} />
+                                                                </td>
+                                                                <td>
+                                                                    <div style={{ color: '#113d69' }}>{formatearFecha(conductor.creadoEn)}</div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="d-flex flex-column gap-2" style={{ minWidth: '120px' }}>
+                                                                        <AccionButton
+                                                                            estado={conductor.estado}
+                                                                            onClick={() => cambiarEstadoConductor(conductor.idUsuarios, conductor.estado)}
+                                                                        >
+                                                                            {getBotonTexto(conductor.estado)}
+                                                                        </AccionButton>
+                                                                        
+                                                                        {puedeSuspender(conductor.estado) && (
+                                                                            <AccionButton
+                                                                                estado={conductor.estado}
+                                                                                onClick={() => suspenderConductor(conductor.idUsuarios)}
+                                                                            >
+                                                                                Suspender
+                                                                            </AccionButton>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )}
+                                                </tbody>
+                                            </Table>
+                                        </div>
                                         <Paginacion />
                                     </>
                                 )}

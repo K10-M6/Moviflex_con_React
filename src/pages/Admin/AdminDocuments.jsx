@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Image, Modal } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Image, Modal } from "react-bootstrap";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 function AdminDocumentos() {
@@ -130,31 +130,170 @@ function AdminDocumentos() {
         }
     }
 
-    function getEstadoBadge(estado) {
-        switch (estado) {
-            case 'APROBADO':
-                return <Badge bg="success" className="px-3 py-1">Aprobado</Badge>;
-            case 'RECHAZADO':
-                return <Badge bg="danger" className="px-3 py-1">Rechazado</Badge>;
-            case 'PENDIENTE':
-                return <Badge bg="warning" text="dark" className="px-3 py-1">Pendiente</Badge>;
-            default:
-                return <Badge bg="secondary" className="px-3 py-1">{estado || "Sin estado"}</Badge>;
-        }
-    }
+    const EstadoBadge = ({ estado }) => {
+        const estilos = {
+            APROBADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+            PENDIENTE: { backgroundColor: '#cccbd2af', color: '#113d69' },
+            RECHAZADO: { backgroundColor: '#113d69', color: '#ffffff' }
+        };
 
-    function getEstadoTexto(estado) {
-        switch (estado) {
-            case 'APROBADO':
-                return "Aprobado";
-            case 'RECHAZADO':
-                return "Rechazado";
-            case 'PENDIENTE':
-                return "Pendiente";
-            default:
-                return estado || "Sin estado";
+        const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+        
+        return (
+            <span style={{
+                ...estilo,
+                padding: '0.25rem 0.75rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                display: 'inline-block'
+            }}>
+                {estado === 'APROBADO' && 'Aprobado'}
+                {estado === 'PENDIENTE' && 'Pendiente'}
+                {estado === 'RECHAZADO' && 'Rechazado'}
+                {!estado && 'Sin estado'}
+            </span>
+        );
+    };
+
+    const TipoDocumentoBadge = ({ tipo }) => {
+        if (!tipo) return null;
+
+        const tipoLower = tipo.toLowerCase();
+        let estilo = { backgroundColor: '#e9ecef', color: '#113d69' };
+
+        if (tipoLower.includes('cedula') || tipoLower.includes('identidad')) {
+            estilo = { backgroundColor: '#62d8d9', color: '#ffffff' };
+        } else if (tipoLower.includes('licencia') || tipoLower.includes('conducir')) {
+            estilo = { backgroundColor: '#113d69', color: '#ffffff' };
+        } else if (tipoLower.includes('pasaporte')) {
+            estilo = { backgroundColor: '#6c757d', color: '#ffffff' };
+        } else if (tipoLower.includes('tarjeta') || tipoLower.includes('circulacion')) {
+            estilo = { backgroundColor: '#495057', color: '#ffffff' };
+        } else if (tipoLower.includes('seguro')) {
+            estilo = { backgroundColor: '#62d8d9', color: '#ffffff' };
         }
-    }
+
+        return (
+            <span style={{
+                ...estilo,
+                padding: '0.2rem 0.5rem',
+                borderRadius: '0.25rem',
+                fontSize: '0.7rem',
+                fontWeight: '500',
+                display: 'inline-block'
+            }}>
+                {tipo}
+            </span>
+        );
+    };
+
+    const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
+        if (isWhite) {
+            return (
+                <span style={{
+                    backgroundColor: '#ffffff',
+                    color: '#62d8d9',
+                    border: '1px solid #62d8d9',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    display: 'inline-block'
+                }}>
+                    {children}
+                </span>
+            );
+        }
+        
+        return (
+            <span style={{
+                backgroundColor: bgColor,
+                color: color,
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                display: 'inline-block'
+            }}>
+                {children}
+            </span>
+        );
+    };
+
+    const AccionButton = ({ estado, onClick, children }) => {
+        const getButtonStyle = () => {
+            if (estado === 'APROBADO') {
+                return {
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            } else {
+                return {
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            }
+        };
+
+        return (
+            <Button
+                size="sm"
+                onClick={onClick}
+                className="w-100"
+                style={{
+                    transition: 'all 0.2s',
+                    fontWeight: '500',
+                    ...getButtonStyle()
+                }}
+                onMouseEnter={(e) => {
+                    if (estado === 'APROBADO') {
+                        e.target.style.backgroundColor = '#62d8d9';
+                        e.target.style.color = 'white';
+                    }
+                }}
+                onMouseLeave={(e) => {
+                    if (estado === 'APROBADO') {
+                        e.target.style.backgroundColor = 'transparent';
+                        e.target.style.color = '#62d8d9';
+                    }
+                }}
+            >
+                {children}
+            </Button>
+        );
+    };
+
+    const VerImagenButton = ({ onClick }) => {
+        return (
+            <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={onClick}
+                style={{
+                    transition: 'all 0.2s',
+                    fontWeight: '500',
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9',
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.8rem'
+                }}
+                onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#62d8d9';
+                    e.target.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = '#62d8d9';
+                }}
+            >
+                Ver Imagen
+            </Button>
+        );
+    };
 
     function getBotonTexto(estado) {
         switch (estado) {
@@ -169,19 +308,6 @@ function AdminDocumentos() {
         }
     }
 
-    function getBotonVariant(estado) {
-        switch (estado) {
-            case 'APROBADO':
-                return "outline-danger";
-            case 'RECHAZADO':
-                return "outline-success";
-            case 'PENDIENTE':
-                return "outline-success";
-            default:
-                return "outline-primary";
-        }
-    }
-
     function formatearFecha(fecha) {
         if (!fecha) return "-";
         return new Date(fecha).toLocaleDateString('es-ES', {
@@ -191,26 +317,6 @@ function AdminDocumentos() {
             hour: '2-digit',
             minute: '2-digit'
         });
-    }
-
-    function getTipoDocumentoBadge(tipo) {
-        if (!tipo) return null;
-
-        const tipoLower = tipo.toLowerCase();
-
-        if (tipoLower.includes('cedula') || tipoLower.includes('identidad')) {
-            return <Badge bg="info" className="px-2">Cédula</Badge>;
-        } else if (tipoLower.includes('licencia') || tipoLower.includes('conducir')) {
-            return <Badge bg="primary" className="px-2">Licencia</Badge>;
-        } else if (tipoLower.includes('pasaporte')) {
-            return <Badge bg="secondary" className="px-2">Pasaporte</Badge>;
-        } else if (tipoLower.includes('tarjeta') || tipoLower.includes('circulacion')) {
-            return <Badge bg="dark" className="px-2">Tarjeta Circulación</Badge>;
-        } else if (tipoLower.includes('seguro')) {
-            return <Badge bg="success" className="px-2">Seguro</Badge>;
-        } else {
-            return <Badge bg="light" text="dark" className="px-2">{tipo}</Badge>;
-        }
     }
 
     const handleVerImagen = (documento) => {
@@ -238,47 +344,41 @@ function AdminDocumentos() {
             backgroundAttachment: 'fixed',
             position: 'relative'
         }}>
-            {/* OVERLAY ELIMINADO - ahora se ve la imagen de fondo directamente */}
-
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
                         <Card className="border-0 shadow" style={{ 
                             borderRadius: '16px', 
-                            borderLeft: '6px solid #51cfbd',
+                            borderLeft: '6px solid #62d8d9',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}>
                             <Card.Body className="p-4">
                                 <h1 className="display-5 fw-bold mb-0" style={{ 
-                                    color: '#2c3e50',
+                                    color: '#113d69',
                                     letterSpacing: '-0.02em'
                                 }}>
                                     Gestión de Documentos
                                 </h1>
-                                <p className="text-muted mb-0 small">
-                                    <span style={{ color: '#51cfbd' }}>●</span> Revisa y administra los documentos subidos por los usuarios
+                                <p className="mb-0 small" style={{ color: '#113d69' }}>
+                                    <span style={{ color: '#62d8d9' }}>●</span> Revisa y administra los documentos subidos por los usuarios
                                 </p>
                             </Card.Body>
                         </Card>
 
                         <div className="d-flex gap-3 mt-3 flex-wrap">
-                            <Badge bg="primary" className="px-3 py-2" style={{ 
-                                backgroundColor: '#51cfbd', 
-                                border: 'none',
-                                fontSize: '0.9rem'
-                            }}>
+                            <StatsBadge bgColor="transparent" color="#113d69">
                                 Total: {documentos.length}
-                            </Badge>
-                            <Badge bg="success" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
+                            </StatsBadge>
+                            <StatsBadge bgColor="#62d8d9" color="#ffffff">
                                 Aprobados: {documentos.filter(d => d.estado === 'APROBADO').length}
-                            </Badge>
-                            <Badge bg="warning" text="dark" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
+                            </StatsBadge>
+                            <StatsBadge bgColor="#cccbd2af" color="#113d69">
                                 Pendientes: {documentos.filter(d => d.estado === 'PENDIENTE').length}
-                            </Badge>
-                            <Badge bg="danger" className="px-3 py-2" style={{ fontSize: '0.9rem' }}>
+                            </StatsBadge>
+                            <StatsBadge bgColor="#113d69" color="#ffffff">
                                 Rechazados: {documentos.filter(d => d.estado === 'RECHAZADO').length}
-                            </Badge>
+                            </StatsBadge>
                         </div>
                     </Col>
                 </Row>
@@ -286,8 +386,8 @@ function AdminDocumentos() {
                 {error && (
                     <Row className="mb-3">
                         <Col>
-                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow">
-                                <strong>Error:</strong> {error}
+                            <Alert variant="danger" onClose={() => setError("")} dismissible className="border-0 shadow" style={{ backgroundColor: '#cccbd2af', color: '#113d69' }}>
+                                <strong style={{ color: '#113d69' }}>Error:</strong> <span style={{ color: '#113d69' }}>{error}</span>
                             </Alert>
                         </Col>
                     </Row>
@@ -303,30 +403,30 @@ function AdminDocumentos() {
                             <Card.Body className="p-0">
                                 {loading ? (
                                     <div className="text-center py-5">
-                                        <Spinner animation="border" style={{ color: '#51cfbd' }} />
-                                        <p className="mt-3 text-muted">Cargando documentos...</p>
+                                        <Spinner animation="border" style={{ color: '#62d8d9' }} />
+                                        <p className="mt-3" style={{ color: '#113d69' }}>Cargando documentos...</p>
                                     </div>
                                 ) : (
                                     <div className="table-responsive">
                                         <Table hover className="align-middle mb-0">
                                             <thead style={{ 
                                                 backgroundColor: 'rgba(248, 249, 250, 0.9)',
-                                                borderBottom: '2px solid #51cfbd'
+                                                borderBottom: '2px solid #62d8d9'
                                             }}>
                                                 <tr>
-                                                    <th className="py-3 px-4">ID</th>
-                                                    <th className="py-3">Usuario</th>
-                                                    <th className="py-3">Tipo Documento</th>
-                                                    <th className="py-3">Documento</th>
-                                                    <th className="py-3">Estado</th>
-                                                    <th className="py-3">Fecha Subida</th>
-                                                    <th className="py-3">Acciones</th>
+                                                    <th className="py-3 px-4" style={{ color: '#113d69' }}>ID</th>
+                                                    <th className="py-3" style={{ color: '#113d69' }}>Usuario</th>
+                                                    <th className="py-3" style={{ color: '#113d69' }}>Tipo Documento</th>
+                                                    <th className="py-3" style={{ color: '#113d69' }}>Documento</th>
+                                                    <th className="py-3" style={{ color: '#113d69' }}>Estado</th>
+                                                    <th className="py-3" style={{ color: '#113d69' }}>Fecha Subida</th>
+                                                    <th className="py-3" style={{ color: '#113d69' }}>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)' }}>
                                                 {documentos.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan="7" className="text-center py-4 text-muted">
+                                                        <td colSpan="7" className="text-center py-4" style={{ color: '#113d69' }}>
                                                             No hay documentos registrados
                                                         </td>
                                                     </tr>
@@ -335,9 +435,9 @@ function AdminDocumentos() {
                                                         <tr key={documento.idDocumentacion} style={{
                                                             backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
                                                         }}>
-                                                            <td className="fw-semibold px-4">{documento.idDocumentacion}</td>
+                                                            <td className="fw-semibold px-4" style={{ color: '#113d69' }}>{documento.idDocumentacion}</td>
                                                             <td>
-                                                                <div className="fw-medium">
+                                                                <div className="fw-medium" style={{ color: '#113d69' }}>
                                                                     {obtenerNombreUsuario(documento.idUsuario)}
                                                                 </div>
                                                                 <small className="text-muted">
@@ -345,61 +445,33 @@ function AdminDocumentos() {
                                                                 </small>
                                                             </td>
                                                             <td>
-                                                                <div className="fw-medium">
+                                                                <div className="fw-medium mb-1" style={{ color: '#113d69' }}>
                                                                     {documento.tipoDocumento || documento.tipo}
                                                                 </div>
-                                                                <div className="mt-1">
-                                                                    {getTipoDocumentoBadge(documento.tipoDocumento || documento.tipo)}
+                                                                <TipoDocumentoBadge tipo={documento.tipoDocumento || documento.tipo} />
+                                                            </td>
+                                                            <td>
+                                                                <div style={{ color: '#113d69' }}>
+                                                                    <span className="fw-medium">N°:</span> {documento.numeroDocumento || documento.numero || "-"}
+                                                                </div>
+                                                                <div className="mt-2">
+                                                                    <VerImagenButton onClick={() => handleVerImagen(documento)} />
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                <div>
-                                                                    <strong>N°:</strong> {documento.numeroDocumento || documento.numero || "-"}
-                                                                </div>
-                                                                <div className="d-flex align-items-center gap-2 mt-2">
-                                                                    <Button
-                                                                        variant="outline-primary"
-                                                                        size="sm"
-                                                                        onClick={() => handleVerImagen(documento)}
-                                                                        style={{
-                                                                            transition: 'all 0.2s',
-                                                                            fontWeight: '500',
-                                                                            borderColor: '#51cfbd',
-                                                                            color: '#51cfbd'
-                                                                        }}
-                                                                        onMouseEnter={(e) => {
-                                                                            e.target.style.backgroundColor = '#51cfbd';
-                                                                            e.target.style.color = 'white';
-                                                                        }}
-                                                                        onMouseLeave={(e) => {
-                                                                            e.target.style.backgroundColor = 'transparent';
-                                                                            e.target.style.color = '#51cfbd';
-                                                                        }}
-                                                                    >
-                                                                        Ver Imagen
-                                                                    </Button>
-                                                                </div>
+                                                                <EstadoBadge estado={documento.estado} />
                                                             </td>
-                                                            <td>
-                                                                <div>{getEstadoBadge(documento.estado)}</div>
-                                                            </td>
-                                                            <td>
-                                                                <div>{formatearFecha(documento.fechaSubida || documento.creadoEn)}</div>
+                                                            <td style={{ color: '#113d69' }}>
+                                                                {formatearFecha(documento.fechaSubida || documento.creadoEn)}
                                                             </td>
                                                             <td>
                                                                 <div className="d-flex flex-column gap-2" style={{ minWidth: '100px' }}>
-                                                                    <Button
-                                                                        variant={getBotonVariant(documento.estado)}
-                                                                        size="sm"
+                                                                    <AccionButton
+                                                                        estado={documento.estado}
                                                                         onClick={() => cambiarEstadoDocumento(documento.idDocumentacion, documento.estado)}
-                                                                        className="w-100"
-                                                                        style={{
-                                                                            transition: 'all 0.2s',
-                                                                            fontWeight: '500'
-                                                                        }}
                                                                     >
                                                                         {getBotonTexto(documento.estado)}
-                                                                    </Button>
+                                                                    </AccionButton>
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -428,15 +500,15 @@ function AdminDocumentos() {
                 <Modal.Header 
                     closeButton 
                     style={{ 
-                        borderBottom: '2px solid #51cfbd',
+                        borderBottom: '2px solid #62d8d9',
                         backgroundColor: 'rgba(255, 255, 255, 0.98)'
                     }}
                 >
-                    <Modal.Title style={{ color: '#2c3e50' }}>
+                    <Modal.Title style={{ color: '#113d69' }}>
                         {selectedDocumento && (
                             <>
-                                <span style={{ color: '#51cfbd' }}>📄</span> {selectedDocumento.tipo || selectedDocumento.tipoDocumento} - 
-                                <span className="ms-1">{obtenerNombreUsuario(selectedDocumento.idUsuario)}</span>
+                                <span style={{ color: '#62d8d9' }}>📄</span> {selectedDocumento.tipo || selectedDocumento.tipoDocumento} - 
+                                <span className="ms-1" style={{ color: '#113d69' }}>{obtenerNombreUsuario(selectedDocumento.idUsuario)}</span>
                             </>
                         )}
                     </Modal.Title>
@@ -458,7 +530,7 @@ function AdminDocumentos() {
                             }}
                         />
                     ) : (
-                        <p className="text-muted">No hay imagen disponible</p>
+                        <p className="text-muted" style={{ color: '#113d69' }}>No hay imagen disponible</p>
                     )}
                 </Modal.Body>
                 <Modal.Footer style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
@@ -468,7 +540,9 @@ function AdminDocumentos() {
                         style={{
                             backgroundColor: '#6c757d',
                             border: 'none',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            fontWeight: '500',
+                            padding: '0.5rem 1.5rem'
                         }}
                     >
                         Cerrar

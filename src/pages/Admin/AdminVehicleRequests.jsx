@@ -12,7 +12,7 @@ const AdminVehicleRequests = () => {
     const [solicitudes, setSolicitudes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [procesando, setProcesando] = useState(null); // ID de solicitud siendo procesada
+    const [procesando, setProcesando] = useState(null); 
     const [showRevisionModal, setShowRevisionModal] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
     const [observaciones, setObservaciones] = useState("");
