@@ -150,7 +150,8 @@ function HomeBase() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '80px 0', marginTop: '50px' }}>
+      <div id="como-funciona-seccion"
+      style={{ backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '80px 0', marginTop: '50px' }}>
         <Container>
           <Row className="text-center mb-5">
             <Col>

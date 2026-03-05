@@ -73,7 +73,6 @@ function Home() {
     console.error(`Error en ${seccion}:`, error);
     setErroresPorSeccion(prev => ({ ...prev, [seccion]: true }));
     
-    // Mostrar error general si es crítico
     if (seccion === 'usuarios' || seccion === 'graficos') {
       setError(mensajePersonalizado || `Error al cargar ${seccion}`);
       setErrorDetails({
@@ -134,8 +133,6 @@ function Home() {
       }
     } catch (error) {
       manejarError('usuarios', error, "Error al cargar estadísticas de usuarios");
-      
-      // Establecer valores por defecto
       setStats(prev => ({ ...prev, totalUsuarios: 0, totalConductores: 0, totalViajeros: 0 }));
     }
   }
@@ -249,7 +246,6 @@ function Home() {
         fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-viajeros", { headers })
       ]);
 
-      // Procesar conductores
       if (resConductores.status === 'fulfilled' && resConductores.value.ok) {
         const data = await resConductores.value.json();
         setTopConductores(Array.isArray(data) ? data : []);
@@ -258,7 +254,6 @@ function Home() {
         setTopConductores([]);
       }
 
-      // Procesar viajeros
       if (resViajeros.status === 'fulfilled' && resViajeros.value.ok) {
         const data = await resViajeros.value.json();
         setTopViajeros(Array.isArray(data) ? data : []);
@@ -328,28 +323,44 @@ function Home() {
         zIndex: 0
       }} />
 
-      <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
+      <Container fluid className="py-4 px-3 px-md-4" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Tarjeta de bienvenida - Responsive */}
         <Row className="mb-4">
-          <Col md={12}>
+          <Col xs={12}>
             <Card className="border-0 shadow-sm" style={{ borderRadius: '12px', borderLeft: '5px solid #54c7b8' }}>
-              <Card.Body className="p-4 d-flex align-items-center">
-                <div className="me-4" style={{ flexShrink: 0 }}>
-                  <Image src={imagenDashboard} fluid style={{ maxHeight: '300px', maxWidth: '300px', borderRadius: '12px', objectFit: 'cover' }} alt="Dashboard" />
+              <Card.Body className="p-3 p-md-4 d-flex flex-column flex-md-row align-items-center">
+                <div className="mb-3 mb-md-0 me-md-4" style={{ flexShrink: 0 }}>
+                  <Image 
+                    src={imagenDashboard} 
+                    fluid 
+                    style={{ 
+                      maxHeight: window.innerWidth < 768 ? '150px' : '200px', 
+                      maxWidth: window.innerWidth < 768 ? '150px' : '250px', 
+                      borderRadius: '12px', 
+                      objectFit: 'cover' 
+                    }} 
+                    alt="Dashboard" 
+                  />
                 </div>
-                <div>
-                  <h2 className="fw-bold mb-2" style={{ color: '#113d69' }}>Hola, {getNombreUsuario()}</h2>
-                  <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>Dashboard administrativo con estadísticas generales.</p>
+                <div className="text-center text-md-start">
+                  <h2 className="fw-bold mb-2" style={{ color: '#113d69', fontSize: window.innerWidth < 768 ? '1.5rem' : '2rem' }}>
+                    Hola, {getNombreUsuario()}
+                  </h2>
+                  <p className="text-muted mb-0" style={{ fontSize: window.innerWidth < 768 ? '0.95rem' : '1.1rem' }}>
+                    Dashboard administrativo con estadísticas generales.
+                  </p>
                 </div>
               </Card.Body>
             </Card>
           </Col>
         </Row>
 
+        {/* Alerta de error - Responsive */}
         {error && (
           <Row className="mb-4">
-            <Col>
-              <Alert variant="warning" className="border-0 shadow-sm d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
+            <Col xs={12}>
+              <Alert variant="warning" className="border-0 shadow-sm d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between">
+                <div className="d-flex align-items-start align-items-sm-center mb-2 mb-sm-0">
                   <div className="me-3">
                     ⚠️
                   </div>
@@ -357,7 +368,7 @@ function Home() {
                     <strong>{error}</strong>
                     {errorDetails && (
                       <div className="small text-muted mt-1">
-                        {errorDetails.seccion} - {errorDetails.mensaje} ({errorDetails.timestamp})
+                        {errorDetails.seccion} - {errorDetails.mensaje}
                       </div>
                     )}
                   </div>
@@ -367,7 +378,7 @@ function Home() {
                   size="sm" 
                   onClick={handleRetry}
                   style={{ borderColor: '#54c7b8', color: '#54c7b8' }}
-                  className="d-flex align-items-center"
+                  className="d-flex align-items-center align-self-start align-self-sm-center"
                 >
                   <BsArrowRepeat className="me-2" />
                   Reintentar
@@ -377,6 +388,7 @@ function Home() {
           </Row>
         )}
 
+        {/* Loading */}
         {loading ? (
           <div className="text-center py-5" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', borderRadius: '12px', padding: '2rem', backdropFilter: 'blur(5px)' }}>
             <Spinner animation="border" style={{ color: '#54c7b8' }} />
@@ -384,20 +396,26 @@ function Home() {
           </div>
         ) : (
           <div>
-            <Row className="g-4 mb-4">
+            {/* Tarjetas de estadísticas - Grid responsive */}
+            <Row className="g-3 g-md-4 mb-4">
               {statCards.map((stat, index) => (
                 <Col key={index} xs={12} sm={6} lg={3}>
                   <Card className="shadow-sm border-0 h-100 bg-white" style={{ borderRadius: '12px' }}>
-                    <Card.Body className="d-flex align-items-center">
-                      <div className="rounded-circle d-flex align-items-center justify-content-center me-3" style={{ width: '50px', height: '50px', backgroundColor: stat.error ? '#ff6b6b' : '#54c7b8', color: 'white' }}>
+                    <Card.Body className="d-flex align-items-center p-3 p-md-4">
+                      <div className="rounded-circle d-flex align-items-center justify-content-center me-3" style={{ 
+                        width: window.innerWidth < 768 ? '40px' : '50px', 
+                        height: window.innerWidth < 768 ? '40px' : '50px', 
+                        backgroundColor: stat.error ? '#ff6b6b' : '#54c7b8', 
+                        color: 'white' 
+                      }}>
                         {stat.icon}
                       </div>
                       <div>
-                        <h6 className="text-muted mb-0 small">
+                        <h6 className="text-muted mb-0 small" style={{ fontSize: window.innerWidth < 768 ? '0.7rem' : '0.8rem' }}>
                           {stat.title}
                           {stat.error && <Badge bg="warning" className="ms-2">Error</Badge>}
                         </h6>
-                        <h3 className="fw-bold mb-0" style={{ color: '#333' }}>
+                        <h3 className="fw-bold mb-0" style={{ color: '#333', fontSize: window.innerWidth < 768 ? '1.3rem' : '1.8rem' }}>
                           {stat.error ? '—' : stat.value}
                         </h3>
                       </div>
@@ -407,30 +425,38 @@ function Home() {
               ))}
             </Row>
 
-            <Row className="g-4 mb-4">
+            {/* Gráficos - Layout responsive */}
+            <Row className="g-3 g-md-4 mb-4">
+              {/* Gráfico de barras */}
               <Col lg={8}>
-                <Card className="shadow-sm border-0 h-100" style={{ 
-                  borderRadius: '12px',
-                  backgroundColor: 'white'
-                }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-4 d-flex justify-content-between align-items-center" style={{ color: '#113d69' }}>
-                      <span>Actividad Semanal</span>
+                <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px', backgroundColor: 'white' }}>
+                  <Card.Body className="p-3 p-md-4">
+                    <Card.Title className="fw-bold mb-3 mb-md-4 d-flex flex-wrap justify-content-between align-items-center" style={{ color: '#113d69' }}>
+                      <span style={{ fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem' }}>Actividad Semanal</span>
                       {erroresPorSeccion.graficos && (
                         <Badge bg="warning" className="ms-2">Datos parciales</Badge>
                       )}
                     </Card.Title>
                     {chartData.length > 0 ? (
-                      <div style={{ height: '300px' }}>
+                      <div style={{ height: window.innerWidth < 768 ? '250px' : '300px' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={chartData}>
+                          <BarChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 12 }} />
-                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 12 }} />
+                            <XAxis 
+                              dataKey="name" 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fill: '#999', fontSize: window.innerWidth < 768 ? 10 : 12 }} 
+                            />
+                            <YAxis 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fill: '#999', fontSize: window.innerWidth < 768 ? 10 : 12 }} 
+                            />
                             <Tooltip cursor={{ fill: 'rgba(84, 199, 184, 0.05)' }} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
-                            <Legend />
-                            <Bar dataKey="usuarios" fill="#68bdc4" name="Usuarios" radius={[4, 4, 0, 0]} barSize={28} />
-                            <Bar dataKey="viajes" fill="#113d69" name="Viajes" radius={[4, 4, 0, 0]} barSize={28} />
+                            <Legend wrapperStyle={{ fontSize: window.innerWidth < 768 ? '10px' : '12px' }} />
+                            <Bar dataKey="usuarios" fill="#68bdc4" name="Usuarios" radius={[4, 4, 0, 0]} barSize={window.innerWidth < 768 ? 15 : 28} />
+                            <Bar dataKey="viajes" fill="#113d69" name="Viajes" radius={[4, 4, 0, 0]} barSize={window.innerWidth < 768 ? 15 : 28} />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -443,59 +469,81 @@ function Home() {
                 </Card>
               </Col>
 
+              {/* Gráfico de dona */}
               <Col lg={4}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4 d-flex flex-column">
-                    <Card.Title className="fw-bold mb-4 d-flex justify-content-between align-items-center" style={{ color: '#333' }}>
-                      <span>Estado de Usuarios</span>
+                  <Card.Body className="p-3 p-md-4 d-flex flex-column">
+                    <Card.Title className="fw-bold mb-3 mb-md-4 d-flex flex-wrap justify-content-between align-items-center" style={{ color: '#333' }}>
+                      <span style={{ fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem' }}>Estado de Usuarios</span>
                       {erroresPorSeccion.usuarios && (
                         <Badge bg="warning" className="ms-2">Datos parciales</Badge>
                       )}
                     </Card.Title>
-                    <div style={{ height: '200px', position: 'relative' }}>
+                    <div style={{ height: window.innerWidth < 768 ? '180px' : '200px', position: 'relative' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={donutData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={2} dataKey="value" startAngle={90} endAngle={-270}>
+                          <Pie 
+                            data={donutData} 
+                            cx="50%" 
+                            cy="50%" 
+                            innerRadius={window.innerWidth < 768 ? 35 : 50} 
+                            outerRadius={window.innerWidth < 768 ? 50 : 70} 
+                            paddingAngle={2} 
+                            dataKey="value" 
+                            startAngle={90} 
+                            endAngle={-270}
+                          >
                             {donutData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                           </Pie>
-                          <Tooltip formatter={(value, name) => {
-                            const total = donutData.reduce((sum, item) => sum + item.value, 0);
-                            const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                            return [`${value} usuarios (${porcentaje}%)`, name];
-                          }} contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} />
+                          <Tooltip 
+                            formatter={(value, name) => {
+                              const total = donutData.reduce((sum, item) => sum + item.value, 0);
+                              const porcentaje = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                              return [`${value} usuarios (${porcentaje}%)`, name];
+                            }} 
+                            contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }} 
+                          />
                         </PieChart>
                       </ResponsiveContainer>
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                        <h3 className="fw-bold mb-0" style={{ color: '#333', fontSize: '1.4rem' }}>
+                      <div style={{ 
+                        position: 'absolute', 
+                        top: '50%', 
+                        left: '50%', 
+                        transform: 'translate(-50%, -50%)', 
+                        textAlign: 'center', 
+                        pointerEvents: 'none' 
+                      }}>
+                        <h3 className="fw-bold mb-0" style={{ color: '#333', fontSize: window.innerWidth < 768 ? '1.1rem' : '1.4rem' }}>
                           {donutData.reduce((sum, item) => sum + item.value, 0)}
                         </h3>
-                        <small className="text-muted">Total</small>
+                        <small className="text-muted" style={{ fontSize: window.innerWidth < 768 ? '0.6rem' : '0.8rem' }}>Total</small>
                       </div>
                     </div>
-                    <div className="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+                    <div className="d-flex justify-content-center gap-2 gap-md-3 mt-3 flex-wrap">
                       {donutData.map((item, index) => {
                         const total = donutData.reduce((sum, item) => sum + item.value, 0) || 1;
                         const porcentaje = Math.round((item.value / total) * 100);
                         return (
                           <div key={index} className="d-flex align-items-center">
-                            <div style={{ width: '10px', height: '10px', backgroundColor: item.color, borderRadius: '3px', marginRight: '6px' }} />
+                            <div style={{ width: window.innerWidth < 768 ? '8px' : '10px', height: window.innerWidth < 768 ? '8px' : '10px', backgroundColor: item.color, borderRadius: '3px', marginRight: '4px' }} />
                             <div>
-                              <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>{item.name}</small>
-                              <strong style={{ fontSize: '0.85rem' }}>{porcentaje}%</strong>
+                              <small className="text-muted d-block" style={{ fontSize: window.innerWidth < 768 ? '0.6rem' : '0.7rem' }}>{item.name}</small>
+                              <strong style={{ fontSize: window.innerWidth < 768 ? '0.75rem' : '0.85rem' }}>{porcentaje}%</strong>
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                  </Card.Body> {/* ← Este es el cierre que faltaba */}
+                  </Card.Body>
                 </Card>
               </Col>
             </Row>
 
-            <Row className="mb-4">
-              <Col md={12}>
+            {/* Rankings - Layout responsive */}
+            <Row className="g-3 g-md-4 mb-4">
+              <Col xs={12}>
                 <div className="d-flex align-items-center mb-3">
-                  <h4 className="fw-bold mb-0" style={{ color: '#113d69' }}>Ranking de Excelencia</h4>
+                  <h4 className="fw-bold mb-0" style={{ color: '#113d69', fontSize: window.innerWidth < 768 ? '1.2rem' : '1.5rem' }}>Ranking de Excelencia</h4>
                   {erroresPorSeccion.rankings && (
                     <Badge bg="warning" className="ms-3">Datos no disponibles</Badge>
                   )}
@@ -505,32 +553,45 @@ function Home() {
 
               <Col lg={6} xl={4}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
+                  <Card.Body className="p-3 p-md-4">
+                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333', fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem' }}>
                       <FaMedal className="me-2" style={{ color: '#FFD700' }} />
                       Mejores Conductores
                     </Card.Title>
-                    <p className="text-muted small mb-4">Top 5 conductores con mayor puntuación acumulada.</p>
+                    <p className="text-muted small mb-4" style={{ fontSize: window.innerWidth < 768 ? '0.8rem' : '0.9rem' }}>
+                      Top 5 conductores con mayor puntuación acumulada.
+                    </p>
                     {cargandoTop ? (
                       <div className="text-center py-4"><Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} /></div>
                     ) : topConductores.length > 0 ? (
                       <ListGroup variant="flush">
                         {topConductores.slice(0, 5).map((c, i) => (
-                          <ListGroup.Item key={c.idUsuarios || i} className="px-0 border-0 bg-transparent py-3">
+                          <ListGroup.Item key={c.idUsuarios || i} className="px-0 border-0 bg-transparent py-2 py-md-3">
                             <div className="d-flex align-items-center">
-                              <div className="d-flex align-items-center justify-content-center rounded-circle me-3 shadow-sm" style={{ width: '36px', height: '36px', backgroundColor: getMedalColor(i), color: i < 3 ? 'white' : '#333', fontWeight: 'bold', fontSize: '1rem' }}>
+                              <div className="d-flex align-items-center justify-content-center rounded-circle me-2 me-md-3 shadow-sm" style={{ 
+                                width: window.innerWidth < 768 ? '30px' : '36px', 
+                                height: window.innerWidth < 768 ? '30px' : '36px', 
+                                backgroundColor: getMedalColor(i), 
+                                color: i < 3 ? 'white' : '#333', 
+                                fontWeight: 'bold', 
+                                fontSize: window.innerWidth < 768 ? '0.9rem' : '1rem' 
+                              }}>
                                 {i + 1}
                               </div>
                               <div className="flex-grow-1">
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <strong style={{ fontSize: '0.95rem' }}>{c.nombre}</strong>
-                                  <Badge bg="none" className="rounded-pill px-2 py-1" style={{ fontSize: '0.8rem', backgroundColor: colores.estrella, color: 'white' }}>
+                                <div className="d-flex flex-wrap justify-content-between align-items-center">
+                                  <strong style={{ fontSize: window.innerWidth < 768 ? '0.85rem' : '0.95rem' }}>{c.nombre}</strong>
+                                  <Badge bg="none" className="rounded-pill px-2 py-1" style={{ fontSize: window.innerWidth < 768 ? '0.7rem' : '0.8rem', backgroundColor: colores.estrella, color: 'white' }}>
                                     {c.promedioEstrellas?.toFixed(1) || '0.0'} ★
                                   </Badge>
                                 </div>
-                                <div className="d-flex align-items-center mt-1">
-                                  {renderStars(c.promedioEstrellas || 0)}
-                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({c.totalResenas || c.totalReseñas || 0} reseñas)</small>
+                                <div className="d-flex align-items-center flex-wrap mt-1">
+                                  <div className="d-flex">
+                                    {renderStars(c.promedioEstrellas || 0)}
+                                  </div>
+                                  <small className="text-muted ms-2" style={{ fontSize: window.innerWidth < 768 ? '0.65rem' : '0.75rem' }}>
+                                    ({c.totalResenas || c.totalReseñas || 0})
+                                  </small>
                                 </div>
                               </div>
                             </div>
@@ -553,32 +614,45 @@ function Home() {
 
               <Col lg={6} xl={4}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
+                  <Card.Body className="p-3 p-md-4">
+                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333', fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem' }}>
                       <FaMedal className="me-2" style={{ color: '#C0C0C0' }} />
                       Mejores Viajeros
                     </Card.Title>
-                    <p className="text-muted small mb-4">Pasajeros destacados por buen comportamiento y puntualidad.</p>
+                    <p className="text-muted small mb-4" style={{ fontSize: window.innerWidth < 768 ? '0.8rem' : '0.9rem' }}>
+                      Pasajeros destacados por buen comportamiento y puntualidad.
+                    </p>
                     {cargandoTop ? (
                       <div className="text-center py-4"><Spinner animation="border" size="sm" style={{ color: '#54c7b8' }} /></div>
                     ) : topViajeros.length > 0 ? (
                       <ListGroup variant="flush">
                         {topViajeros.slice(0, 5).map((v, i) => (
-                          <ListGroup.Item key={v.idUsuarios || i} className="px-0 border-0 bg-transparent py-3">
+                          <ListGroup.Item key={v.idUsuarios || i} className="px-0 border-0 bg-transparent py-2 py-md-3">
                             <div className="d-flex align-items-center">
-                              <div className="d-flex align-items-center justify-content-center rounded-circle me-3 shadow-sm" style={{ width: '36px', height: '36px', backgroundColor: getMedalColor(i), color: i < 3 ? 'white' : '#333', fontWeight: 'bold', fontSize: '1rem' }}>
+                              <div className="d-flex align-items-center justify-content-center rounded-circle me-2 me-md-3 shadow-sm" style={{ 
+                                width: window.innerWidth < 768 ? '30px' : '36px', 
+                                height: window.innerWidth < 768 ? '30px' : '36px', 
+                                backgroundColor: getMedalColor(i), 
+                                color: i < 3 ? 'white' : '#333', 
+                                fontWeight: 'bold', 
+                                fontSize: window.innerWidth < 768 ? '0.9rem' : '1rem' 
+                              }}>
                                 {i + 1}
                               </div>
                               <div className="flex-grow-1">
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <strong style={{ fontSize: '0.95rem' }}>{v.nombre}</strong>
-                                  <Badge bg="none" className="rounded-pill px-2 py-1" style={{ fontSize: '0.8rem', backgroundColor: colores.estrella, color: 'white' }}>
+                                <div className="d-flex flex-wrap justify-content-between align-items-center">
+                                  <strong style={{ fontSize: window.innerWidth < 768 ? '0.85rem' : '0.95rem' }}>{v.nombre}</strong>
+                                  <Badge bg="none" className="rounded-pill px-2 py-1" style={{ fontSize: window.innerWidth < 768 ? '0.7rem' : '0.8rem', backgroundColor: colores.estrella, color: 'white' }}>
                                     {v.promedioEstrellas?.toFixed(1) || '0.0'} ★
                                   </Badge>
                                 </div>
-                                <div className="d-flex align-items-center mt-1">
-                                  {renderStars(v.promedioEstrellas || 0)}
-                                  <small className="text-muted ms-2" style={{ fontSize: '0.75rem' }}>({v.totalResenas || v.totalReseñas || 0} reseñas)</small>
+                                <div className="d-flex align-items-center flex-wrap mt-1">
+                                  <div className="d-flex">
+                                    {renderStars(v.promedioEstrellas || 0)}
+                                  </div>
+                                  <small className="text-muted ms-2" style={{ fontSize: window.innerWidth < 768 ? '0.65rem' : '0.75rem' }}>
+                                    ({v.totalResenas || v.totalReseñas || 0})
+                                  </small>
                                 </div>
                               </div>
                             </div>
@@ -601,29 +675,35 @@ function Home() {
 
               <Col lg={12} xl={4}>
                 <Card className="shadow-sm border-0 h-100" style={{ borderRadius: '12px' }}>
-                  <Card.Body className="p-4">
-                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333' }}>
-                      <BsCircleFill className="me-2 text-success" size={12} />
+                  <Card.Body className="p-3 p-md-4">
+                    <Card.Title className="fw-bold mb-3 d-flex align-items-center" style={{ color: '#333', fontSize: window.innerWidth < 768 ? '1rem' : '1.25rem' }}>
+                      <BsCircleFill className="me-2 text-success" size={window.innerWidth < 768 ? 10 : 12} />
                       Sesiones Activas ({onlineUsers?.length || 0})
                     </Card.Title>
-                    <p className="text-muted small mb-4">Usuarios interactuando con la plataforma en tiempo real.</p>
+                    <p className="text-muted small mb-4" style={{ fontSize: window.innerWidth < 768 ? '0.8rem' : '0.9rem' }}>
+                      Usuarios interactuando con la plataforma en tiempo real.
+                    </p>
                     {onlineUsers && onlineUsers.length > 0 ? (
                       <ListGroup variant="flush">
                         {onlineUsers.map((u, index) => (
                           <ListGroup.Item key={u.id || u.nombre || `online-${index}`} className="px-0 border-0 bg-transparent py-2">
                             <div className="d-flex align-items-center justify-content-between">
                               <div className="d-flex align-items-center">
-                                <div className="rounded-circle me-3 d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px', backgroundColor: '#f8f9fa' }}>
-                                  <BsPersonCircle size={24} className="text-muted" />
+                                <div className="rounded-circle me-2 me-md-3 d-flex align-items-center justify-content-center" style={{ 
+                                  width: window.innerWidth < 768 ? '35px' : '40px', 
+                                  height: window.innerWidth < 768 ? '35px' : '40px', 
+                                  backgroundColor: '#f8f9fa' 
+                                }}>
+                                  <BsPersonCircle size={window.innerWidth < 768 ? 20 : 24} className="text-muted" />
                                 </div>
                                 <div>
-                                  <div className="fw-bold mb-0" style={{ fontSize: '0.9rem' }}>{u.nombre || 'Usuario'}</div>
-                                  <div className="text-muted" style={{ fontSize: '0.75rem' }}>{u.role || 'Sin rol'}</div>
+                                  <div className="fw-bold mb-0" style={{ fontSize: window.innerWidth < 768 ? '0.85rem' : '0.9rem' }}>{u.nombre || 'Usuario'}</div>
+                                  <div className="text-muted" style={{ fontSize: window.innerWidth < 768 ? '0.65rem' : '0.75rem' }}>{u.role || 'Sin rol'}</div>
                                 </div>
                               </div>
                               <div className="d-flex align-items-center">
                                 <span className="p-1 rounded-circle bg-success me-2" style={{ width: '8px', height: '8px' }}></span>
-                                <small className="text-success fw-bold" style={{ fontSize: '0.7rem' }}>En línea</small>
+                                <small className="text-success fw-bold" style={{ fontSize: window.innerWidth < 768 ? '0.6rem' : '0.7rem' }}>En línea</small>
                               </div>
                             </div>
                           </ListGroup.Item>
@@ -631,7 +711,7 @@ function Home() {
                       </ListGroup>
                     ) : (
                       <div className="text-center py-5">
-                        <BsPeopleFill className="text-muted mb-2 opacity-25" size={40} />
+                        <BsPeopleFill className="text-muted mb-2 opacity-25" size={window.innerWidth < 768 ? 30 : 40} />
                         <p className="text-muted small">No hay usuarios activos</p>
                       </div>
                     )}

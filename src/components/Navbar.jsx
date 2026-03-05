@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom"; // IMPORTAMOS useLocation
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Image, Button } from "react-bootstrap";
 import { FaUserCircle, FaDoorOpen, FaKey, FaQuestionCircle } from "react-icons/fa"; 
 import Logo from '../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
@@ -9,7 +9,7 @@ import Notificaciones from '../components/Notificaciones';
 export default function NavbarCustom({ transparent }) {
   const { token, usuario, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // PARA SABER EN QUÉ RUTA ESTAMOS
+  const location = useLocation();
   
   const [fotoPerfil, setFotoPerfil] = useState(null);
   const [cargandoFoto, setCargandoFoto] = useState(false);
@@ -43,23 +43,35 @@ export default function NavbarCustom({ transparent }) {
     navigate("/");
   };
 
-  // Función para scroll suave a la sección "¿Cómo Funciona?"
-  const scrollToComoFunciona = () => {
-    if (window.location.pathname !== '/') {
-      // Si no estamos en HomeBase, navegamos y luego scrolleamos
+  // Función para navegar a HomeBase y hacer scroll a "¿Cómo funciona?"
+  const goToComoFunciona = () => {
+    if (location.pathname !== '/') {
+      // Si no estamos en HomeBase, navegamos con estado
       navigate('/', { state: { scrollToComoFunciona: true } });
     } else {
-      // Si ya estamos en HomeBase, scrolleamos directamente
+      // Si ya estamos en HomeBase, hacemos scroll directo
       const seccion = document.getElementById('como-funciona-seccion');
       if (seccion) {
         seccion.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Si no encuentra la sección, esperamos un poco (por si el DOM no ha cargado)
+        setTimeout(() => {
+          const seccionRetry = document.getElementById('como-funciona-seccion');
+          if (seccionRetry) {
+            seccionRetry.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 500);
       }
     }
   };
 
   // Efecto para manejar el scroll cuando se navega desde otra página
   useEffect(() => {
-    if (window.location.pathname === '/' && window.history.state?.usr?.scrollToComoFunciona) {
+    if (location.pathname === '/' && location.state?.scrollToComoFunciona) {
+      // Limpiamos el estado para no hacer scroll múltiples veces
+      navigate(location.pathname, { replace: true, state: {} });
+      
+      // Pequeño delay para asegurar que el DOM esté listo
       setTimeout(() => {
         const seccion = document.getElementById('como-funciona-seccion');
         if (seccion) {
@@ -67,7 +79,7 @@ export default function NavbarCustom({ transparent }) {
         }
       }, 500);
     }
-  }, []);
+  }, [location.pathname, location.state, navigate]);
 
   const idRol = usuario?.idRol || usuario?.rol?.id;
   const isDriver = idRol === 2 || idRol === "2";
@@ -75,8 +87,8 @@ export default function NavbarCustom({ transparent }) {
   const profilePath = isDriver ? "/driver-profile" : "/profile";
   const fotoAMostrar = fotoPerfil || usuario?.fotoPerfil || usuario?.foto;
 
-  // VARIABLE PARA SABER SI ESTAMOS EN HOMEBASE (ruta "/")
-  const isHomeBase = location.pathname === "/";
+  // El botón "¿Cómo funciona?" se muestra en TODAS las páginas
+  // (no solo en HomeBase, para que siempre puedas ir a esa sección)
 
   return (
     <Navbar 
@@ -103,34 +115,32 @@ export default function NavbarCustom({ transparent }) {
             />
           </Navbar.Brand>
 
-          {/* BOTÓN "CÓMO FUNCIONA" - SOLO SE MUESTRA EN HOMEBASE */}
-          {isHomeBase && (
-            <Button 
-              variant="link" 
-              onClick={scrollToComoFunciona}
-              className="d-flex align-items-center text-decoration-none"
-              style={{
-                color: '#56bca7',
-                fontWeight: '600',
-                fontSize: '1rem',
-                padding: '0.5rem 1rem',
-                backgroundColor: 'transparent',
-                border: 'none',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.color = '#3da89a';
-                e.target.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.color = '#56bca7';
-                e.target.style.transform = 'scale(1)';
-              }}
-            >
-              <FaQuestionCircle className="me-2" size={20} />
-              ¿Cómo funciona?
-            </Button>
-          )}
+          {/* BOTÓN "CÓMO FUNCIONA" - SIEMPRE VISIBLE */}
+          <Button 
+            variant="link" 
+            onClick={goToComoFunciona}
+            className="d-flex align-items-center text-decoration-none"
+            style={{
+              color: '#56bca7',
+              fontWeight: '600',
+              fontSize: '1rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: 'transparent',
+              border: 'none',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = '#3da89a';
+              e.target.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = '#56bca7';
+              e.target.style.transform = 'scale(1)';
+            }}
+          >
+            <FaQuestionCircle className="me-2" size={20} />
+            ¿Cómo funciona?
+          </Button>
         </div>
         
         <Navbar.Toggle aria-controls="navbar-basico" />
