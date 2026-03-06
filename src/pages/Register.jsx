@@ -195,8 +195,8 @@ function Register() {
                                 <div className="text-center mb-4">
                                     <img src={LogoMoviflex} alt="Logo" style={{ width: '150px' }} />
                                     <h5 className="fw-bold mt-3 mb-1">Crea tu cuenta</h5>
-                                    <ProgressBar now={(step / 5) * 100} variant="info" className="mt-3" style={{ height: '5px', borderRadius: '10px' }} />
-                                    <small className="text-muted d-block mt-2">Paso {step} de 5</small>
+                                    <ProgressBar now={(step / 6) * 100} variant="info" className="mt-3" style={{ height: '5px', borderRadius: '10px' }} />
+                                    <small className="text-muted d-block mt-2">Paso {step} de 6</small>
                                 </div>
 
                                 {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
@@ -208,7 +208,7 @@ function Register() {
                                             <Form.Group className="mb-4">
                                                 <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo Electrónico" required style={inputStyle} />
                                             </Form.Group>
-                                            <Button onClick={handleNextStep} disabled={loading} className="w-100 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
+                                            <Button type="button" onClick={handleNextStep} disabled={loading} className="w-100 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
                                                 {loading ? "Enviando..." : "Enviar Código"} <FaArrowRight className="ms-2" size={14} />
                                             </Button>
                                         </div>
@@ -227,7 +227,7 @@ function Register() {
                                                     style={{ ...inputStyle, textAlign: 'center', fontSize: '1.5rem', letterSpacing: '8px' }}
                                                 />
                                             </Form.Group>
-                                            <Button onClick={handleNextStep} disabled={loading || otp.length !== 6} className="w-100 py-2 border-0 mb-3" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
+                                            <Button type="button" onClick={handleNextStep} disabled={loading || otp.length !== 6} className="w-100 py-2 border-0 mb-3" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
                                                 {loading ? "Verificando..." : "Verificar Email"}
                                             </Button>
                                             <div className="d-flex justify-content-between px-2">
@@ -245,7 +245,7 @@ function Register() {
                                             <Form.Group className="mb-4">
                                                 <Form.Control type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="Teléfono" required style={inputStyle} />
                                             </Form.Group>
-                                            <Button onClick={handleNextStep} className="w-100 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
+                                            <Button type="button" onClick={handleNextStep} className="w-100 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
                                                 Siguiente <FaArrowRight className="ms-2" size={14} />
                                             </Button>
                                         </div>
@@ -262,8 +262,8 @@ function Register() {
                                                 <FaVideo className="me-2" /> Tomar Foto
                                             </Button>
                                             <div className="d-flex gap-2">
-                                                <Button variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
-                                                <Button onClick={handleNextStep} disabled={!fotoBase64} className="w-50 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>Siguiente</Button>
+                                                <Button type="button" variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
+                                                <Button type="button" onClick={handleNextStep} disabled={!fotoBase64} className="w-50 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>Siguiente</Button>
                                             </div>
                                         </div>
                                     )}
@@ -282,8 +282,8 @@ function Register() {
                                                 {passwordError && <small className="text-danger mt-1 d-block" style={{ fontSize: '0.8rem' }}>{passwordError}</small>}
                                             </Form.Group>
                                             <div className="d-flex gap-2">
-                                                <Button variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
-                                                <Button onClick={handleNextStep} disabled={!!passwordError || !password} className="w-50 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>Siguiente</Button>
+                                                <Button type="button" variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
+                                                <Button type="button" onClick={handleNextStep} disabled={!!passwordError || !password} className="w-50 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>Siguiente</Button>
                                             </div>
                                         </div>
                                     )}
@@ -295,7 +295,7 @@ function Register() {
                                             </div>
                                             <Form.Check type="checkbox" label={<span style={{ fontSize: '0.8rem' }}>Acepto términos y condiciones</span>} checked={terminosAceptados} onChange={(e) => setTerminosAceptados(e.target.checked)} className="mb-4" />
                                             <div className="d-flex gap-2">
-                                                <Button variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
+                                                <Button type="button" variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
                                                 <Button type="submit" disabled={!terminosAceptados || loading} className="w-50 py-2 border-0" style={{ background: '#124c83', borderRadius: '12px', fontWeight: 'bold' }}>
                                                     {loading ? "..." : "Finalizar"}
                                                 </Button>
