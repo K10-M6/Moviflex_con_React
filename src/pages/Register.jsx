@@ -76,8 +76,56 @@ function Register() {
     };
 
     // --- LÓGICA DE REGISTRO ---
+    async function handleRequestOtp() {
+        if (!email) return toast.error("Ingresa un correo");
+        setLoading(true);
+        try {
+            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/request-pre-otp", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+            const data = await respuesta.json();
+            if (respuesta.ok) {
+                toast.success(data.mensaje);
+                setStep(2);
+            } else {
+                toast.error(data.error || "Error al enviar el código.");
+            }
+        } catch (err) {
+            toast.error('Error de conexión.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleVerifyOtp() {
+        if (otp.length !== 6) return toast.error("Ingresa el código de 6 dígitos");
+        setLoading(true);
+        try {
+            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/verify-pre-otp", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp })
+            });
+            const data = await respuesta.json();
+            if (respuesta.ok) {
+                toast.success(data.mensaje);
+                setStep(3);
+            } else {
+                toast.error(data.error || "Código incorrecto.");
+            }
+        } catch (err) {
+            toast.error('Error al verificar.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleResendOtp() {
+        return handleRequestOtp(); // Reutilizamos para reenviar
+    }
+
     async function guardar(e) {
-        e.preventDefault();
+        if (e) e.preventDefault();
         if (!terminosAceptados) return toast.error("Acepta los términos");
         setLoading(true);
         try {
@@ -87,8 +135,8 @@ function Register() {
                 body: JSON.stringify(datosEnviar)
             });
             if (respuesta.ok) {
-                toast.success('¡Registro exitoso! Por favor verifica tu correo.');
-                setStep(5);
+                toast.success('¡Registro exitoso!');
+                setTimeout(() => navigate("/login"), 2000);
             } else {
                 const data = await respuesta.json();
                 setError(data.error || "Error en el registro.");
@@ -100,53 +148,12 @@ function Register() {
         }
     }
 
-    async function handleVerifyOtp(e) {
-        if (e) e.preventDefault();
-        if (otp.length !== 6) return toast.error("Ingresa el código de 6 dígitos");
-        setLoading(true);
-        try {
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/verify-otp", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, otp })
-            });
-            const data = await respuesta.json();
-            if (respuesta.ok) {
-                toast.success(data.mensaje);
-                setTimeout(() => navigate("/login"), 2000);
-            } else {
-                toast.error(data.error || "Código incorrecto o expirado.");
-            }
-        } catch (err) {
-            toast.error('Error al verificar el código.');
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function handleResendOtp() {
-        setLoading(true);
-        try {
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/resend-otp", {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email })
-            });
-            const data = await respuesta.json();
-            if (respuesta.ok) {
-                toast.success(data.mensaje);
-            } else {
-                toast.error(data.error || "Error al reenviar el código.");
-            }
-        } catch (err) {
-            toast.error('Error al reenviar el código.');
-        } finally {
-            setLoading(false);
-        }
-    }
-
     const handleNextStep = () => {
-        if (step === 1 && (!nombre || !email || !telefono)) return toast.error("Completa los campos");
-        if (step === 2 && !fotoBase64) return toast.error("Toma una foto");
-        if (step === 3 && (passwordError || !password)) return toast.error("Revisa la contraseña");
+        if (step === 1) return handleRequestOtp();
+        if (step === 2) return handleVerifyOtp();
+        if (step === 3 && (!nombre || !telefono)) return toast.error("Completa los campos");
+        if (step === 4 && !fotoBase64) return toast.error("Toma una foto");
+        if (step === 5 && (passwordError || !password)) return toast.error("Revisa la contraseña");
         setStep(step + 1);
     };
 
@@ -197,11 +204,43 @@ function Register() {
                                 <Form onSubmit={guardar}>
                                     {step === 1 && (
                                         <div className="animate__animated animate__fadeIn">
+                                            <p className="small mb-3 text-center">Ingresa tu correo para recibir un código de verificación.</p>
+                                            <Form.Group className="mb-4">
+                                                <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo Electrónico" required style={inputStyle} />
+                                            </Form.Group>
+                                            <Button onClick={handleNextStep} disabled={loading} className="w-100 py-2 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
+                                                {loading ? "Enviando..." : "Enviar Código"} <FaArrowRight className="ms-2" size={14} />
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {step === 2 && (
+                                        <div className="animate__animated animate__fadeIn text-center">
+                                            <p className="small mb-4">Ingresa el código enviado a <strong>{email}</strong></p>
+                                            <Form.Group className="mb-4">
+                                                <Form.Control
+                                                    type="text"
+                                                    maxLength="6"
+                                                    value={otp}
+                                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                                                    placeholder="000000"
+                                                    style={{ ...inputStyle, textAlign: 'center', fontSize: '1.5rem', letterSpacing: '8px' }}
+                                                />
+                                            </Form.Group>
+                                            <Button onClick={handleNextStep} disabled={loading || otp.length !== 6} className="w-100 py-2 border-0 mb-3" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }}>
+                                                {loading ? "Verificando..." : "Verificar Email"}
+                                            </Button>
+                                            <div className="d-flex justify-content-between px-2">
+                                                <span onClick={handlePrevStep} style={{ cursor: 'pointer', fontSize: '0.85rem' }} className="text-muted">Cambiar Correo</span>
+                                                <span onClick={handleResendOtp} style={{ color: '#4acfbd', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>Reenviar Código</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {step === 3 && (
+                                        <div className="animate__animated animate__fadeIn">
                                             <Form.Group className="mb-3">
                                                 <Form.Control type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre Completo" required style={inputStyle} />
-                                            </Form.Group>
-                                            <Form.Group className="mb-3">
-                                                <Form.Control type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo Electrónico" required style={inputStyle} />
                                             </Form.Group>
                                             <Form.Group className="mb-4">
                                                 <Form.Control type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="Teléfono" required style={inputStyle} />
@@ -212,7 +251,7 @@ function Register() {
                                         </div>
                                     )}
 
-                                    {step === 2 && (
+                                    {step === 4 && (
                                         <div className="text-center animate__animated animate__fadeIn">
                                             <div className="d-flex justify-content-center mb-4">
                                                 <div style={{ width: '120px', height: '120px', borderRadius: '50%', border: '3px solid #4acfbd', overflow: 'hidden', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -229,7 +268,7 @@ function Register() {
                                         </div>
                                     )}
 
-                                    {step === 3 && (
+                                    {step === 5 && (
                                         <div className="animate__animated animate__fadeIn">
                                             <Form.Group className="mb-4">
                                                 <div className="position-relative">
@@ -249,7 +288,7 @@ function Register() {
                                         </div>
                                     )}
 
-                                    {step === 4 && (
+                                    {step === 6 && (
                                         <div className="animate__animated animate__fadeIn">
                                             <div className="bg-light p-3 rounded-4 mb-3" style={{ fontSize: '0.85rem' }}>
                                                 <strong>{nombre}</strong><br />{email}
