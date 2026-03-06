@@ -16,11 +16,11 @@ import toast from "react-hot-toast";
 const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#54c7b8" }) => {
     const [imageError, setImageError] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
-    
+
     useEffect(() => {
         if (vehiculo?.fotoVehiculo) {
-            const url = vehiculo.fotoVehiculo.startsWith('http') 
-                ? vehiculo.fotoVehiculo 
+            const url = vehiculo.fotoVehiculo.startsWith('http')
+                ? vehiculo.fotoVehiculo
                 : `https://backendmovi-production-c657.up.railway.app${vehiculo.fotoVehiculo}`;
             setImageUrl(url);
             setImageError(false);
@@ -56,12 +56,12 @@ const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#54c7b8" }) => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 cursor: 'pointer'
             }}
-            onClick={() => {
-                if (window.open) {
-                    window.open(imageUrl, '_blank');
-                }
-            }}>
-                <Image 
+                onClick={() => {
+                    if (window.open) {
+                        window.open(imageUrl, '_blank');
+                    }
+                }}>
+                <Image
                     src={imageUrl}
                     alt={`${vehiculo.marca} ${vehiculo.modelo}`}
                     fluid
@@ -278,7 +278,7 @@ const DriverHome = () => {
                     console.log("Viajes recibidos:", data);
 
                     const viajesData = Array.isArray(data) ? data : [];
-                    
+
                     setTodosLosViajes(viajesData);
                     setViajesRecientes(viajesData.slice(0, 3));
 
@@ -315,12 +315,12 @@ const DriverHome = () => {
     const filtrarViajes = (viajes) => {
         return viajes.filter(viaje => {
             const textoBusqueda = busquedaViajes.toLowerCase();
-            const coincideBusqueda = textoBusqueda === '' || 
+            const coincideBusqueda = textoBusqueda === '' ||
                 viaje.idViajes.toString().includes(textoBusqueda) ||
                 (viaje.ruta?.nombre?.toLowerCase().includes(textoBusqueda));
-            
+
             const coincideEstado = filtroEstado === 'TODOS' || viaje.estado === filtroEstado;
-            
+
             return coincideBusqueda && coincideEstado;
         });
     };
@@ -366,7 +366,7 @@ const DriverHome = () => {
             setCargandoVehiculo(true);
             setErrorVehiculo("");
             console.log("Obteniendo vehículos del usuario ID:", usuario?.idUsuarios);
-            
+
             const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -379,7 +379,7 @@ const DriverHome = () => {
             if (respuesta.ok) {
                 const data = await respuesta.json();
                 console.log("Todos los vehículos recibidos:", data);
-                
+
                 // Asegurarse de que siempre sea un array
                 let vehiculosArray = [];
                 if (Array.isArray(data)) {
@@ -387,11 +387,11 @@ const DriverHome = () => {
                 } else if (data && typeof data === 'object') {
                     vehiculosArray = [data];
                 }
-                
+
                 // Filtrar solo los del usuario actual (por si acaso)
                 const vehiculosUsuario = vehiculosArray.filter(v => v.idUsuario === usuario?.idUsuarios);
                 console.log("Vehículos filtrados del usuario:", vehiculosUsuario);
-                
+
                 setVehiculos(vehiculosUsuario);
             } else if (respuesta.status === 404) {
                 console.log("No se encontraron vehículos");
@@ -628,7 +628,7 @@ const DriverHome = () => {
 
     // Determinar el vehículo principal (primero de la lista o el guardado en localStorage)
     const vehiculoPrincipalId = localStorage.getItem('vehiculoPrincipalId');
-    const vehiculoPrincipal = vehiculoSeleccionado || 
+    const vehiculoPrincipal = vehiculoSeleccionado ||
         (vehiculoPrincipalId ? vehiculos.find(v => v.idVehiculos === parseInt(vehiculoPrincipalId)) : null) ||
         (vehiculos.length > 0 ? vehiculos[0] : null);
 
@@ -652,7 +652,7 @@ const DriverHome = () => {
                 zIndex: 0
             }} />
 
-            <Navbar transparent={true}/>
+            <Navbar transparent={true} />
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 {/* Tarjeta de bienvenida */}
@@ -735,7 +735,14 @@ const DriverHome = () => {
                         </Card>
                     </Col>
                     <Col xs={12} sm={6} lg={3}>
-                        <Card style={{ ...cardStyle, borderBottom: '4px solid #10b981' }}>
+                        <Card
+                            style={{ ...cardStyle, borderBottom: '4px solid #10b981', cursor: 'pointer' }}
+                            onClick={() => {
+                                setBusquedaViajes('');
+                                setFiltroEstado('FINALIZADO');
+                                setShowHistorialCompleto(true);
+                            }}
+                        >
                             <Card.Body className="d-flex align-items-center p-4">
                                 <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
                                     style={{ width: '50px', height: '50px', backgroundColor: '#d1fae5', color: '#10b981' }}>
@@ -744,6 +751,7 @@ const DriverHome = () => {
                                 <div>
                                     <h6 className="text-muted mb-0 small">Viajes Finalizados</h6>
                                     <h4 className="fw-bold mb-0">{statsAvanzadas.resumenViajes.total}</h4>
+                                    <small className="text-success fw-bold mt-1" style={{ fontSize: '0.75rem' }}>Ver lista de viajes</small>
                                 </div>
                             </Card.Body>
                         </Card>
@@ -813,7 +821,7 @@ const DriverHome = () => {
                         </Card>
                     </Col>
                 </Row>
-                
+
                 <Row className="g-4 mb-4">
                     {/* Tarjeta de Vehículo */}
                     <Col lg={7}>
@@ -835,7 +843,7 @@ const DriverHome = () => {
                                         </div>
                                         <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Vehículo Activo</h5>
                                     </div>
-                                    
+
                                     {/* NUEVO: Botón para ver todos los vehículos */}
                                     {vehiculos.length > 1 && (
                                         <Button
@@ -887,8 +895,8 @@ const DriverHome = () => {
                                                         size="sm"
                                                         className="p-0 text-decoration-none mt-2"
                                                         onClick={() => {
-                                                            const url = vehiculoPrincipal.fotoVehiculo.startsWith('http') 
-                                                                ? vehiculoPrincipal.fotoVehiculo 
+                                                            const url = vehiculoPrincipal.fotoVehiculo.startsWith('http')
+                                                                ? vehiculoPrincipal.fotoVehiculo
                                                                 : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`;
                                                             setSelectedPhoto(url);
                                                             setShowPhotoModal(true);
@@ -1109,9 +1117,9 @@ const DriverHome = () => {
                                     <>
                                         <ListGroup variant="flush">
                                             {viajesRecientes.map((viaje) => (
-                                                <ListGroup.Item 
-                                                    key={viaje.idViajes} 
-                                                    className="px-0 border-0 py-3" 
+                                                <ListGroup.Item
+                                                    key={viaje.idViajes}
+                                                    className="px-0 border-0 py-3"
                                                     style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
                                                     onClick={() => {
                                                         setViajeSeleccionado(viaje);
@@ -1211,12 +1219,12 @@ const DriverHome = () => {
                         <Row>
                             {vehiculos.map((vehiculo, index) => (
                                 <Col md={6} key={vehiculo.idVehiculos} className="mb-3">
-                                    <Card style={{ 
+                                    <Card style={{
                                         border: vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos ? `2px solid ${brandColor}` : '1px solid #e0e0e0',
                                         borderRadius: '12px',
                                         cursor: 'pointer'
                                     }}
-                                    onClick={() => seleccionarVehiculoPrincipal(vehiculo)}>
+                                        onClick={() => seleccionarVehiculoPrincipal(vehiculo)}>
                                         <Card.Body>
                                             <div className="d-flex align-items-center gap-3">
                                                 <VehiculoImage vehiculo={vehiculo} size={50} brandColor={brandColor} />
@@ -1264,9 +1272,9 @@ const DriverHome = () => {
                 </Modal.Header>
                 <Modal.Body className="text-center bg-dark p-0">
                     {selectedPhoto && (
-                        <Image 
-                            src={selectedPhoto} 
-                            fluid 
+                        <Image
+                            src={selectedPhoto}
+                            fluid
                             style={{ maxHeight: '70vh', objectFit: 'contain' }}
                             onError={(e) => {
                                 console.log("Error cargando imagen en modal:", selectedPhoto);
@@ -1290,7 +1298,7 @@ const DriverHome = () => {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1rem 1.5rem' }}>
-                    
+
                     <Row className="mb-4 g-3">
                         <Col md={6}>
                             <InputGroup>
@@ -1360,9 +1368,9 @@ const DriverHome = () => {
                     ) : (
                         <ListGroup variant="flush">
                             {viajesFiltrados.map((viaje) => (
-                                <ListGroup.Item 
-                                    key={viaje.idViajes} 
-                                    className="py-3 border-0" 
+                                <ListGroup.Item
+                                    key={viaje.idViajes}
+                                    className="py-3 border-0"
                                     style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
                                     onClick={() => {
                                         setViajeSeleccionado(viaje);
@@ -1599,9 +1607,9 @@ const DriverHome = () => {
                                     margin: '0 auto 20px'
                                 }}>
                                     {vehiculoPrincipal?.fotoVehiculo ? (
-                                        <Image 
-                                            src={vehiculoPrincipal.fotoVehiculo.startsWith('http') 
-                                                ? vehiculoPrincipal.fotoVehiculo 
+                                        <Image
+                                            src={vehiculoPrincipal.fotoVehiculo.startsWith('http')
+                                                ? vehiculoPrincipal.fotoVehiculo
                                                 : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`}
                                             alt="Vehículo"
                                             style={{

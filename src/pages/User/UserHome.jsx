@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button, Badge, ListGroup } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal } from "react-bootstrap";
 import { FaUser, FaRoute, FaWallet, FaHistory, FaStar, FaCalendarAlt, FaArrowRight, FaChartLine, FaSuitcase } from "react-icons/fa";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -13,7 +13,7 @@ import imagencontacto from "../Imagenes/AutoresContacto.png";
 const UserHome = () => {
     const { usuario, token } = useAuth();
     const navigate = useNavigate();
-    
+
     // Colores exactos del DriverProfile
     const brandColor = "#124c83"; // Azul oscuro del DriverProfile
     const accentColor = "#54c7b8"; // Verde turquesa de los botones
@@ -29,6 +29,8 @@ const UserHome = () => {
 
     // ... (Mantengo todos tus estados y useEffects intactos)
     const [viajesRecientes, setViajesRecientes] = useState([]);
+    const [todosLosViajes, setTodosLosViajes] = useState([]);
+    const [showViajesModal, setShowViajesModal] = useState(false);
     const [cargandoViajes, setCargandoViajes] = useState(false);
     const [errorViajes, setErrorViajes] = useState("");
     const [pagosRecientes, setPagosRecientes] = useState([]);
@@ -83,6 +85,7 @@ const UserHome = () => {
                     console.log("Viajes recibidos:", data);
 
                     const viajesData = Array.isArray(data) ? data : [];
+                    setTodosLosViajes(viajesData);
                     setViajesRecientes(viajesData.slice(0, 3));
 
                     const completados = viajesData.filter(v => v.estado === 'COMPLETADO').length;
@@ -219,30 +222,30 @@ const UserHome = () => {
     };
 
     return (
-        <div style={{ 
-            minHeight: '100vh', 
-            backgroundImage: `url(${imagencontacto})`, 
+        <div style={{
+            minHeight: '100vh',
+            backgroundImage: `url(${imagencontacto})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundAttachment: 'fixed',
-            position: 'relative', 
-            overflowX: 'hidden' 
+            position: 'relative',
+            overflowX: 'hidden'
         }}>
             {/* Overlay blanco semitransparente como en DriverProfile */}
-            <div style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                backgroundColor: 'rgba(255, 255, 255, 0.65)', 
-                zIndex: 0 
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.65)',
+                zIndex: 0
             }} />
 
             <div style={{ position: 'relative', zIndex: 2 }}>
                 {/* Navbar con fondo transparente como en DriverProfile */}
-                <Navbar transparent={true}/>
-                
+                <Navbar transparent={true} />
+
                 <Container className="py-5">
                     {/* Tarjeta de bienvenida - estilo DriverProfile */}
                     <Card className="mb-4 border-0 rounded-4 shadow">
@@ -265,8 +268,8 @@ const UserHome = () => {
                                         bg={periodo === 'diario' ? 'primary' : 'light'}
                                         text={periodo === 'diario' ? 'white' : 'dark'}
                                         onClick={() => setPeriodo('diario')}
-                                        style={{ 
-                                            cursor: 'pointer', 
+                                        style={{
+                                            cursor: 'pointer',
                                             backgroundColor: periodo === 'diario' ? accentColor : '',
                                             color: periodo === 'diario' ? 'white' : '#666'
                                         }}
@@ -276,8 +279,8 @@ const UserHome = () => {
                                         bg={periodo === 'mensual' ? 'primary' : 'light'}
                                         text={periodo === 'mensual' ? 'white' : 'dark'}
                                         onClick={() => setPeriodo('mensual')}
-                                        style={{ 
-                                            cursor: 'pointer', 
+                                        style={{
+                                            cursor: 'pointer',
                                             backgroundColor: periodo === 'mensual' ? accentColor : '',
                                             color: periodo === 'mensual' ? 'white' : '#666'
                                         }}
@@ -287,8 +290,8 @@ const UserHome = () => {
                                         bg={periodo === 'anual' ? 'primary' : 'light'}
                                         text={periodo === 'anual' ? 'white' : 'dark'}
                                         onClick={() => setPeriodo('anual')}
-                                        style={{ 
-                                            cursor: 'pointer', 
+                                        style={{
+                                            cursor: 'pointer',
                                             backgroundColor: periodo === 'anual' ? accentColor : '',
                                             color: periodo === 'anual' ? 'white' : '#666'
                                         }}
@@ -350,9 +353,11 @@ const UserHome = () => {
                                             </div>
                                         </Col>
                                         <Col xs={6}>
-                                            <div className="p-3 rounded-3 text-center" style={{ backgroundColor: '#f8f9fa', border: 'none' }}>
+                                            <div className="p-3 rounded-3 text-center" style={{ backgroundColor: '#f8f9fa', border: 'none', cursor: 'pointer' }}
+                                                onClick={() => setShowViajesModal(true)}>
                                                 <h3 className="fw-bold mb-0" style={{ color: accentColor }}>{estadisticas.viajesCompletados}</h3>
-                                                <small className="text-muted">Completados</small>
+                                                <small className="text-muted fw-bold d-block mb-1">Completados</small>
+                                                <small className="text-success" style={{ fontSize: '0.75rem' }}>Ver lista</small>
                                             </div>
                                         </Col>
                                     </Row>
@@ -398,8 +403,8 @@ const UserHome = () => {
                                             ))}
                                         </ListGroup>
                                     )}
-                                    <Button 
-                                        className="w-100 mt-4 border-0 fw-bold py-2 rounded-pill" 
+                                    <Button
+                                        className="w-100 mt-4 border-0 fw-bold py-2 rounded-pill"
                                         style={{ backgroundColor: accentColor, color: 'white' }}
                                         onClick={() => navigate("/pagos")}
                                     >
@@ -446,6 +451,48 @@ const UserHome = () => {
                     </Row>
                 </Container>
             </div>
+
+            {/* Modal de Viajes Completados */}
+            <Modal show={showViajesModal} onHide={() => setShowViajesModal(false)} size="lg" centered>
+                <Modal.Header closeButton style={{ background: brandColor, color: 'white', borderBottom: 'none' }}>
+                    <Modal.Title className="fw-semibold">
+                        <FaHistory className="me-2" /> Mis Viajes Completados ({estadisticas.viajesCompletados})
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1.5rem' }}>
+                    {todosLosViajes.filter(v => v.estado === 'COMPLETADO' || v.estado === 'FINALIZADO').length === 0 ? (
+                        <div className="text-center py-5">
+                            <FaHistory size={50} className="text-muted mb-3 opacity-50" />
+                            <p className="text-muted">No tienes viajes completados</p>
+                        </div>
+                    ) : (
+                        <ListGroup variant="flush">
+                            {todosLosViajes.filter(v => v.estado === 'COMPLETADO' || v.estado === 'FINALIZADO').map((viaje) => (
+                                <ListGroup.Item key={viaje.idViajes} className="px-0 py-3 border-bottom bg-transparent">
+                                    <Row className="align-items-center">
+                                        <Col xs={1}><FaRoute size={20} color={accentColor} /></Col>
+                                        <Col xs={4}>
+                                            <p className="mb-0 fw-bold">Viaje a {viaje.ruta?.nombre || viaje.destino || 'Destino no disponible'}</p>
+                                            <small className="text-muted">{formatearFecha(viaje.fechaHoraSalida)}</small>
+                                        </Col>
+                                        <Col xs={3} className="fw-bold" style={{ color: accentColor }}>{formatearMoneda(viaje.precioFinal)}</Col>
+                                        <Col xs={4} className="text-end">
+                                            <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2">
+                                                {getEstadoTexto(viaje.estado)}
+                                            </Badge>
+                                        </Col>
+                                    </Row>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    )}
+                </Modal.Body>
+                <Modal.Footer style={{ borderTop: 'none' }}>
+                    <Button variant="secondary" onClick={() => setShowViajesModal(false)}>
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

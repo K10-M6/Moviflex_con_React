@@ -14,7 +14,7 @@ function Register() {
     const navigate = useNavigate();
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    
+
     // --- ESTADOS ORIGINALES ---
     const [step, setStep] = useState(1);
     const [nombre, setNombre] = useState("");
@@ -33,14 +33,15 @@ function Register() {
     const [cameraActive, setCameraActive] = useState(false);
     const [stream, setStream] = useState(null);
     const [terminosAceptados, setTerminosAceptados] = useState(false);
+    const [otp, setOtp] = useState("");
 
     const termsText = `CONTRATO MARCO DE LICENCIA DE USO DE SOFTWARE...`;
 
     // --- LÓGICA DE CÁMARA ---
     const iniciarCamara = async () => {
         try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } 
+            const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
             });
             setStream(mediaStream);
             setCameraActive(true);
@@ -86,14 +87,57 @@ function Register() {
                 body: JSON.stringify(datosEnviar)
             });
             if (respuesta.ok) {
-                toast.success('¡Registro exitoso!');
-                setTimeout(() => navigate("/login"), 2000);
+                toast.success('¡Registro exitoso! Por favor verifica tu correo.');
+                setStep(5);
             } else {
                 const data = await respuesta.json();
-                setError(data.message || "Error en el registro.");
+                setError(data.error || "Error en el registro.");
             }
         } catch (err) {
             toast.error('Error de conexión.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleVerifyOtp(e) {
+        if (e) e.preventDefault();
+        if (otp.length !== 6) return toast.error("Ingresa el código de 6 dígitos");
+        setLoading(true);
+        try {
+            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/verify-otp", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, otp })
+            });
+            const data = await respuesta.json();
+            if (respuesta.ok) {
+                toast.success(data.mensaje);
+                setTimeout(() => navigate("/login"), 2000);
+            } else {
+                toast.error(data.error || "Código incorrecto o expirado.");
+            }
+        } catch (err) {
+            toast.error('Error al verificar el código.');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleResendOtp() {
+        setLoading(true);
+        try {
+            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/resend-otp", {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+            const data = await respuesta.json();
+            if (respuesta.ok) {
+                toast.success(data.mensaje);
+            } else {
+                toast.error(data.error || "Error al reenviar el código.");
+            }
+        } catch (err) {
+            toast.error('Error al reenviar el código.');
         } finally {
             setLoading(false);
         }
@@ -123,20 +167,20 @@ function Register() {
     };
 
     return (
-        <div style={{ 
+        <div style={{
             backgroundImage: `url(${FondoPantalla})`, // Fondo integrado
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            minHeight: '100vh', 
-            display: 'flex', 
-            flexDirection: 'column' 
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column'
         }}>
             <Toaster position="top-right" />
             <NavbarCustom />
-            
+
             <Container className="d-flex flex-column justify-content-center flex-grow-1 py-4">
                 <Row className="justify-content-center align-items-center g-0">
-                    
+
                     {/* COLUMNA FORMULARIO (IZQUIERDA) */}
                     <Col xs={12} md={10} lg={5} xl={4} className="p-3">
                         <Card className="shadow-lg border-0" style={{ borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
@@ -144,8 +188,8 @@ function Register() {
                                 <div className="text-center mb-4">
                                     <img src={LogoMoviflex} alt="Logo" style={{ width: '150px' }} />
                                     <h5 className="fw-bold mt-3 mb-1">Crea tu cuenta</h5>
-                                    <ProgressBar now={(step / 4) * 100} variant="info" className="mt-3" style={{ height: '5px', borderRadius: '10px' }} />
-                                    <small className="text-muted d-block mt-2">Paso {step} de 4</small>
+                                    <ProgressBar now={(step / 5) * 100} variant="info" className="mt-3" style={{ height: '5px', borderRadius: '10px' }} />
+                                    <small className="text-muted d-block mt-2">Paso {step} de 5</small>
                                 </div>
 
                                 {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
@@ -189,14 +233,14 @@ function Register() {
                                         <div className="animate__animated animate__fadeIn">
                                             <Form.Group className="mb-4">
                                                 <div className="position-relative">
-                                                    <Form.Control type={showPassword ? "text" : "password"} value={password} 
-                                                        onChange={(e) => { setPassword(e.target.value); setPasswordError(validarPassword(e.target.value)); }} 
+                                                    <Form.Control type={showPassword ? "text" : "password"} value={password}
+                                                        onChange={(e) => { setPassword(e.target.value); setPasswordError(validarPassword(e.target.value)); }}
                                                         placeholder="Contraseña" required style={inputStyle} />
                                                     <span className="position-absolute end-0 top-50 translate-middle-y me-3" style={{ cursor: 'pointer' }} onClick={() => setShowPassword(!showPassword)}>
-                                                        {showPassword ? <FaEyeSlash color="#8899a6"/> : <FaEye color="#8899a6"/>}
+                                                        {showPassword ? <FaEyeSlash color="#8899a6" /> : <FaEye color="#8899a6" />}
                                                     </span>
                                                 </div>
-                                                {passwordError && <small className="text-danger mt-1 d-block" style={{fontSize: '0.8rem'}}>{passwordError}</small>}
+                                                {passwordError && <small className="text-danger mt-1 d-block" style={{ fontSize: '0.8rem' }}>{passwordError}</small>}
                                             </Form.Group>
                                             <div className="d-flex gap-2">
                                                 <Button variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
@@ -207,10 +251,10 @@ function Register() {
 
                                     {step === 4 && (
                                         <div className="animate__animated animate__fadeIn">
-                                            <div className="bg-light p-3 rounded-4 mb-3" style={{fontSize: '0.85rem'}}>
-                                                <strong>{nombre}</strong><br/>{email}
+                                            <div className="bg-light p-3 rounded-4 mb-3" style={{ fontSize: '0.85rem' }}>
+                                                <strong>{nombre}</strong><br />{email}
                                             </div>
-                                            <Form.Check type="checkbox" label={<span style={{fontSize: '0.8rem'}}>Acepto términos y condiciones</span>} checked={terminosAceptados} onChange={(e) => setTerminosAceptados(e.target.checked)} className="mb-4" />
+                                            <Form.Check type="checkbox" label={<span style={{ fontSize: '0.8rem' }}>Acepto términos y condiciones</span>} checked={terminosAceptados} onChange={(e) => setTerminosAceptados(e.target.checked)} className="mb-4" />
                                             <div className="d-flex gap-2">
                                                 <Button variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
                                                 <Button type="submit" disabled={!terminosAceptados || loading} className="w-50 py-2 border-0" style={{ background: '#124c83', borderRadius: '12px', fontWeight: 'bold' }}>
