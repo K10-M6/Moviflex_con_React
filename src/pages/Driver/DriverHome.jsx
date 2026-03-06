@@ -333,11 +333,11 @@ const DriverHome = () => {
             setCargandoStats(true);
             const headers = { "Authorization": "Bearer " + token };
 
-            const [resGanancias, resTime, resRutas, resViajes] = await Promise.all([
+            const [resGanancias, resTime, resRutas, resViajesHistory] = await Promise.all([
                 fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/ganancias?periodo=${periodo}`, { headers }),
                 fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/online-time?periodo=${periodo}`, { headers }),
                 fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/rutas`, { headers }),
-                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/viajes`, { headers })
+                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/viajes?periodo=${periodo}`, { headers })
             ]);
 
             const nuevasStats = { ...statsAvanzadas };
@@ -345,7 +345,7 @@ const DriverHome = () => {
             if (resGanancias.ok) nuevasStats.ganancias = await resGanancias.json();
             if (resTime.ok) nuevasStats.tiempoEnLinea = await resTime.json();
             if (resRutas.ok) nuevasStats.rutasFrecuentes = await resRutas.json();
-            if (resViajes.ok) nuevasStats.resumenViajes = await resViajes.json();
+            if (resViajesHistory.ok) nuevasStats.resumenViajes = await resViajesHistory.json();
 
             setStatsAvanzadas(nuevasStats);
         } catch (error) {
@@ -775,27 +775,27 @@ const DriverHome = () => {
                 </Row>
 
                 <Row className="g-4 mb-4">
-                    <Col lg={8}>
-                        <Card style={cardStyle}>
+                    <Col lg={4}>
+                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
                             <Card.Body className="p-4">
                                 <div className="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 className="fw-bold mb-0">Tendencia de Ganancias</h5>
-                                    <Badge bg="light" text="dark" className="border">Historial {periodo}</Badge>
+                                    <h5 className="fw-bold mb-0" style={{ color: brandColor }}>Ganancias</h5>
+                                    <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill shadow-sm">Tendencia {periodo}</Badge>
                                 </div>
-                                <div style={{ height: '300px' }}>
+                                <div style={{ height: '250px' }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={statsAvanzadas.ganancias.historial}>
                                             <defs>
                                                 <linearGradient id="colorGanancias" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor={brandColor} stopOpacity={0.8} />
-                                                    <stop offset="95%" stopColor={brandColor} stopOpacity={0} />
+                                                    <stop offset="5%" stopColor={accentColor} stopOpacity={0.8} />
+                                                    <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
                                             <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                            <Area type="monotone" dataKey="value" stroke={brandColor} fillOpacity={1} fill="url(#colorGanancias)" name="Ganancias ($)" />
+                                            <Area type="monotone" dataKey="value" stroke={accentColor} fillOpacity={1} fill="url(#colorGanancias)" name="Ganancias ($)" />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -803,17 +803,41 @@ const DriverHome = () => {
                         </Card>
                     </Col>
                     <Col lg={4}>
-                        <Card style={cardStyle}>
+                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
                             <Card.Body className="p-4">
-                                <h5 className="fw-bold mb-4">Horas en Línea</h5>
-                                <div style={{ height: '300px' }}>
+                                <div className="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 className="fw-bold mb-0" style={{ color: brandColor }}>Frecuencia</h5>
+                                    <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill shadow-sm">Viajes {periodo}</Badge>
+                                </div>
+                                <div style={{ height: '250px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={statsAvanzadas.resumenViajes.historial}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                            <Tooltip cursor={{ fill: 'rgba(84, 199, 184, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                            <Bar dataKey="value" fill={brandColor} radius={[4, 4, 0, 0]} name="Viajes" barSize={20} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col lg={4}>
+                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
+                            <Card.Body className="p-4">
+                                <div className="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 className="fw-bold mb-0" style={{ color: brandColor }}>Actividad</h5>
+                                    <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill shadow-sm">Horas {periodo}</Badge>
+                                </div>
+                                <div style={{ height: '250px' }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={statsAvanzadas.tiempoEnLinea.historial}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
                                             <Tooltip cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Horas" barSize={25} />
+                                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Horas" barSize={20} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
