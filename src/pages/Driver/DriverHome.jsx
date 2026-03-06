@@ -906,7 +906,7 @@ const DriverHome = () => {
                                         <Button
                                             style={{ backgroundColor: brandColor, border: 'none', color: 'white' }}
                                             className="fw-semibold px-4 py-2"
-                                            onClick={() => navigate("/registrar-vehiculo")}
+                                            onClick={() => navigate("/vehicle-registration")}
                                         >
                                             Registrar ahora
                                         </Button>
@@ -1201,7 +1201,7 @@ const DriverHome = () => {
                                 style={{ backgroundColor: brandColor, border: 'none' }}
                                 onClick={() => {
                                     setShowVehiculosModal(false);
-                                    navigate("/registrar-vehiculo");
+                                    navigate("/vehicle-registration");
                                 }}
                             >
                                 Registrar Vehículo
@@ -1249,7 +1249,7 @@ const DriverHome = () => {
                         style={{ backgroundColor: brandColor, border: 'none' }}
                         onClick={() => {
                             setShowVehiculosModal(false);
-                            navigate("/registrar-vehiculo");
+                            navigate("/vehicle-registration");
                         }}
                     >
                         Registrar Nuevo Vehículo
