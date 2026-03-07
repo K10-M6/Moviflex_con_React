@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import { API_BASE_URL, API_URL } from '../config';
+import { API_BASE_URL, API_URL } from '../../config';
 import toast from 'react-hot-toast';
 
 const SocketContext = createContext();

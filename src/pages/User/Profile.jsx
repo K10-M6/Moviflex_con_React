@@ -7,7 +7,7 @@ import { FaUser, FaStar, FaQrcode, FaUserCircle, FaCalendarAlt, FaRoute, FaWalle
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
-import imagencontacto from "../Imagenes/AutoresContacto.png";
+import fondo from "../Imagenes/AutoresContacto.png";
 
 function Profile() {
   const { usuario, token } = useAuth();
