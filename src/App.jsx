@@ -41,22 +41,9 @@ function App() {
           <Routes>
             <Route path="/dashboard/home" element={
               <RequiredAuth>
-                <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-                  <Header />
-                  <div style={{ display: 'flex', flex: 1, position: 'relative', width: '100%', overflow: 'hidden' }}>
-                    <Sidebar openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar} />
-                    <div style={{
-                      flex: 1,
-                      marginLeft: openSidebarToggle ? '280px' : '0px',
-                      transition: 'margin-left 0.3s ease-in-out',
-                      backgroundColor: '#f5f5f5',
-                      height: '100%',
-                      overflow: 'auto'
-                    }}>
-                      <Home />
-                    </div>
-                  </div>
-                </div>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <Home />
+                </DashboardLayout>
               </RequiredAuth>
             } />
 
@@ -64,9 +51,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-
             <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
-
 
             <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
             <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
@@ -74,12 +59,6 @@ function App() {
             <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
             <Route path="/vehicle-registration" element={<RequiredAuth><VehicleRegistration /></RequiredAuth>} />
             <Route path="/documents" element={<RequiredAuth><Documents /></RequiredAuth>} />
-
-            <Route path="/dashboard/home" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <Home />
-              </DashboardLayout>
-            } />
 
             <Route path="/admin/conductores" element={
               <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>

@@ -71,9 +71,19 @@ const AdminVehicleRequests = () => {
         }
     };
 
+    const handleCloseRevisionModal = () => {
+        if (!procesando) {
+            setShowRevisionModal(false);
+        }
+    };
+
+    const handleRevisionModalExited = () => {
+        setSelectedSolicitud(null);
+        setObservaciones("");
+    };
+
     const openRevision = (solicitud) => {
         setSelectedSolicitud(solicitud);
-        setObservaciones("");
         setShowRevisionModal(true);
     };
 
@@ -183,7 +193,13 @@ const AdminVehicleRequests = () => {
             </Container>
 
             {/* Modal de Revisión Detallada */}
-            <Modal show={showRevisionModal} onHide={() => !procesando && setShowRevisionModal(false)} size="lg" centered>
+            <Modal
+                show={showRevisionModal}
+                onHide={handleCloseRevisionModal}
+                onExited={handleRevisionModalExited}
+                size="lg"
+                centered
+            >
                 <Modal.Header closeButton={!procesando} className="border-0">
                     <Modal.Title className="fw-bold">Detalle de Modificación</Modal.Title>
                 </Modal.Header>

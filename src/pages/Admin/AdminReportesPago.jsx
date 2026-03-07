@@ -148,6 +148,22 @@ function AdminReportesPago() {
         }
     };
 
+    const handleCloseModal = () => {
+        setShowModal(false);
+    };
+
+    const handleModalExited = () => {
+        setReporteSeleccionado(null);
+    };
+
+    const handleCloseRechazarModal = () => {
+        setShowRechazarModal(false);
+    };
+
+    const handleRechazarModalExited = () => {
+        setObservaciones('');
+    };
+
     const formatearFecha = (fecha) => {
         return new Date(fecha).toLocaleDateString('es-CO', {
             year: 'numeric', month: 'long', day: 'numeric'
@@ -372,7 +388,7 @@ function AdminReportesPago() {
             </Card>
 
             {/* Modal Ver Detalle */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
+            <Modal show={showModal} onHide={handleCloseModal} onExited={handleModalExited} size="lg" centered>
                 <Modal.Header closeButton style={{ borderBottom: '2px solid #4acfbd' }}>
                     <Modal.Title>Detalle del Reporte de Pago</Modal.Title>
                 </Modal.Header>
@@ -425,14 +441,14 @@ function AdminReportesPago() {
                             </Button>
                         </>
                     )}
-                    <Button variant="secondary" onClick={() => setShowModal(false)} style={{ borderRadius: '8px' }}>
+                    <Button variant="secondary" onClick={handleCloseModal} style={{ borderRadius: '8px' }}>
                         Cerrar
                     </Button>
                 </Modal.Footer>
             </Modal>
 
             {/* Modal Rechazar */}
-            <Modal show={showRechazarModal} onHide={() => setShowRechazarModal(false)} centered>
+            <Modal show={showRechazarModal} onHide={handleCloseRechazarModal} onExited={handleRechazarModalExited} centered>
                 <Modal.Header closeButton style={{ borderBottom: '2px solid #e74c3c' }}>
                     <Modal.Title>Rechazar Reporte</Modal.Title>
                 </Modal.Header>
@@ -450,7 +466,7 @@ function AdminReportesPago() {
                     </Form.Group>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowRechazarModal(false)} style={{ borderRadius: '8px' }}>
+                    <Button variant="secondary" onClick={handleCloseRechazarModal} style={{ borderRadius: '8px' }}>
                         Cancelar
                     </Button>
                     <Button

@@ -218,6 +218,14 @@ function AdminVehiculos() {
         }
     }
 
+    const handleClosePhotoModal = () => {
+        setShowPhotoModal(false);
+    };
+
+    const handlePhotoModalExited = () => {
+        setSelectedPhoto("");
+    };
+
     function obtenerNombreUsuario(idUsuario) {
         if (!idUsuario) return "Sin propietario";
 
@@ -231,6 +239,7 @@ function AdminVehiculos() {
             return `Usuario #${idUsuario}`;
         }
     }
+
 
     const EstadoBadge = ({ estado }) => {
         const estilos = {
@@ -906,7 +915,8 @@ function AdminVehiculos() {
             {/* Modal para ver la foto del vehículo */}
             <Modal
                 show={showPhotoModal}
-                onHide={() => setShowPhotoModal(false)}
+                onHide={handleClosePhotoModal}
+                onExited={handlePhotoModalExited}
                 size="lg"
                 centered
                 style={{
@@ -942,7 +952,7 @@ function AdminVehiculos() {
                 <Modal.Footer style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
                     <Button
                         variant="secondary"
-                        onClick={() => setShowPhotoModal(false)}
+                        onClick={handleClosePhotoModal}
                         style={{
                             backgroundColor: '#6c757d',
                             border: 'none',
