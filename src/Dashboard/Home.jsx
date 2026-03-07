@@ -286,7 +286,7 @@ function Home() {
               <Image src={imagenDashboard} fluid style={{ width: '120px', borderRadius: '15px' }} />
             </div>
             <div className="text-center text-md-start flex-grow-1">
-              <h2 className="fw-bold mb-1" style={{ color: colores.azulFuerte }}>¡Bienvenido de nuevo, {getNombreUsuario()}!</h2>
+              <h2 className="fw-bold mb-1" style={{ color: colores.azulFuerte }}>¡Bienvenido de nuevo, {usuario?.nombre || 'Administrador'}!</h2>
               <p className="text-muted mb-0">Gestión global de la plataforma MoviFlex</p>
             </div>
             <div className="mt-3 mt-md-0 d-flex gap-2">
