@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Modal, Image, Form, InputGroup } from "react-bootstrap";
 import { FaCheckCircle, FaTimesCircle, FaEye, FaCar } from "react-icons/fa";
 import { BsSearch, BsXCircle } from "react-icons/bs";
@@ -15,13 +16,13 @@ function AdminVehiculos() {
     const [selectedPhoto, setSelectedPhoto] = useState("");
     const [validatingPlate, setValidatingPlate] = useState(false);
     const [busqueda, setBusqueda] = useState("");
-    
+
     const [paginaActual, setPaginaActual] = useState(1);
     const elementosPorPagina = 10;
 
     const traerUsuarios = useCallback(async () => {
         try {
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
+            const response = await fetch(`${API_URL}/auth/`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -51,7 +52,7 @@ function AdminVehiculos() {
             setLoading(true);
             setError("");
 
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/", {
+            const response = await fetch(`${API_URL}/vehiculos/`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -93,7 +94,7 @@ function AdminVehiculos() {
 
         try {
             setLoading(true);
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/search?q=${busqueda}`, {
+            const response = await fetch(`${API_URL}/auth/search?q=${busqueda}`, {
                 headers: { "Authorization": "Bearer " + token }
             });
             if (!response.ok) throw new Error("Error en la búsqueda");
@@ -134,7 +135,7 @@ function AdminVehiculos() {
     const vehiculosFiltrados = vehiculos.filter(vehiculo => {
         const terminoBusqueda = busqueda.toLowerCase();
         const nombrePropietario = obtenerNombreUsuario(vehiculo.idUsuario).toLowerCase();
-        
+
         return (
             vehiculo.placa?.toLowerCase().includes(terminoBusqueda) ||
             nombrePropietario.includes(terminoBusqueda) ||
@@ -169,7 +170,7 @@ function AdminVehiculos() {
                     nuevoEstado = 'ACTIVO';
             }
 
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${id}/estado`, {
+            const response = await fetch(`${API_URL}/vehiculos/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -195,7 +196,7 @@ function AdminVehiculos() {
     async function validarPlaca(id, actual) {
         try {
             setValidatingPlate(true);
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${id}/validar-placa`, {
+            const response = await fetch(`${API_URL}/vehiculos/${id}/validar-placa`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -238,7 +239,7 @@ function AdminVehiculos() {
         };
 
         const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
-        
+
         return (
             <span style={{
                 ...estilo,
@@ -280,7 +281,7 @@ function AdminVehiculos() {
                 </span>
             );
         }
-        
+
         return (
             <span style={{
                 backgroundColor: bgColor,
@@ -704,14 +705,14 @@ function AdminVehiculos() {
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow" style={{ 
-                            borderRadius: '16px', 
+                        <Card className="border-0 shadow" style={{
+                            borderRadius: '16px',
                             borderLeft: '6px solid #62d8d9',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}>
                             <Card.Body className="p-4">
-                                <h1 className="display-5 fw-bold mb-0" style={{ 
+                                <h1 className="display-5 fw-bold mb-0" style={{
                                     color: '#113d69',
                                     letterSpacing: '-0.02em'
                                 }}>
@@ -789,7 +790,7 @@ function AdminVehiculos() {
 
                 <Row>
                     <Col>
-                        <Card className="shadow border-0" style={{ 
+                        <Card className="shadow border-0" style={{
                             borderRadius: '16px',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
@@ -804,7 +805,7 @@ function AdminVehiculos() {
                                     <>
                                         <div className="table-responsive">
                                             <Table hover className="align-middle mb-0">
-                                                <thead style={{ 
+                                                <thead style={{
                                                     backgroundColor: 'rgba(248, 249, 250, 0.9)',
                                                     borderBottom: '2px solid #62d8d9'
                                                 }}>
@@ -903,18 +904,18 @@ function AdminVehiculos() {
             </Container>
 
             {/* Modal para ver la foto del vehículo */}
-            <Modal 
-                show={showPhotoModal} 
-                onHide={() => setShowPhotoModal(false)} 
-                size="lg" 
+            <Modal
+                show={showPhotoModal}
+                onHide={() => setShowPhotoModal(false)}
+                size="lg"
                 centered
                 style={{
                     backgroundColor: 'rgba(0, 0, 0, 0.5)'
                 }}
             >
-                <Modal.Header 
-                    closeButton 
-                    style={{ 
+                <Modal.Header
+                    closeButton
+                    style={{
                         borderBottom: '2px solid #62d8d9',
                         backgroundColor: 'rgba(255, 255, 255, 0.98)'
                     }}
@@ -924,9 +925,9 @@ function AdminVehiculos() {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="text-center p-0" style={{ backgroundColor: '#1a1a1a' }}>
-                    <Image 
-                        src={selectedPhoto} 
-                        fluid 
+                    <Image
+                        src={selectedPhoto}
+                        fluid
                         style={{
                             maxHeight: '70vh',
                             width: 'auto',
@@ -939,8 +940,8 @@ function AdminVehiculos() {
                     />
                 </Modal.Body>
                 <Modal.Footer style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
-                    <Button 
-                        variant="secondary" 
+                    <Button
+                        variant="secondary"
                         onClick={() => setShowPhotoModal(false)}
                         style={{
                             backgroundColor: '#6c757d',

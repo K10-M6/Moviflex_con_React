@@ -6,6 +6,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../pages/context/AuthContext";
 import { useSocket } from "../pages/context/SocketContext";
+import { API_URL } from "../config";
 import Logo from "../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png";
 import fondo from "../pages/Imagenes/AutoresContacto.png";
 
@@ -49,7 +50,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
   const fetchPendingCount = useCallback(async () => {
     if (usuario?.rol === 'ADMIN' && token) {
       try {
-        const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/pendientes/count", {
+        const response = await fetch(`${API_URL}/vehiculos/solicitudes/pendientes/count`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (response.ok) {

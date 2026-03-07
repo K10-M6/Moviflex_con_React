@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL, API_URL } from '../config';
 import toast from 'react-hot-toast';
 
 const SocketContext = createContext();
@@ -12,7 +13,7 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (token) {
-            const newSocket = io("https://backendmovi-production-c657.up.railway.app", {
+            const newSocket = io(API_BASE_URL, {
                 auth: { token }
             });
 
@@ -72,7 +73,7 @@ export const SocketProvider = ({ children }) => {
     const fetchOnlineUsers = async () => {
         if (!token || (usuario?.rol?.nombre !== 'ADMIN' && usuario?.idRol !== 1)) return;
         try {
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/online-users", {
+            const response = await fetch(`${API_URL}/auth/online-users`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const data = await response.json();

@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Badge, ListGroup, Button, Spinner, Modal } from "react-bootstrap";
-import { 
-  FaBell, 
-  FaExclamationCircle, 
-  FaCar, 
-  FaMoneyBillWave, 
+import {
+  FaBell,
+  FaExclamationCircle,
+  FaCar,
+  FaMoneyBillWave,
   FaEnvelope,
   FaCheckDouble,
   FaClock,
   FaEllipsisV
 } from "react-icons/fa";
 import { useAuth } from '../pages/context/AuthContext';
+import { API_URL } from '../config';
 import toast from 'react-hot-toast';
 
 function Notificaciones() {
@@ -30,23 +31,23 @@ function Notificaciones() {
     }
 
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target) && 
-          buttonRef.current && !buttonRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+        buttonRef.current && !buttonRef.current.contains(event.target)) {
         setMostrarDropdown(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [usuario?.idUsuarios, token]);
 
   const obtenerNotificaciones = async () => {
     if (!token || !usuario?.idUsuarios) return;
-    
+
     try {
       setCargando(true);
       const respuesta = await fetch(
-        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/usuario/${usuario.idUsuarios}?limit=5`, 
+        `${API_URL}/notificaciones/usuario/${usuario.idUsuarios}?limit=5`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -54,11 +55,11 @@ function Notificaciones() {
           }
         }
       );
-      
+
       if (respuesta.ok) {
         const data = await respuesta.json();
         const notificacionesData = data.notificaciones || data;
-        
+
         if (Array.isArray(notificacionesData)) {
           setNotificaciones(notificacionesData);
           setNoLeidas(notificacionesData.filter(n => !n.leido).length);
@@ -78,7 +79,7 @@ function Notificaciones() {
   const marcarComoLeida = async (idNotificacion) => {
     try {
       const respuesta = await fetch(
-        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/${idNotificacion}/leer`, 
+        `${API_URL}/notificaciones/${idNotificacion}/leer`,
         {
           method: 'PATCH',
           headers: {
@@ -87,10 +88,10 @@ function Notificaciones() {
           }
         }
       );
-      
+
       if (respuesta.ok) {
-        setNotificaciones(prev => 
-          prev.map(n => n.idNotificacion === idNotificacion ? {...n, leido: true} : n)
+        setNotificaciones(prev =>
+          prev.map(n => n.idNotificacion === idNotificacion ? { ...n, leido: true } : n)
         );
         setNoLeidas(prev => Math.max(0, prev - 1));
       }
@@ -102,7 +103,7 @@ function Notificaciones() {
   const marcarTodasLeidas = async () => {
     try {
       const respuesta = await fetch(
-        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/usuario/${usuario.idUsuarios}/leer-todas`, 
+        `${API_URL}/notificaciones/usuario/${usuario.idUsuarios}/leer-todas`,
         {
           method: 'PATCH',
           headers: {
@@ -111,9 +112,9 @@ function Notificaciones() {
           }
         }
       );
-      
+
       if (respuesta.ok) {
-        setNotificaciones(prev => prev.map(n => ({...n, leido: true})));
+        setNotificaciones(prev => prev.map(n => ({ ...n, leido: true })));
         setNoLeidas(0);
         setMostrarDropdown(false);
       }
@@ -127,7 +128,7 @@ function Notificaciones() {
 
     try {
       const respuesta = await fetch(
-        `https://backendmovi-production-c657.up.railway.app/api/notificaciones/${notificacionAEliminar}`,
+        `${API_URL}/notificaciones/${notificacionAEliminar}`,
         {
           method: 'DELETE',
           headers: {
@@ -136,7 +137,7 @@ function Notificaciones() {
           }
         }
       );
-      
+
       if (respuesta.ok) {
         setNotificaciones(prev => prev.filter(n => n.idNotificacion !== notificacionAEliminar));
         const notificacionEliminada = notificaciones.find(n => n.idNotificacion === notificacionAEliminar);
@@ -160,10 +161,10 @@ function Notificaciones() {
       PAGO: { icon: FaMoneyBillWave, color: '#f59e0b', bg: '#FEF3C7' },
       MENSAJE: { icon: FaEnvelope, color: '#3b82f6', bg: '#E8F0FE' }
     };
-    const config = iconos[tipo?.toUpperCase()] || { 
-      icon: FaBell, 
-      color: '#6b7280', 
-      bg: '#F3F4F6' 
+    const config = iconos[tipo?.toUpperCase()] || {
+      icon: FaBell,
+      color: '#6b7280',
+      bg: '#F3F4F6'
     };
     const IconComponent = config.icon;
     return { Icon: IconComponent, color: config.color, bg: config.bg };
@@ -171,7 +172,7 @@ function Notificaciones() {
 
   const getTimeAgo = (fecha) => {
     if (!fecha) return 'Recientemente';
-    
+
     const ahora = new Date();
     const notifDate = new Date(fecha);
     const diffMin = Math.floor((ahora - notifDate) / 60000);
@@ -212,11 +213,11 @@ function Notificaciones() {
         `}
       </style>
 
-      <button 
+      <button
         ref={buttonRef}
         className="btn btn-link position-relative p-2 rounded-circle notification-badge"
         onClick={() => setMostrarDropdown(!mostrarDropdown)}
-        style={{ 
+        style={{
           color: '#4b5563',
           backgroundColor: mostrarDropdown ? '#F3F4F6' : 'transparent',
           width: '42px',
@@ -228,10 +229,10 @@ function Notificaciones() {
       >
         <FaBell size={20} />
         {noLeidas > 0 && (
-          <Badge 
-            bg="" 
+          <Badge
+            bg=""
             className="position-absolute top-0 start-100 translate-middle rounded-pill"
-            style={{ 
+            style={{
               fontSize: '0.7rem',
               padding: '0.25rem 0.45rem',
               minWidth: '20px',
@@ -244,8 +245,8 @@ function Notificaciones() {
         )}
       </button>
 
-      <Modal 
-        show={showDeleteModal} 
+      <Modal
+        show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
         centered
         size="sm"
@@ -269,10 +270,10 @@ function Notificaciones() {
       </Modal>
 
       {mostrarDropdown && (
-        <div 
+        <div
           ref={dropdownRef}
           className="position-absolute end-0 mt-2 bg-white shadow-lg border"
-          style={{ 
+          style={{
             width: '380px',
             maxHeight: '520px',
             zIndex: 9999,
@@ -294,9 +295,9 @@ function Notificaciones() {
               </small>
             </div>
             {noLeidas > 0 && (
-              <Button 
-                variant="link" 
-                size="sm" 
+              <Button
+                variant="link"
+                size="sm"
                 onClick={marcarTodasLeidas}
                 className="text-decoration-none p-1"
                 style={{ color: '#6b7280', fontSize: '0.75rem' }}
@@ -325,12 +326,11 @@ function Notificaciones() {
                 {notificaciones.map((notif) => {
                   const { Icon, color, bg } = getIcono(notif.tipo);
                   return (
-                    <ListGroup.Item 
+                    <ListGroup.Item
                       key={notif.idNotificacion}
-                      className={`border-0 border-bottom px-3 py-3 notification-item ${
-                        !notif.leido ? 'unread' : ''
-                      }`}
-                      style={{ 
+                      className={`border-0 border-bottom px-3 py-3 notification-item ${!notif.leido ? 'unread' : ''
+                        }`}
+                      style={{
                         backgroundColor: !notif.leido ? '#F9FAFB' : 'white',
                         cursor: 'pointer',
                         paddingRight: '48px',
@@ -338,28 +338,28 @@ function Notificaciones() {
                       }}
                     >
                       <div className="d-flex gap-3" onClick={() => marcarComoLeida(notif.idNotificacion)}>
-                        <div 
+                        <div
                           className="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-                          style={{ 
-                            width: '36px', 
-                            height: '36px', 
+                          style={{
+                            width: '36px',
+                            height: '36px',
                             backgroundColor: bg,
                             color: color
                           }}
                         >
                           <Icon size={16} />
                         </div>
-                        
+
                         <div className="flex-grow-1" style={{ minWidth: 0 }}>
                           <div className="d-flex align-items-center gap-2 mb-1">
                             <strong style={{ fontSize: '0.85rem', color: '#111827' }}>
                               {notif.titulo || 'Notificación'}
                             </strong>
                             {!notif.leido && (
-                              <Badge 
-                                bg="" 
+                              <Badge
+                                bg=""
                                 className="rounded-pill"
-                                style={{ 
+                                style={{
                                   fontSize: '0.6rem',
                                   backgroundColor: '#3b82f6',
                                   color: 'white',
@@ -370,8 +370,8 @@ function Notificaciones() {
                               </Badge>
                             )}
                           </div>
-                          
-                          <p className="small text-muted mb-2" style={{ 
+
+                          <p className="small text-muted mb-2" style={{
                             fontSize: '0.8rem',
                             lineHeight: '1.4',
                             color: '#4b5563'
@@ -388,8 +388,8 @@ function Notificaciones() {
                         </div>
                       </div>
 
-                      <Button 
-                        variant="link" 
+                      <Button
+                        variant="link"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -397,8 +397,8 @@ function Notificaciones() {
                           setShowDeleteModal(true);
                         }}
                         className="p-1 position-absolute text-muted"
-                        style={{ 
-                          top: '16px', 
+                        style={{
+                          top: '16px',
                           right: '12px',
                           opacity: 0.5,
                           transition: 'opacity 0.2s'

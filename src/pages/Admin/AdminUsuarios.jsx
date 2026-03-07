@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
 import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
@@ -11,13 +12,13 @@ function AdminUsuarios() {
     const [error, setError] = useState("");
     const [paginaActual, setPaginaActual] = useState(1);
     const [busqueda, setBusqueda] = useState("");
-    
+
     const elementosPorPagina = 10;
 
     useEffect(() => {
         traerUsuarios();
     }, []);
-    
+
     const usuariosFiltrados = usuarios.filter(usuario => {
         const terminoBusqueda = busqueda.toLowerCase();
         return (
@@ -27,7 +28,7 @@ function AdminUsuarios() {
             usuario.telefono?.toLowerCase().includes(terminoBusqueda)
         );
     });
-    
+
     const indiceUltimoElemento = paginaActual * elementosPorPagina;
     const indicePrimerElemento = indiceUltimoElemento - elementosPorPagina;
     const usuariosPaginados = usuariosFiltrados.slice(indicePrimerElemento, indiceUltimoElemento);
@@ -43,7 +44,7 @@ function AdminUsuarios() {
             setLoading(true);
             setError("");
 
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
+            const response = await fetch(`${API_URL}/auth/`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -85,7 +86,7 @@ function AdminUsuarios() {
 
         try {
             setLoading(true);
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/search?q=${busqueda}`, {
+            const response = await fetch(`${API_URL}/auth/search?q=${busqueda}`, {
                 headers: { "Authorization": "Bearer " + token }
             });
 
@@ -123,7 +124,7 @@ function AdminUsuarios() {
                     nuevoEstado = 'ACTIVO';
             }
 
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -148,7 +149,7 @@ function AdminUsuarios() {
 
     async function suspenderUsuario(id) {
         try {
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -179,7 +180,7 @@ function AdminUsuarios() {
         };
 
         const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
-        
+
         return (
             <span style={{
                 ...estilo,
@@ -199,7 +200,7 @@ function AdminUsuarios() {
 
     const RolBadge = ({ rolId, rolNombre }) => {
         const nombre = getRolNombre(rolId, rolNombre);
-        
+
         const estilos = {
             "Administrador": { backgroundColor: '#113d69', color: '#ffffff' },
             "Conductor": { backgroundColor: '#62d8d9', color: '#ffffff' },
@@ -207,7 +208,7 @@ function AdminUsuarios() {
         };
 
         const estilo = estilos[nombre] || { backgroundColor: '#e9ecef', color: '#113d69' };
-        
+
         return (
             <span style={{
                 ...estilo,
@@ -239,7 +240,7 @@ function AdminUsuarios() {
                 </span>
             );
         }
-        
+
         return (
             <span style={{
                 backgroundColor: bgColor,
@@ -614,14 +615,14 @@ function AdminUsuarios() {
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow" style={{ 
-                            borderRadius: '16px', 
+                        <Card className="border-0 shadow" style={{
+                            borderRadius: '16px',
                             borderLeft: '6px solid #62d8d9',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}>
                             <Card.Body className="p-4">
-                                <h1 className="display-5 fw-bold mb-0" style={{ 
+                                <h1 className="display-5 fw-bold mb-0" style={{
                                     color: '#113d69',
                                     letterSpacing: '-0.02em'
                                 }}>
@@ -702,7 +703,7 @@ function AdminUsuarios() {
 
                 <Row>
                     <Col>
-                        <Card className="shadow border-0" style={{ 
+                        <Card className="shadow border-0" style={{
                             borderRadius: '16px',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
@@ -717,7 +718,7 @@ function AdminUsuarios() {
                                     <>
                                         <div className="table-responsive">
                                             <Table hover className="align-middle mb-0">
-                                                <thead style={{ 
+                                                <thead style={{
                                                     backgroundColor: 'rgba(248, 249, 250, 0.9)',
                                                     borderBottom: '2px solid #62d8d9'
                                                 }}>
@@ -770,7 +771,7 @@ function AdminUsuarios() {
                                                                         >
                                                                             {getBotonTexto(usuario.estado)}
                                                                         </AccionButton>
-                                                                        
+
                                                                         {puedeSuspender(usuario.estado) && (
                                                                             <AccionButton
                                                                                 estado={usuario.estado}

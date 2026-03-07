@@ -9,6 +9,7 @@ import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { useNavigate } from "react-router-dom";
+import { API_URL, API_BASE_URL } from "../../config";
 import fondo from "../Imagenes/AutoresContacto.png";
 import toast from "react-hot-toast";
 
@@ -21,7 +22,7 @@ const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#54c7b8" }) => {
         if (vehiculo?.fotoVehiculo) {
             const url = vehiculo.fotoVehiculo.startsWith('http')
                 ? vehiculo.fotoVehiculo
-                : `https://backendmovi-production-c657.up.railway.app${vehiculo.fotoVehiculo}`;
+                : `${API_BASE_URL}${vehiculo.fotoVehiculo}`;
             setImageUrl(url);
             setImageError(false);
         } else {
@@ -187,7 +188,7 @@ const DriverHome = () => {
         if (!token) return;
         try {
             setCargandoComision(true);
-            const res = await fetch('https://backendmovi-production-c657.up.railway.app/api/reportes-pago/comision', {
+            const res = await fetch(`${API_URL}/reportes-pago/comision`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -205,7 +206,7 @@ const DriverHome = () => {
     const cargarMisReportes = useCallback(async () => {
         if (!token) return;
         try {
-            const res = await fetch('https://backendmovi-production-c657.up.railway.app/api/reportes-pago', {
+            const res = await fetch(`${API_URL}/reportes-pago`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -225,7 +226,7 @@ const DriverHome = () => {
         }
         try {
             setEnviandoReporte(true);
-            const res = await fetch('https://backendmovi-production-c657.up.railway.app/api/reportes-pago', {
+            const res = await fetch(`${API_URL}/reportes-pago`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -274,7 +275,7 @@ const DriverHome = () => {
         const obtenerGanancias = async () => {
             if (!token || !usuario?.idUsuarios) return;
             try {
-                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/`, {
+                const respuesta = await fetch(`${API_URL}/estadisticas/ganancias`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -304,7 +305,7 @@ const DriverHome = () => {
             setCargandoDocumentos(true);
             setErrorDocumentos("");
 
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis", {
+            const response = await fetch(`${API_URL}/documentacion/documentacion_mis`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -361,7 +362,7 @@ const DriverHome = () => {
                 setCargandoViajes(true);
                 setErrorViajes("");
 
-                const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, {
+                const respuesta = await fetch(`${API_URL}/viajes/mis-viajes`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -429,10 +430,10 @@ const DriverHome = () => {
             const headers = { "Authorization": "Bearer " + token };
 
             const [resGanancias, resTime, resRutas, resViajesHistory] = await Promise.all([
-                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/ganancias?periodo=${periodo}`, { headers }),
-                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/online-time?periodo=${periodo}`, { headers }),
-                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/rutas`, { headers }),
-                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/viajes?periodo=${periodo}`, { headers })
+                fetch(`${API_URL}/estadisticas/ganancias?periodo=${periodo}`, { headers }),
+                fetch(`${API_URL}/estadisticas/online-time?periodo=${periodo}`, { headers }),
+                fetch(`${API_URL}/estadisticas/rutas`, { headers }),
+                fetch(`${API_URL}/estadisticas/viajes?periodo=${periodo}`, { headers })
             ]);
 
             const nuevasStats = { ...statsAvanzadas };
@@ -462,7 +463,7 @@ const DriverHome = () => {
             setErrorVehiculo("");
             console.log("Obteniendo vehículos del usuario ID:", usuario?.idUsuarios);
 
-            const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
+            const respuesta = await fetch(`${API_URL}/vehiculos/mis-vehiculos`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -560,7 +561,7 @@ const DriverHome = () => {
             setEnviandoSolicitud(true);
             setMensajeSolicitud({ tipo: '', texto: '' });
 
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/${v.idVehiculos}/solicitar-cambio`, {
+            const response = await fetch(`${API_URL}/vehiculos/${v.idVehiculos}/solicitar-cambio`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

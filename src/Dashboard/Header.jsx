@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../pages/context/AuthContext";
+import { API_URL } from "../config";
 import { Dropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Logo from "../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png";
@@ -19,7 +20,7 @@ function Header() {
     const fetchPendingCount = async () => {
       if (usuario?.rol === 'ADMIN' && token) {
         try {
-          const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/pendientes/count", {
+          const response = await fetch(`${API_URL}/vehiculos/solicitudes/pendientes/count`, {
             headers: { "Authorization": `Bearer ${token}` }
           });
           if (response.ok) {
@@ -54,7 +55,7 @@ function Header() {
 
       try {
         const response = await fetch(
-          `https://backendmovi-production-c657.up.railway.app/api/notificaciones/usuario/${usuario.idUsuarios}`,
+          `${API_URL}/notificaciones/usuario/${usuario.idUsuarios}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,

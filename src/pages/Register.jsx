@@ -4,7 +4,8 @@ import { Container, Row, Col, Card, Form, Button, Alert, ProgressBar, Image, Mod
 import { FaUser, FaEnvelope, FaPhone, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaCamera, FaVideo } from "react-icons/fa";
 import toast, { Toaster } from 'react-hot-toast';
 import NavbarCustom from '../components/Navbar';
-
+import QRScanner from '../components/QRScanner';
+import { API_URL } from '../config';
 // --- IMÁGENES ---
 import LogoMoviflex from './Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import EscenaHomeBase from './Imagenes/HomeBaseImage.png';
@@ -80,7 +81,7 @@ function Register() {
         if (!email) return toast.error("Ingresa un correo");
         setLoading(true);
         try {
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/request-pre-otp", {
+            const respuesta = await fetch(`${API_URL}/auth/request-pre-otp`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
             });
@@ -102,7 +103,7 @@ function Register() {
         if (otp.length !== 6) return toast.error("Ingresa el código de 6 dígitos");
         setLoading(true);
         try {
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/verify-pre-otp", {
+            const respuesta = await fetch(`${API_URL}/auth/verify-pre-otp`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp })
             });
@@ -130,7 +131,7 @@ function Register() {
         setLoading(true);
         try {
             const datosEnviar = { nombre, email, telefono, password, rol, image: fotoBase64 };
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/registro", {
+            const respuesta = await fetch(`${API_URL}/auth/registro`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datosEnviar)
             });

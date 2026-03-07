@@ -14,6 +14,7 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode, FaCamera } from "react
 // Componentes del proyecto
 import NavbarCustom from '../components/Navbar';
 import QRScanner from '../components/QRScanner';
+import { API_URL } from '../config';
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -22,7 +23,7 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showQRScanner, setShowQRScanner] = useState(false);
-    
+
     const [showFacialModal, setShowFacialModal] = useState(false);
     const [fotoBase64, setFotoBase64] = useState("");
     const [fotoPreview, setFotoPreview] = useState("");
@@ -31,7 +32,7 @@ function Login() {
     const [stream, setStream] = useState(null);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    
+
     const navigate = useNavigate();
     const { login, token, usuario } = useAuth();
 
@@ -47,8 +48,8 @@ function Login() {
     // --- LÓGICA DE CÁMARA (Mantenida) ---
     const iniciarCamara = async () => {
         try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } 
+            const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
             });
             setStream(mediaStream);
             setCameraActive(true);
@@ -87,7 +88,7 @@ function Login() {
         if (!fotoBase64) return;
         setVerificando(true);
         try {
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/login", {
+            const respuesta = await fetch(`${API_URL}/auth/login`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ image: fotoBase64 })
             });
@@ -100,7 +101,7 @@ function Login() {
     async function guardar(e) {
         e.preventDefault(); setError(""); setLoading(true);
         try {
-            const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/login", {
+            const respuesta = await fetch(`${API_URL}/auth/login`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
             });
@@ -132,27 +133,27 @@ function Login() {
                 <Row className="justify-content-center align-items-center g-0">
 
                     <Col md={7} lg={6} className="d-none d-md-flex justify-content-center p-4">
-                        <img 
-                            src={EscenaHomeBase} 
-                            alt="Moviflex Home" 
-                            style={{ width: '100%', maxWidth: '550px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }} 
+                        <img
+                            src={EscenaHomeBase}
+                            alt="Moviflex Home"
+                            style={{ width: '100%', maxWidth: '550px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }}
                         />
                     </Col>
 
                     <Col xs={12} md={5} lg={5} xl={4}>
                         <Card className="shadow-lg border-0" style={{ borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                             <Card.Body className="p-4 p-md-5">
-                                
+
                                 <div className="text-center mb-4">
                                     <img src={LogoMoviflex} alt="Logo" style={{ width: '150px' }} />
                                 </div>
 
                                 <div className="d-flex gap-2 mb-4">
                                     <Button onClick={() => setShowQRScanner(true)} variant="outline-primary" className="w-100 fw-bold" style={{ borderRadius: '12px', borderColor: '#4acfbd', color: '#4acfbd' }}>
-                                        <FaQrcode className="me-1"/> QR
+                                        <FaQrcode className="me-1" /> QR
                                     </Button>
                                     <Button onClick={abrirFacialModal} variant="outline-success" className="w-100 fw-bold" style={{ borderRadius: '12px' }}>
-                                        <FaCamera className="me-1"/> Facial
+                                        <FaCamera className="me-1" /> Facial
                                     </Button>
                                 </div>
 
@@ -180,7 +181,7 @@ function Login() {
                                                 style={{ borderRadius: '12px', paddingLeft: '45px', backgroundColor: '#f8fafb', border: '1px solid #eee' }}
                                             />
                                             <span className="position-absolute end-0 top-50 translate-middle-y me-3" style={{ cursor: 'pointer' }} onClick={() => setShowPassword(!showPassword)}>
-                                                {showPassword ? <FaEyeSlash color="#8899a6"/> : <FaEye color="#8899a6"/>}
+                                                {showPassword ? <FaEyeSlash color="#8899a6" /> : <FaEye color="#8899a6" />}
                                             </span>
                                         </div>
                                     </Form.Group>
@@ -213,7 +214,7 @@ function Login() {
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
                     </div>
                     {!fotoPreview ? <Button variant="success" onClick={tomarFoto} className="mt-3 w-100 py-2 fw-bold">Capturar</Button> :
-                    <Button variant="primary" onClick={enviarLoginFacial} className="mt-3 w-100 py-2 fw-bold" disabled={verificando}>{verificando ? 'Verificando...' : 'Confirmar e Iniciar'}</Button>}
+                        <Button variant="primary" onClick={enviarLoginFacial} className="mt-3 w-100 py-2 fw-bold" disabled={verificando}>{verificando ? 'Verificando...' : 'Confirmar e Iniciar'}</Button>}
                 </Modal.Body>
             </Modal>
 

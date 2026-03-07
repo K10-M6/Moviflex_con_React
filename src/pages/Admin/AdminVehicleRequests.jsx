@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Form } from "react-bootstrap";
 import { FaCheck, FaTimes, FaUser, FaExchangeAlt } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
@@ -12,7 +13,7 @@ const AdminVehicleRequests = () => {
     const [solicitudes, setSolicitudes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [procesando, setProcesando] = useState(null); 
+    const [procesando, setProcesando] = useState(null);
     const [showRevisionModal, setShowRevisionModal] = useState(false);
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
     const [observaciones, setObservaciones] = useState("");
@@ -22,7 +23,7 @@ const AdminVehicleRequests = () => {
     const traerSolicitudes = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/pendientes", {
+            const response = await fetch(`${API_URL}/vehiculos/solicitudes/pendientes`, {
                 headers: { "Authorization": "Bearer " + token }
             });
 
@@ -43,7 +44,7 @@ const AdminVehicleRequests = () => {
     const handleProcesar = async (id, aprobado) => {
         try {
             setProcesando(id);
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/solicitudes/${id}/procesar`, {
+            const response = await fetch(`${API_URL}/vehiculos/solicitudes/${id}/procesar`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

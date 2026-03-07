@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../pages/context/AuthContext";
+import { API_URL } from "../config";
 import { Container, Row, Col, Card, Alert, Spinner, ListGroup, Badge, Image, Button } from "react-bootstrap";
 import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill, BsStarFill, BsStarHalf, BsStar, BsCircleFill, BsArrowRepeat, BsCashStack, BsGraphUp } from "react-icons/bs";
 import { useSocket } from "../pages/context/SocketContext";
@@ -25,8 +26,7 @@ function Home() {
 
   // Nuevos estados financieros para Admin
   const [statsFinancieras, setStatsFinancieras] = useState({
-    ingresosPlataforma: { total: 0, historial: [] },
-    gananciasConductores: { total: 0, historial: [] }
+    ingresosPlataforma: { total: 0, historial: [] }
   });
   const [periodoAdmin, setPeriodoAdmin] = useState('mensual');
 
@@ -86,14 +86,15 @@ function Home() {
       setErroresPorSeccion(prev => ({ ...prev, finanzas: false }));
       const headers = { "Authorization": "Bearer " + token };
 
-      const [resIngresos, resGanancias] = await Promise.all([
-        fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/ingresos?periodo=${periodoAdmin}`, { headers }),
-        fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/ganancias?periodo=${periodoAdmin}`, { headers })
-      ]);
+      const resIngresos = await fetch(`${API_URL}/estadisticas/ingresos-plataforma?periodo=${periodoAdmin}`, { headers });
 
-      const dataFin = { ...statsFinancieras };
-      if (resIngresos.ok) dataFin.ingresosPlataforma = await resIngresos.json();
-      if (resGanancias.ok) dataFin.gananciasConductores = await resGanancias.json();
+      const dataFin = {
+        ingresosPlataforma: { total: 0, historial: [] }
+      };
+
+      if (resIngresos.ok) {
+        dataFin.ingresosPlataforma = await resIngresos.json();
+      }
 
       setStatsFinancieras(dataFin);
     } catch (error) {
@@ -124,7 +125,7 @@ function Home() {
       setErroresPorSeccion(prev => ({ ...prev, usuarios: false }));
       if (!token) throw new Error("No hay token de autenticación");
 
-      const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
+      const response = await fetch(`${API_URL}/auth/`, {
         headers: { "Authorization": "Bearer " + token }
       });
 
@@ -152,7 +153,7 @@ function Home() {
     try {
       setErroresPorSeccion(prev => ({ ...prev, vehiculos: false }));
       if (!token) return;
-      const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/", {
+      const response = await fetch(`${API_URL}/vehiculos/`, {
         headers: { "Authorization": "Bearer " + token }
       });
       if (!response.ok) throw new Error(`Error ${response.status}`);
@@ -170,7 +171,7 @@ function Home() {
       const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
       const promesasViajes = diasSemana.map(async (nombre, dia) => {
         try {
-          const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/dia/${dia}`, {
+          const response = await fetch(`${API_URL}/viajes/dia/${dia}`, {
             headers: { "Authorization": "Bearer " + token }
           });
           if (!response.ok) return { nombre, cantidad: 0 };
@@ -194,7 +195,7 @@ function Home() {
       const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
       const promesasUsuarios = diasSemana.map(async (nombre, dia) => {
         try {
-          const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/usuarios/dia/${dia}`, {
+          const response = await fetch(`${API_URL}/auth/usuarios/dia/${dia}`, {
             headers: { "Authorization": "Bearer " + token }
           });
           if (!response.ok) return { name: nombre, usuarios: 0 };
@@ -228,8 +229,8 @@ function Home() {
 
       const headers = { "Authorization": "Bearer " + token };
       const [resConductores, resViajeros] = await Promise.allSettled([
-        fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-conductores", { headers }),
-        fetch("https://backendmovi-production-c657.up.railway.app/api/calificaciones/top-viajeros", { headers })
+        fetch(`${API_URL}/calificaciones/top-conductores`, { headers }),
+        fetch(`${API_URL}/calificaciones/top-viajeros`, { headers })
       ]);
 
       if (resConductores.status === 'fulfilled' && resConductores.value.ok) {
@@ -303,7 +304,7 @@ function Home() {
           <>
             {/* Tarjetas Principales */}
             <Row className="g-4 mb-4">
-              <Col md={3}>
+              <Col md={4}>
                 <Card className="border-0 shadow-sm rounded-4 h-100 bg-white">
                   <Card.Body className="p-4 d-flex align-items-center">
                     <div className="p-3 rounded-circle me-3" style={{ backgroundColor: '#e0f4f2', color: colores.verdeMenta }}><BsPeopleFill size={25} /></div>
@@ -311,7 +312,7 @@ function Home() {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={3}>
+              <Col md={4}>
                 <Card className="border-0 shadow-sm rounded-4 h-100 bg-white">
                   <Card.Body className="p-4 d-flex align-items-center">
                     <div className="p-3 rounded-circle me-3" style={{ backgroundColor: '#ebf3f9', color: '#113d69' }}><BsTruck size={25} /></div>
@@ -319,7 +320,7 @@ function Home() {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={3}>
+              <Col md={4}>
                 <Card className="border-0 shadow-sm rounded-4 h-100 bg-white">
                   <Card.Body className="p-4 d-flex align-items-center">
                     <div className="p-3 rounded-circle me-3" style={{ backgroundColor: '#fff7e6', color: '#f59e0b' }}><BsCashStack size={25} /></div>
@@ -327,19 +328,11 @@ function Home() {
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={3}>
-                <Card className="border-0 shadow-sm rounded-4 h-100 bg-white">
-                  <Card.Body className="p-4 d-flex align-items-center">
-                    <div className="p-3 rounded-circle me-3" style={{ backgroundColor: '#f0f0f0', color: '#333' }}><BsGraphUp size={25} /></div>
-                    <div><h6 className="text-muted mb-0 small">Ganancias Cond.</h6><h4 className="fw-bold mb-0">{formatearMoneda(statsFinancieras.gananciasConductores.total)}</h4></div>
-                  </Card.Body>
-                </Card>
-              </Col>
             </Row>
 
             {/* Gráficos de Finanzas - NUEVO */}
             <Row className="g-4 mb-4">
-              <Col lg={7}>
+              <Col lg={12}>
                 <Card className="border-0 shadow-sm rounded-4 bg-white h-100">
                   <Card.Body className="p-4">
                     <div className="d-flex align-items-center mb-4">
@@ -361,27 +354,6 @@ function Home() {
                           <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} />
                           <Area type="monotone" dataKey="value" stroke={colores.verdeMenta} strokeWidth={3} fillOpacity={1} fill="url(#colorAdminIngresos)" name="Ingresos ($)" />
                         </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col lg={5}>
-                <Card className="border-0 shadow-sm rounded-4 bg-white h-100">
-                  <Card.Body className="p-4">
-                    <div className="d-flex align-items-center mb-4">
-                      <BsGraphUp size={20} className="me-2 text-primary" />
-                      <h5 className="fw-bold mb-0" style={{ color: colores.azulFuerte }}>Ganancias de Conductores</h5>
-                    </div>
-                    <div style={{ height: '300px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={statsFinancieras.gananciasConductores.historial}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                          <Tooltip cursor={{ fill: 'rgba(18, 76, 131, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} />
-                          <Bar dataKey="value" fill={colores.azulFuerte} radius={[4, 4, 0, 0]} name="Ganancias ($)" />
-                        </BarChart>
                       </ResponsiveContainer>
                     </div>
                   </Card.Body>

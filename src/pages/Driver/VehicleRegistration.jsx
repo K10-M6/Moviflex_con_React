@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge } from "react-bootstrap";
 import { FaCar, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaIdCard } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from "../config";
 import Navbar from '../../components/Navbar';
 import LogoMoviflex from '../Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import EscenaHomeBase from '../Imagenes/HomeBaseImage.png';
@@ -11,25 +12,25 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const customStyles = `
   .custom-tomar-foto-btn {
-    border-radius: 12px !important;
-    border-color: #62d8d9 !important;
-    color: #62d8d9 !important;
-    font-weight: 500 !important;
-    transition: all 0.3s ease !important;
-    width: 100% !important;
-    padding: 1rem 0 !important;
-    margin-bottom: 1rem !important;
+    border-radius: 12px!important;
+    border-color: #62d8d9!important;
+    color: #62d8d9!important;
+    font-weight: 500!important;
+    transition: all 0.3s ease!important;
+    width: 100%!important;
+    padding: 1rem 0!important;
+    margin-bottom: 1rem!important;
   }
   
   .custom-tomar-foto-btn:hover {
-    background-color: #62d8d9 !important;
-    border-color: #62d8d9 !important;
-    color: white !important;
+    background-color: #62d8d9!important;
+    border-color: #62d8d9!important;
+    color: white!important;
   }
   
   .custom-tomar-foto-btn:disabled {
-    opacity: 0.6 !important;
-    cursor: not-allowed !important;
+    opacity: 0.6!important;
+    cursor: not-allowed!important;
   }
 `;
 
@@ -212,7 +213,7 @@ function VehicleRegistration() {
     setBuscandoPlaca(true);
     const toastId = toast.loading("Analizando placa...");
     try {
-      const resp = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/extraer-placa", {
+      const resp = await fetch(`${API_URL}/vehiculos/extraer-placa`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -309,7 +310,7 @@ function VehicleRegistration() {
         'Authorization': `Bearer ${token}`
       };
 
-      const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/vehiculos/", {
+      const respuesta = await fetch(`${API_URL}/vehiculos/`, {
         method: "POST",
         headers: headers,
         body: JSON.stringify(datosEnviar)
@@ -401,18 +402,18 @@ function VehicleRegistration() {
 
         <Container className="d-flex flex-column justify-content-center flex-grow-1 py-4">
           <Row className="justify-content-center align-items-center g-0">
-        
+
             <Col md={6} className="d-none d-md-flex justify-content-center p-4">
-              <img 
-                src={EscenaHomeBase} 
-                alt="Moviflex Home" 
-                style={{ width: '100%', maxWidth: '500px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }} 
+              <img
+                src={EscenaHomeBase}
+                alt="Moviflex Home"
+                style={{ width: '100%', maxWidth: '500px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }}
               />
             </Col>
             <Col xs={12} md={6}>
               <Card className="shadow-lg border-0" style={{ borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                 <Card.Body className="p-4 p-md-5">
-                  
+
                   <div className="text-center mb-4">
                     <img src={LogoMoviflex} alt="Logo" style={{ width: '120px' }} />
                   </div>
@@ -601,9 +602,9 @@ function VehicleRegistration() {
                         {loading ? 'Registrando...' : 'Registrar vehículo'}
                       </Button>
 
-                      <Button 
-                        variant="outline-secondary" 
-                        onClick={() => navigate("/driver-profile")} 
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => navigate("/driver-profile")}
                         className="px-4"
                         style={{ borderRadius: '12px' }}
                       >
@@ -622,7 +623,7 @@ function VehicleRegistration() {
             <Modal.Title className="fw-bold">Tomar Foto del Vehículo</Modal.Title>
           </Modal.Header>
           <Modal.Body className="text-center p-0">
-            <div style={{ backgroundColor: '#000', minHeight: '450px', borderRadius: '0' }}>
+            <div style={{ backgroundColor: '#000', minHeight: '450px', borderRadius: '0', position: 'relative' }}>
               <video
                 ref={videoRef}
                 autoPlay

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from '../../config';
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
 import { BsSearch, BsXCircle } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
@@ -11,13 +12,13 @@ function AdminViajeros() {
     const [error, setError] = useState("");
     const [paginaActual, setPaginaActual] = useState(1);
     const [busqueda, setBusqueda] = useState("");
-    
+
     const elementosPorPagina = 10;
 
     useEffect(() => {
         traerViajeros();
     }, []);
-    
+
     const viajerosFiltrados = viajeros.filter(viajero => {
         const terminoBusqueda = busqueda.toLowerCase();
         return (
@@ -27,7 +28,7 @@ function AdminViajeros() {
             viajero.telefono?.toLowerCase().includes(terminoBusqueda)
         );
     });
-    
+
     const indiceUltimoElemento = paginaActual * elementosPorPagina;
     const indicePrimerElemento = indiceUltimoElemento - elementosPorPagina;
     const viajerosPaginados = viajerosFiltrados.slice(indicePrimerElemento, indiceUltimoElemento);
@@ -37,43 +38,43 @@ function AdminViajeros() {
         setPaginaActual(numeroPagina);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    
+
     async function traerViajeros() {
         try {
             setLoading(true);
             setError("");
-            
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/pasajeros", {
+
+            const response = await fetch(`${API_URL}/auth/viajeros`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token
                 }
             });
-            
+
             if (!response.ok) {
                 if (response.status === 403) {
                     throw new Error("Acceso denegado. No tienes permisos de administrador.");
                 }
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
             }
-            
+
             const data = await response.json();
-            
+
             if (!Array.isArray(data)) {
                 throw new Error("La respuesta del servidor no es válida");
             }
-            
-            const viajerosFiltrados = data.filter(usuario => 
-                usuario.idRol === 3 || 
-                usuario.rol?.nombre?.toUpperCase() === 'VIAJERO' || 
+
+            const viajerosFiltrados = data.filter(usuario =>
+                usuario.idRol === 3 ||
+                usuario.rol?.nombre?.toUpperCase() === 'VIAJERO' ||
                 usuario.rol?.nombre?.toUpperCase() === 'PASAJERO' ||
                 usuario.rol?.nombre?.toUpperCase() === 'PASSENGER'
             );
-            
+
             setViajeros(viajerosFiltrados);
             setPaginaActual(1);
-            
+
         } catch (error) {
             console.error("Error al traer viajeros:", error);
             setError(error.message);
@@ -92,15 +93,15 @@ function AdminViajeros() {
 
         try {
             setLoading(true);
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/search?q=${busqueda}`, {
+            const response = await fetch(`${API_URL}/auth/search?q=${busqueda}`, {
                 headers: { "Authorization": "Bearer " + token }
             });
             if (!response.ok) throw new Error("Error en la búsqueda");
             const data = await response.json();
 
             const soloViajeros = data.filter(u =>
-                u.idRol === 3 || 
-                u.rol?.nombre?.toUpperCase() === 'VIAJERO' || 
+                u.idRol === 3 ||
+                u.rol?.nombre?.toUpperCase() === 'VIAJERO' ||
                 u.rol?.nombre?.toUpperCase() === 'PASAJERO' ||
                 u.rol?.nombre?.toUpperCase() === 'PASSENGER'
             );
@@ -118,11 +119,11 @@ function AdminViajeros() {
         setBusqueda("");
         traerViajeros();
     }
-    
+
     async function cambiarEstadoViajero(id, estadoActual) {
         try {
             let nuevoEstado;
-            
+
             switch (estadoActual) {
                 case 'ACTIVO':
                     nuevoEstado = 'INACTIVO';
@@ -136,8 +137,8 @@ function AdminViajeros() {
                 default:
                     nuevoEstado = 'ACTIVO';
             }
-            
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
+
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -151,19 +152,19 @@ function AdminViajeros() {
             if (!response.ok) {
                 throw new Error(`Error al cambiar estado: ${response.status}`);
             }
-            
+
             await traerViajeros();
-            
+
         } catch (error) {
             console.error("Error al cambiar estado:", error);
             setError("Error al cambiar estado del viajero");
         }
     }
-    
+
     async function suspenderViajero(id) {
         try {
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${id}/estado`, {
-                method: "PATCH",
+            const response = await fetch(`${API_URL}/auth/suspend-viajero/${id}`, {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token
@@ -176,15 +177,15 @@ function AdminViajeros() {
             if (!response.ok) {
                 throw new Error(`Error al suspender viajero: ${response.status}`);
             }
-            
+
             await traerViajeros();
-            
+
         } catch (error) {
             console.error("Error al suspender viajero:", error);
             setError("Error al suspender el viajero");
         }
     }
-    
+
     const EstadoBadge = ({ estado }) => {
         const estilos = {
             ACTIVO: { backgroundColor: '#62d8d9', color: '#ffffff' },
@@ -193,7 +194,7 @@ function AdminViajeros() {
         };
 
         const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
-        
+
         return (
             <span style={{
                 ...estilo,
@@ -228,7 +229,7 @@ function AdminViajeros() {
                 </span>
             );
         }
-        
+
         return (
             <span style={{
                 backgroundColor: bgColor,
@@ -578,14 +579,14 @@ function AdminViajeros() {
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow" style={{ 
-                            borderRadius: '16px', 
+                        <Card className="border-0 shadow" style={{
+                            borderRadius: '16px',
                             borderLeft: '6px solid #62d8d9',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}>
                             <Card.Body className="p-4">
-                                <h1 className="display-5 fw-bold mb-0" style={{ 
+                                <h1 className="display-5 fw-bold mb-0" style={{
                                     color: '#113d69',
                                     letterSpacing: '-0.02em'
                                 }}>
@@ -631,7 +632,7 @@ function AdminViajeros() {
                                 </Form>
                             </Card.Body>
                         </Card>
-                        
+
                         <div className="d-flex gap-3 mt-3 flex-wrap">
                             <StatsBadge bgColor="transparent" color="#113d69">
                                 Total: {viajeros.length}
@@ -653,7 +654,7 @@ function AdminViajeros() {
                         </div>
                     </Col>
                 </Row>
-                
+
                 {error && (
                     <Row className="mb-3">
                         <Col>
@@ -663,10 +664,10 @@ function AdminViajeros() {
                         </Col>
                     </Row>
                 )}
-                
+
                 <Row>
                     <Col>
-                        <Card className="shadow border-0" style={{ 
+                        <Card className="shadow border-0" style={{
                             borderRadius: '16px',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
@@ -681,7 +682,7 @@ function AdminViajeros() {
                                     <>
                                         <div className="table-responsive">
                                             <Table hover className="align-middle mb-0">
-                                                <thead style={{ 
+                                                <thead style={{
                                                     backgroundColor: 'rgba(248, 249, 250, 0.9)',
                                                     borderBottom: '2px solid #62d8d9'
                                                 }}>
@@ -728,7 +729,7 @@ function AdminViajeros() {
                                                                         >
                                                                             {getBotonTexto(viajero.estado)}
                                                                         </AccionButton>
-                                                                        
+
                                                                         {puedeSuspender(viajero.estado) && (
                                                                             <AccionButton
                                                                                 estado={viajero.estado}

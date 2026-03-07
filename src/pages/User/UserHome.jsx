@@ -8,6 +8,7 @@ import {
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../config";
 import imagencontacto from "../Imagenes/AutoresContacto.png";
 
 const UserHome = () => {
@@ -57,7 +58,7 @@ const UserHome = () => {
             try {
                 setCargandoViajes(true);
                 const respuesta = await fetch(
-                    `https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`,
+                    `${API_URL}/viajes/mis-viajes`,
                     { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
                 );
 
@@ -93,7 +94,7 @@ const UserHome = () => {
             try {
                 setCargandoPagos(true);
                 const respuesta = await fetch(
-                    `https://backendmovi-production-c657.up.railway.app/api/pagos/usuario/`,
+                    `${API_URL}/pagos/usuario/`,
                     { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
                 );
                 if (respuesta.ok) {
@@ -117,8 +118,8 @@ const UserHome = () => {
 
             // Obtenemos gastos (Pagos) y frecuencia (Viajes historial)
             const [resGastos, resViajesHistory] = await Promise.all([
-                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/ganancias?periodo=${periodo}`, { headers }),
-                fetch(`https://backendmovi-production-c657.up.railway.app/api/estadisticas/viajes?periodo=${periodo}`, { headers })
+                fetch(`${API_URL}/estadisticas/ganancias?periodo=${periodo}`, { headers }),
+                fetch(`${API_URL}/estadisticas/viajes?periodo=${periodo}`, { headers })
             ]);
 
             const nuevasStats = { ...statsAvanzadas };

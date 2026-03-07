@@ -6,12 +6,13 @@ import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt, FaC
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
+import { API_URL } from "../../config";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 function DriverProfile() {
   const { usuario, token, setUsuario } = useAuth();
   const navigate = useNavigate();
-  
+
   const [nombre, setNombre] = useState(usuario?.nombre || '');
   const [telefono, setTelefono] = useState(usuario?.telefono || '');
   const [showQRModal, setShowQRModal] = useState(false);
@@ -24,7 +25,7 @@ function DriverProfile() {
     total: 0
   });
   const [totalViajes, setTotalViajes] = useState(0);
-  
+
   const [documentos, setDocumentos] = useState([]);
   const [cargandoDocumentos, setCargandoDocumentos] = useState(false);
   const [errorDocumentos, setErrorDocumentos] = useState("");
@@ -34,7 +35,7 @@ function DriverProfile() {
     const obtenerVehiculo = async () => {
       if (!token) return;
       try {
-        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/vehiculos/mis-vehiculos`, {
+        const respuesta = await fetch(`${API_URL}/vehiculos/mis-vehiculos`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -61,7 +62,7 @@ function DriverProfile() {
     const obtenerCalificaciones = async () => {
       if (!token || !usuario?.idUsuarios) return;
       try {
-        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/calificaciones/${usuario.idUsuarios}/PROMEDIO`, {
+        const respuesta = await fetch(`${API_URL}/calificaciones/${usuario.idUsuarios}/PROMEDIO`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -70,13 +71,13 @@ function DriverProfile() {
         if (respuesta.ok) {
           const data = await respuesta.json();
           console.log("📊 Calificaciones recibidas:", data);
-          
+
           if (typeof data === 'number') {
             setDatosCalificacion({ promedio: data, total: 0 });
           } else if (data && data.promedio !== undefined) {
-            setDatosCalificacion({ 
-              promedio: data.promedio, 
-              total: data.total || 0 
+            setDatosCalificacion({
+              promedio: data.promedio,
+              total: data.total || 0
             });
           } else {
             setDatosCalificacion({ promedio: 0, total: 0 });
@@ -96,7 +97,7 @@ function DriverProfile() {
     const obtenerEstadisticasViajes = async () => {
       if (!token || !usuario?.idUsuarios) return;
       try {
-        const respuesta = await fetch(`https://backendmovi-production-c657.up.railway.app/api/viajes/mis-viajes`, {
+        const respuesta = await fetch(`${API_URL}/viajes/mis-viajes`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -105,7 +106,7 @@ function DriverProfile() {
         if (respuesta.ok) {
           const data = await respuesta.json();
           console.log("🚗 Viajes recibidos:", data);
-          
+
           if (Array.isArray(data)) {
             const viajesCompletados = data.filter(v => v.estado === 'FINALIZADO');
             setTotalViajes(viajesCompletados.length);
@@ -129,19 +130,19 @@ function DriverProfile() {
       try {
         setCargandoDocumentos(true);
         setErrorDocumentos("");
-        
-        const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_mis", {
+
+        const response = await fetch(`${API_URL}/documentacion/documentacion_mis`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token
           }
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           console.log("📄 Documentos recibidos:", data);
-          
+
           let docsArray = [];
           if (Array.isArray(data)) {
             docsArray = data;
@@ -150,18 +151,18 @@ function DriverProfile() {
           } else if (data && typeof data === 'object') {
             docsArray = [data];
           }
-          
+
           setDocumentos(docsArray);
-          
-          const licenciaEncontrada = docsArray.find(doc => 
-            doc.tipoDocumento?.toLowerCase().includes('licencia') || 
+
+          const licenciaEncontrada = docsArray.find(doc =>
+            doc.tipoDocumento?.toLowerCase().includes('licencia') ||
             doc.tipoDocumento?.toLowerCase().includes('conducir') ||
             doc.tipoDocumento === 'LICENCIA_CONDUCCION'
           );
-          
+
           console.log("🎯 Licencia encontrada:", licenciaEncontrada);
           setLicencia(licenciaEncontrada || null);
-          
+
         } else if (response.status === 404) {
           console.log("No se encontraron documentos");
           setDocumentos([]);
@@ -176,14 +177,14 @@ function DriverProfile() {
         setCargandoDocumentos(false);
       }
     };
-    
+
     obtenerDocumentos();
   }, [token, usuario?.idUsuarios]);
 
   const guardarCambios = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/auth/${usuario.idUsuarios}`, {
+      const response = await fetch(`${API_URL}/auth/${usuario.idUsuarios}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +192,7 @@ function DriverProfile() {
         },
         body: JSON.stringify({ nombre, telefono })
       });
-      
+
       if (response.ok) {
         setUsuario({ ...usuario, nombre, telefono });
         toast.success('Datos actualizados correctamente');
@@ -207,17 +208,17 @@ function DriverProfile() {
 
   const getBadgeColor = (estado) => {
     switch (estado?.toUpperCase()) {
-      case 'APROBADO': 
-      case 'VÁLIDO': 
-      case 'VALIDO': 
+      case 'APROBADO':
+      case 'VÁLIDO':
+      case 'VALIDO':
         return 'success';
-      case 'PENDIENTE': 
-      case 'REVISION': 
+      case 'PENDIENTE':
+      case 'REVISION':
         return 'warning';
-      case 'RECHAZADO': 
-      case 'VENCIDO': 
+      case 'RECHAZADO':
+      case 'VENCIDO':
         return 'danger';
-      default: 
+      default:
         return 'secondary';
     }
   };
@@ -253,25 +254,25 @@ function DriverProfile() {
   };
 
   return (
-    <div style={{ 
-        minHeight: '100vh', 
-        backgroundImage: `url(${fondo})`, 
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-        position: 'relative', 
-        overflowX: 'hidden' 
+    <div style={{
+      minHeight: '100vh',
+      backgroundImage: `url(${fondo})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      position: 'relative',
+      overflowX: 'hidden'
     }}>
-      <div style={{ 
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
-          backgroundColor: 'rgba(255, 255, 255, 0.65)', 
-          zIndex: 0 
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
+        zIndex: 0
       }} />
 
       <Toaster position="top-right" />
-      
+
       <div style={{ position: 'relative', zIndex: 2 }}>
-        <Navbar transparent={true}/>
+        <Navbar transparent={true} />
         <Container className="py-5">
           <Row className="justify-content-center">
             <Col lg={10}>
@@ -279,7 +280,7 @@ function DriverProfile() {
                 <Card.Header className="bg-white border-0 p-4">
                   <h2 className="fw-bold mb-0" style={{ color: '#124c83' }}>Mi Perfil de Conductor</h2>
                 </Card.Header>
-                
+
                 <Row className="g-0">
                   <Col md={4} className="bg-light text-center p-4 border-end">
                     <div className="mb-3">
@@ -289,20 +290,20 @@ function DriverProfile() {
                         <FaUserCircle size={150} color="#124c83" className="shadow-sm rounded-circle bg-white p-2" />
                       )}
                     </div>
-                    
+
                     <h3 className="fw-bold mb-1">{nombre || usuario?.nombre}</h3>
                     <Badge bg="warning" text="dark" className="px-3 rounded-pill mb-3">
                       <FaStar className="me-1" /> {formatearPromedio(datosCalificacion.promedio)} ({datosCalificacion.total || 0} reseñas)
                     </Badge>
-                    
+
                     <Button onClick={() => navigate("/documentacion")} variant="outline-success" className="w-100 mb-3 rounded-pill">
                       <FaFileAlt className="me-2" /> Subir Documentación
                     </Button>
-                    
+
                     <Button onClick={() => { setQrValue(`${token}|${usuario?.nombre}`); setShowQRModal(true); }} variant="outline-primary" className="w-100 mb-3 rounded-pill" style={{ borderColor: '#a385ff', color: '#a385ff' }}>
                       <FaQrcode className="me-2" /> Generar QR
                     </Button>
-                    
+
                     <hr />
                     <div className="text-start px-3">
                       <p className="small text-muted mb-1">VIAJES COMPLETADOS</p>
@@ -317,10 +318,10 @@ function DriverProfile() {
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold">NOMBRE COMPLETO</Form.Label>
-                            <Form.Control 
-                              type="text" 
-                              value={nombre} 
-                              onChange={(e) => setNombre(e.target.value)} 
+                            <Form.Control
+                              type="text"
+                              value={nombre}
+                              onChange={(e) => setNombre(e.target.value)}
                               placeholder="Tu nombre completo"
                             />
                           </Form.Group>
@@ -328,16 +329,16 @@ function DriverProfile() {
                         <Col md={6}>
                           <Form.Group className="mb-3">
                             <Form.Label className="small fw-bold">TELÉFONO</Form.Label>
-                            <Form.Control 
-                              type="text" 
-                              value={telefono} 
-                              onChange={(e) => setTelefono(e.target.value)} 
+                            <Form.Control
+                              type="text"
+                              value={telefono}
+                              onChange={(e) => setTelefono(e.target.value)}
                               placeholder="Tu número de teléfono"
                             />
                           </Form.Group>
                         </Col>
                       </Row>
-                      
+
                       <h4 className="fw-bold mt-4 mb-3">Credenciales y Vehículo</h4>
                       <Row className="g-3 mb-4">
                         <Col sm={6}>
@@ -346,7 +347,7 @@ function DriverProfile() {
                               <FaIdCard className="text-primary me-2" />
                               <span className="fw-bold small">LICENCIA DE CONDUCIR</span>
                             </div>
-                            
+
                             {cargandoDocumentos ? (
                               <p className="mb-0 small text-muted">Cargando...</p>
                             ) : licencia ? (
@@ -383,7 +384,7 @@ function DriverProfile() {
                             )}
                           </Card>
                         </Col>
-                        
+
                         <Col sm={6}>
                           <Card className="p-3 border-0 bg-light rounded-3 h-100">
                             <div className="d-flex align-items-center mb-2">
@@ -416,8 +417,8 @@ function DriverProfile() {
                         </Col>
                       </Row>
 
-                      <Button 
-                        className="w-100 border-0 fw-bold py-2" 
+                      <Button
+                        className="w-100 border-0 fw-bold py-2"
                         style={{ backgroundColor: '#54c7b8', color: 'white' }}
                         onClick={guardarCambios}
                         disabled={loading}

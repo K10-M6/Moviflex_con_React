@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Table, Badge, Button, Modal, Form, Card, Row, Col, Spinner, Image } from 'react-bootstrap';
 import { BsCheckCircleFill, BsXCircleFill, BsEyeFill, BsCalendar3, BsFunnelFill } from 'react-icons/bs';
 import { useAuth } from '../../pages/context/AuthContext';
+import { API_URL } from '../../config';
 import toast from 'react-hot-toast';
 
-const API_URL = 'https://backendmovi-production-c657.up.railway.app';
+// Removido API_URL local ya que se usa el central de config.js
 
 function AdminReportesPago() {
     const { token } = useAuth();
@@ -23,7 +24,7 @@ function AdminReportesPago() {
     const cargarReportes = useCallback(async () => {
         try {
             setLoading(true);
-            let url = `${API_URL}/api/reportes-pago?`;
+            let url = `${API_URL}/reportes-pago?`;
             if (filtroEstado) url += `estado=${filtroEstado}&`;
             if (filtroMes) url += `mes=${filtroMes}&`;
 
@@ -49,7 +50,7 @@ function AdminReportesPago() {
     const aprobarReporte = async (id) => {
         try {
             setProcesando(true);
-            const res = await fetch(`${API_URL}/api/reportes-pago/${id}/aprobar`, {
+            const res = await fetch(`${API_URL}/reportes-pago/${id}/aprobar`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -71,7 +72,7 @@ function AdminReportesPago() {
     const rechazarReporte = async (id) => {
         try {
             setProcesando(true);
-            const res = await fetch(`${API_URL}/api/reportes-pago/${id}/rechazar`, {
+            const res = await fetch(`${API_URL}/reportes-pago/${id}/rechazar`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -101,7 +102,7 @@ function AdminReportesPago() {
 
         try {
             setProcesando(true);
-            const res = await fetch(`${API_URL}/api/reportes-pago/verificar-mensuales`, {
+            const res = await fetch(`${API_URL}/reportes-pago/verificar-mensuales`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -129,7 +130,7 @@ function AdminReportesPago() {
     const enviarRecordatorios = async () => {
         try {
             setProcesando(true);
-            const res = await fetch(`${API_URL}/api/reportes-pago/enviar-recordatorios`, {
+            const res = await fetch(`${API_URL}/reportes-pago/enviar-recordatorios`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

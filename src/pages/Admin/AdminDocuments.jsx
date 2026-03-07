@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Image, Modal } from "react-bootstrap";
 import fondo from "../Imagenes/AutoresContacto.png";
 
@@ -20,7 +21,7 @@ function AdminDocumentos() {
 
     async function traerUsuarios() {
         try {
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/auth/", {
+            const response = await fetch(`${API_URL}/auth/`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -50,7 +51,7 @@ function AdminDocumentos() {
             setLoading(true);
             setError("");
 
-            const response = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/todos", {
+            const response = await fetch(`${API_URL}/documentacion/todos`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -92,7 +93,7 @@ function AdminDocumentos() {
                 nuevoEstado = 'APROBADO';
             }
 
-            const response = await fetch(`https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_validate/${id}`, {
+            const response = await fetch(`${API_URL}/documentacion/documentacion_validate/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -138,7 +139,7 @@ function AdminDocumentos() {
         };
 
         const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
-        
+
         return (
             <span style={{
                 ...estilo,
@@ -205,7 +206,7 @@ function AdminDocumentos() {
                 </span>
             );
         }
-        
+
         return (
             <span style={{
                 backgroundColor: bgColor,
@@ -347,14 +348,14 @@ function AdminDocumentos() {
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
-                        <Card className="border-0 shadow" style={{ 
-                            borderRadius: '16px', 
+                        <Card className="border-0 shadow" style={{
+                            borderRadius: '16px',
                             borderLeft: '6px solid #62d8d9',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
                         }}>
                             <Card.Body className="p-4">
-                                <h1 className="display-5 fw-bold mb-0" style={{ 
+                                <h1 className="display-5 fw-bold mb-0" style={{
                                     color: '#113d69',
                                     letterSpacing: '-0.02em'
                                 }}>
@@ -395,7 +396,7 @@ function AdminDocumentos() {
 
                 <Row>
                     <Col>
-                        <Card className="shadow border-0" style={{ 
+                        <Card className="shadow border-0" style={{
                             borderRadius: '16px',
                             overflow: 'hidden',
                             backgroundColor: 'rgba(255, 255, 255, 0.95)'
@@ -409,7 +410,7 @@ function AdminDocumentos() {
                                 ) : (
                                     <div className="table-responsive">
                                         <Table hover className="align-middle mb-0">
-                                            <thead style={{ 
+                                            <thead style={{
                                                 backgroundColor: 'rgba(248, 249, 250, 0.9)',
                                                 borderBottom: '2px solid #62d8d9'
                                             }}>
@@ -488,18 +489,18 @@ function AdminDocumentos() {
             </Container>
 
             {/* Modal para ver imagen - con estilo mejorado */}
-            <Modal 
-                show={showImageModal} 
-                onHide={handleCloseModal} 
-                size="lg" 
+            <Modal
+                show={showImageModal}
+                onHide={handleCloseModal}
+                size="lg"
                 centered
                 style={{
                     backgroundColor: 'rgba(0, 0, 0, 0.5)'
                 }}
             >
-                <Modal.Header 
-                    closeButton 
-                    style={{ 
+                <Modal.Header
+                    closeButton
+                    style={{
                         borderBottom: '2px solid #62d8d9',
                         backgroundColor: 'rgba(255, 255, 255, 0.98)'
                     }}
@@ -507,7 +508,7 @@ function AdminDocumentos() {
                     <Modal.Title style={{ color: '#113d69' }}>
                         {selectedDocumento && (
                             <>
-                                <span style={{ color: '#62d8d9' }}>📄</span> {selectedDocumento.tipo || selectedDocumento.tipoDocumento} - 
+                                <span style={{ color: '#62d8d9' }}>📄</span> {selectedDocumento.tipo || selectedDocumento.tipoDocumento} -
                                 <span className="ms-1" style={{ color: '#113d69' }}>{obtenerNombreUsuario(selectedDocumento.idUsuario)}</span>
                             </>
                         )}
@@ -519,7 +520,7 @@ function AdminDocumentos() {
                             src={getImageUrl(selectedDocumento)}
                             alt="Documento"
                             fluid
-                            style={{ 
+                            style={{
                                 maxHeight: '70vh',
                                 borderRadius: '8px',
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
@@ -534,8 +535,8 @@ function AdminDocumentos() {
                     )}
                 </Modal.Body>
                 <Modal.Footer style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
-                    <Button 
-                        variant="secondary" 
+                    <Button
+                        variant="secondary"
                         onClick={handleCloseModal}
                         style={{
                             backgroundColor: '#6c757d',

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge, Table } from "react-bootstrap";
 import { FaIdCard, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaCalendarAlt, FaUser } from "react-icons/fa";
 import { useAuth } from "./context/AuthContext";
+import { API_URL } from "../config";
 import Navbar from '../components/Navbar';
 import LogoMoviflex from './Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import EscenaHomeBase from './Imagenes/HomeBaseImage.png';
@@ -230,7 +231,7 @@ function Documents() {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const respuesta = await fetch("https://backendmovi-production-c657.up.railway.app/api/documentacion/documentacion_subir", {
+      const respuesta = await fetch(`${API_URL}/documentacion/documentacion_subir`, {
         method: "POST",
         headers: headers,
         body: JSON.stringify(datosEnviar)
@@ -325,19 +326,19 @@ function Documents() {
 
         <Container className="d-flex flex-column justify-content-center flex-grow-1 py-4">
           <Row className="justify-content-center align-items-center g-0">
-        
+
             <Col md={6} className="d-none d-md-flex justify-content-center p-4">
-              <img 
-                src={EscenaHomeBase} 
-                alt="Moviflex Home" 
-                style={{ width: '100%', maxWidth: '500px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }} 
+              <img
+                src={EscenaHomeBase}
+                alt="Moviflex Home"
+                style={{ width: '100%', maxWidth: '500px', height: 'auto', filter: 'drop-shadow(0px 10px 15px rgba(0,0,0,0.2))' }}
               />
             </Col>
-            
+
             <Col xs={12} md={6}>
               <Card className="shadow-lg border-0" style={{ borderRadius: '25px', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
                 <Card.Body className="p-4 p-md-5">
-                  
+
                   <div className="text-center mb-4">
                     <img src={LogoMoviflex} alt="Logo" style={{ width: '120px' }} />
                   </div>
@@ -492,9 +493,9 @@ function Documents() {
                         {loading ? 'Enviando...' : 'Enviar licencia para revisión'}
                       </Button>
 
-                      <Button 
-                        variant="outline-secondary" 
-                        onClick={() => navigate("/driver-profile")} 
+                      <Button
+                        variant="outline-secondary"
+                        onClick={() => navigate("/driver-profile")}
                         className="px-4"
                         style={{ borderRadius: '12px' }}
                       >

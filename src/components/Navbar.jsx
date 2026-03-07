@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Navbar, Container, Nav, Dropdown, Image, Button } from "react-bootstrap";
-import { FaUserCircle, FaDoorOpen, FaKey, FaQuestionCircle } from "react-icons/fa"; 
+import { FaUserCircle, FaDoorOpen, FaKey, FaQuestionCircle } from "react-icons/fa";
 import Logo from '../pages/Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import { useAuth } from '../pages/context/AuthContext';
+import { API_URL } from '../config';
 import Notificaciones from '../components/Notificaciones';
 
 export default function NavbarCustom({ transparent }) {
   const { token, usuario, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const [fotoPerfil, setFotoPerfil] = useState(null);
   const [cargandoFoto, setCargandoFoto] = useState(false);
 
@@ -20,7 +21,7 @@ export default function NavbarCustom({ transparent }) {
       setCargandoFoto(true);
       try {
         const respuesta = await fetch(
-          `https://backendmovi-production-c657.up.railway.app/api/auth/${usuario.idUsuarios}`,
+          `${API_URL}/auth/${usuario.idUsuarios}`,
           { headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } }
         );
         if (!respuesta.ok) return;
@@ -70,7 +71,7 @@ export default function NavbarCustom({ transparent }) {
     if (location.pathname === '/' && location.state?.scrollToComoFunciona) {
       // Limpiamos el estado para no hacer scroll múltiples veces
       navigate(location.pathname, { replace: true, state: {} });
-      
+
       // Pequeño delay para asegurar que el DOM esté listo
       setTimeout(() => {
         const seccion = document.getElementById('como-funciona-seccion');
@@ -91,12 +92,12 @@ export default function NavbarCustom({ transparent }) {
   // (no solo en HomeBase, para que siempre puedas ir a esa sección)
 
   return (
-    <Navbar 
-      variant={transparent ? "light" : "dark"} 
-      expand="lg" 
+    <Navbar
+      variant={transparent ? "light" : "dark"}
+      expand="lg"
       className="sticky-top py-1"
       style={{
-        backgroundColor: 'transparent', 
+        backgroundColor: 'transparent',
         borderBottom: transparent,
         transition: 'all 0.3s ease-in-out',
         boxShadow: transparent ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
@@ -106,18 +107,18 @@ export default function NavbarCustom({ transparent }) {
         {/* Contenedor flexible para logo y botón */}
         <div className="d-flex align-items-center">
           <Navbar.Brand as={Link} to={token ? homePath : "/"} className="me-3">
-            <img 
-              src={Logo} 
-              height="65px" 
-              style={{ width: 'auto', objectFit: 'contain' }} 
-              className="me-1" 
-              alt="Logo MoviFlexx" 
+            <img
+              src={Logo}
+              height="65px"
+              style={{ width: 'auto', objectFit: 'contain' }}
+              className="me-1"
+              alt="Logo MoviFlexx"
             />
           </Navbar.Brand>
 
           {/* BOTÓN "CÓMO FUNCIONA" - SIEMPRE VISIBLE */}
-          <Button 
-            variant="link" 
+          <Button
+            variant="link"
             onClick={goToComoFunciona}
             className="d-flex align-items-center text-decoration-none"
             style={{
@@ -142,9 +143,9 @@ export default function NavbarCustom({ transparent }) {
             ¿Cómo funciona?
           </Button>
         </div>
-        
+
         <Navbar.Toggle aria-controls="navbar-basico" />
-        
+
         <Navbar.Collapse id="navbar-basico">
           <Nav className="ms-auto align-items-center">
             {!token ? (
@@ -213,12 +214,12 @@ export default function NavbarCustom({ transparent }) {
             ) : (
               <>
                 <div className="me-3">
-                  <Notificaciones/>
+                  <Notificaciones />
                 </div>
 
                 <Dropdown align="end">
-                  <Dropdown.Toggle 
-                    variant="link" 
+                  <Dropdown.Toggle
+                    variant="link"
                     id="dropdown-user"
                     className="d-flex align-items-center text-decoration-none p-0 border-0"
                     style={{ color: 'black' }}
@@ -226,9 +227,9 @@ export default function NavbarCustom({ transparent }) {
                     <span className="me-2 fw-bold d-none d-sm-inline text-dark">
                       Hola, {getFirstName()}
                     </span>
-                    
-                    <div style={{ 
-                      width: '35px', height: '35px', borderRadius: '50%', 
+
+                    <div style={{
+                      width: '35px', height: '35px', borderRadius: '50%',
                       overflow: 'hidden', backgroundColor: '#fff',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       border: '2px solid #56bca7'
@@ -236,9 +237,9 @@ export default function NavbarCustom({ transparent }) {
                       {cargandoFoto ? (
                         <div className="spinner-border spinner-border-sm text-primary" role="status" />
                       ) : fotoAMostrar ? (
-                        <Image 
-                          src={fotoAMostrar} 
-                          alt="Perfil" 
+                        <Image
+                          src={fotoAMostrar}
+                          alt="Perfil"
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                       ) : (
