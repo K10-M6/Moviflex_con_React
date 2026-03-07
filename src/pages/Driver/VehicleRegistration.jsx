@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert, Modal, Badge } from "react-bootstrap";
 import { FaCar, FaFileImage, FaArrowLeft, FaCheckCircle, FaCamera, FaVideo, FaExclamationTriangle, FaSmile, FaFrown, FaIdCard } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
-import { API_URL } from "../config";
+import { API_URL } from "../../config";
 import Navbar from '../../components/Navbar';
 import LogoMoviflex from '../Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import EscenaHomeBase from '../Imagenes/HomeBaseImage.png';
