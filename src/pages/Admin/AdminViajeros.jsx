@@ -44,7 +44,7 @@ function AdminViajeros() {
             setLoading(true);
             setError("");
 
-            const response = await fetch(`${API_URL}/auth/viajeros`, {
+            const response = await fetch(`${API_URL}/`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
