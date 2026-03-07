@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   BsGrid1X2Fill, BsFillGrid3X3GapFill, BsPeopleFill, BsListCheck, BsMenuButtonWideFill, BsChevronRight,
-  BsChevronLeft, BsQrCode, BsFileEarmarkTextFill, BsArrowRepeat
+  BsChevronLeft, BsQrCode, BsFileEarmarkTextFill, BsArrowRepeat, BsCashCoin
 } from "react-icons/bs";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../pages/context/AuthContext";
@@ -36,6 +36,7 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
       usuarios: saved.usuarios || 0,
       documentos: saved.documentos || 0,
       solicitudes: saved.solicitudes || 0,
+      reportesPago: saved.reportesPago || 0,
     };
   });
 
@@ -134,7 +135,8 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
     { icon: <BsListCheck />, label: "Usuarios", path: "/admin/usuarios", badgeKey: "usuarios" },
     { icon: <BsMenuButtonWideFill />, label: "Vehículos", path: "/admin/vehiculos", badgeKey: null },
     { icon: <BsFileEarmarkTextFill />, label: "Documentos", path: "/admin/documentos", badgeKey: "documentos" },
-    { icon: <BsArrowRepeat />, label: "Solicitudes", path: "/admin/solicitudes-vehiculos", badgeKey: "solicitudes" }
+    { icon: <BsArrowRepeat />, label: "Solicitudes", path: "/admin/solicitudes-vehiculos", badgeKey: "solicitudes" },
+    { icon: <BsCashCoin />, label: "Reportes de Pago", path: "/admin/reportes-pago", badgeKey: "reportesPago" }
   ];
 
   const isActive = (path) => location.pathname === path;

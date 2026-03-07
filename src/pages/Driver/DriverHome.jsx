@@ -170,10 +170,105 @@ const DriverHome = () => {
     const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
     const [mensajeSolicitud, setMensajeSolicitud] = useState({ tipo: '', texto: '' });
 
+    // Estado para comisión y reportes de pago
+    const [comisionInfo, setComisionInfo] = useState(null);
+    const [cargandoComision, setCargandoComision] = useState(false);
+    const [fotoComprobante, setFotoComprobante] = useState('');
+    const [enviandoReporte, setEnviandoReporte] = useState(false);
+    const [misReportes, setMisReportes] = useState([]);
+
     useEffect(() => {
         const hasSeenTutorial = localStorage.getItem("tutorial_conductor_visto");
         if (!hasSeenTutorial) setShowTutorial(true);
     }, []);
+
+    // Cargar comisión acumulada
+    const cargarComision = useCallback(async () => {
+        if (!token) return;
+        try {
+            setCargandoComision(true);
+            const res = await fetch('https://backendmovi-production-c657.up.railway.app/api/reportes-pago/comision', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setComisionInfo(data);
+            }
+        } catch (err) {
+            console.error('Error cargando comisión:', err);
+        } finally {
+            setCargandoComision(false);
+        }
+    }, [token]);
+
+    // Cargar reportes del conductor
+    const cargarMisReportes = useCallback(async () => {
+        if (!token) return;
+        try {
+            const res = await fetch('https://backendmovi-production-c657.up.railway.app/api/reportes-pago', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setMisReportes(data);
+            }
+        } catch (err) {
+            console.error('Error cargando reportes:', err);
+        }
+    }, [token]);
+
+    // Enviar reporte de pago
+    const enviarReportePago = async () => {
+        if (!fotoComprobante) {
+            toast.error('Debes adjuntar la foto del comprobante');
+            return;
+        }
+        try {
+            setEnviandoReporte(true);
+            const res = await fetch('https://backendmovi-production-c657.up.railway.app/api/reportes-pago', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fotoComprobante })
+            });
+            if (res.ok) {
+                toast.success('Comprobante enviado exitosamente. El administrador lo revisará.');
+                setFotoComprobante('');
+                cargarComision();
+                cargarMisReportes();
+            } else {
+                const err = await res.json();
+                toast.error(err.message);
+            }
+        } catch (err) {
+            toast.error('Error al enviar comprobante');
+        } finally {
+            setEnviandoReporte(false);
+        }
+    };
+
+    // Convertir imagen a base64
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('La imagen no debe superar 5MB');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFotoComprobante(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    useEffect(() => {
+        cargarComision();
+        cargarMisReportes();
+    }, [cargarComision, cargarMisReportes]);
 
     useEffect(() => {
         const obtenerGanancias = async () => {
@@ -841,6 +936,129 @@ const DriverHome = () => {
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+
+                {/* ========== SECCIÓN COMISIÓN PLATAFORMA ========== */}
+                <Row className="g-4 mb-4">
+                    <Col lg={6}>
+                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
+                            <Card.Body className="p-4">
+                                <div className="d-flex align-items-center mb-3">
+                                    <div style={{
+                                        width: '40px', height: '40px', borderRadius: '12px',
+                                        backgroundColor: '#fef3c715', display: 'flex',
+                                        alignItems: 'center', justifyContent: 'center', marginRight: '12px'
+                                    }}>
+                                        <FaWallet size={20} style={{ color: '#f59e0b' }} />
+                                    </div>
+                                    <h5 className="mb-0 fw-bold" style={{ color: '#333' }}>Comisión del Mes (10%)</h5>
+                                </div>
+
+                                {cargandoComision ? (
+                                    <div className="text-center py-3"><Spinner size="sm" style={{ color: brandColor }} /></div>
+                                ) : comisionInfo ? (
+                                    <>
+                                        <div className="d-flex justify-content-between p-3 rounded-3 mb-2" style={{ backgroundColor: '#f8f9fa' }}>
+                                            <span className="text-muted">Ingresos del mes</span>
+                                            <span className="fw-bold">${comisionInfo.totalIngresos?.toLocaleString()} COP</span>
+                                        </div>
+                                        <div className="d-flex justify-content-between p-3 rounded-3 mb-2" style={{ backgroundColor: '#fff3cd' }}>
+                                            <span className="fw-semibold">Comisión a pagar (10%)</span>
+                                            <span className="fw-bold" style={{ color: '#e67e22' }}>${comisionInfo.totalComision?.toLocaleString()} COP</span>
+                                        </div>
+                                        <div className="d-flex justify-content-between p-3 rounded-3 mb-2" style={{ backgroundColor: '#f8f9fa' }}>
+                                            <span className="text-muted">Viajes completados</span>
+                                            <span className="fw-bold">{comisionInfo.viajesCompletados}</span>
+                                        </div>
+                                        <div className="d-flex justify-content-between p-3 rounded-3" style={{ backgroundColor: comisionInfo.reporteEnviado ? '#d4edda' : '#f8d7da' }}>
+                                            <span>Estado del reporte</span>
+                                            <Badge bg={comisionInfo.estadoReporte === 'APROBADO' ? 'success' : comisionInfo.estadoReporte === 'PENDIENTE' ? 'warning' : comisionInfo.reporteEnviado ? 'danger' : 'secondary'}>
+                                                {comisionInfo.estadoReporte || 'Sin enviar'}
+                                            </Badge>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-muted">No hay datos disponibles</p>
+                                )}
+                            </Card.Body>
+                        </Card>
+                    </Col>
+
+                    <Col lg={6}>
+                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
+                            <Card.Body className="p-4">
+                                <div className="d-flex align-items-center mb-3">
+                                    <div style={{
+                                        width: '40px', height: '40px', borderRadius: '12px',
+                                        backgroundColor: `${brandColor}15`, display: 'flex',
+                                        alignItems: 'center', justifyContent: 'center', marginRight: '12px'
+                                    }}>
+                                        <FaFileAlt size={20} style={{ color: brandColor }} />
+                                    </div>
+                                    <h5 className="mb-0 fw-bold" style={{ color: '#333' }}>Enviar Comprobante de Pago</h5>
+                                </div>
+
+                                {comisionInfo?.reporteEnviado && comisionInfo?.estadoReporte !== 'RECHAZADO' ? (
+                                    <Alert variant={comisionInfo.estadoReporte === 'APROBADO' ? 'success' : 'info'}
+                                        style={{ borderRadius: '10px' }}>
+                                        {comisionInfo.estadoReporte === 'APROBADO'
+                                            ? '✅ Tu comprobante ha sido aprobado. ¡Gracias!'
+                                            : '⏳ Tu comprobante está pendiente de revisión por el administrador.'}
+                                    </Alert>
+                                ) : (
+                                    <>
+                                        <Form.Group className="mb-3">
+                                            <Form.Label className="small text-muted">Foto del comprobante de pago</Form.Label>
+                                            <Form.Control
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                style={{ borderRadius: '8px' }}
+                                            />
+                                        </Form.Group>
+
+                                        {fotoComprobante && (
+                                            <div className="mb-3 text-center">
+                                                <Image
+                                                    src={fotoComprobante}
+                                                    style={{ maxHeight: '200px', borderRadius: '10px', border: '1px solid #eee' }}
+                                                    fluid
+                                                />
+                                            </div>
+                                        )}
+
+                                        <Button
+                                            className="w-100"
+                                            style={{ backgroundColor: brandColor, border: 'none', borderRadius: '10px', padding: '10px' }}
+                                            onClick={enviarReportePago}
+                                            disabled={enviandoReporte || !fotoComprobante}
+                                        >
+                                            {enviandoReporte ? <Spinner size="sm" className="me-2" /> : null}
+                                            Enviar Comprobante
+                                        </Button>
+                                    </>
+                                )}
+
+                                {/* Historial de reportes */}
+                                {misReportes.length > 0 && (
+                                    <div className="mt-3">
+                                        <h6 className="text-muted small mb-2">Historial de reportes</h6>
+                                        {misReportes.slice(0, 3).map(reporte => (
+                                            <div key={reporte.idReporte}
+                                                className="d-flex justify-content-between align-items-center p-2 rounded-2 mb-1"
+                                                style={{ backgroundColor: '#f8f9fa', fontSize: '0.85rem' }}>
+                                                <span>{new Date(reporte.mesCorrespondiente).toLocaleDateString('es-CO', { year: 'numeric', month: 'short' })}</span>
+                                                <span>${Number(reporte.montoComision).toLocaleString()}</span>
+                                                <Badge bg={reporte.estado === 'APROBADO' ? 'success' : reporte.estado === 'PENDIENTE' ? 'warning' : 'danger'} style={{ fontSize: '0.7rem' }}>
+                                                    {reporte.estado}
+                                                </Badge>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </Card.Body>
                         </Card>
                     </Col>
