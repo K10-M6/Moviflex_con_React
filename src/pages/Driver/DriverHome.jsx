@@ -111,8 +111,8 @@ const DriverHome = () => {
     const { usuario, token } = useAuth();
     const { socket } = useSocket();
     const navigate = useNavigate();
-
     const brandColor = "#54c7b8";
+    const accentColor = brandColor;
 
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
