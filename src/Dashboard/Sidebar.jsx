@@ -211,9 +211,9 @@ function Sidebar({ openSidebarToggle, OpenSidebar }) {
                   onClick={() => handleNavigation(item.path, item.badgeKey)}
                   style={{
                     background: isActive(item.path) ? 'rgba(84, 199, 184, 0.1)' : 'transparent',
-                    color: isActive(item.path) ? '#54c7b8' : '#666',
+                    color: isActive(item.path) ? '#56bca7' : '#666',
                     fontSize: '0.9rem',
-                    borderLeft: isActive(item.path) ? '4px solid #54c7b8' : '4px solid transparent'
+                    borderLeft: isActive(item.path) ? '4px solid #56bca7' : '4px solid transparent'
                   }}
                 >
                   <span className="me-3" style={{ fontSize: '1.2rem' }}>

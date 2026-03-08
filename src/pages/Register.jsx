@@ -297,7 +297,7 @@ function Register() {
                                             <Form.Check type="checkbox" label={<span style={{ fontSize: '0.8rem' }}>Acepto términos y condiciones</span>} checked={terminosAceptados} onChange={(e) => setTerminosAceptados(e.target.checked)} className="mb-4" />
                                             <div className="d-flex gap-2">
                                                 <Button type="button" variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
-                                                <Button type="submit" disabled={!terminosAceptados || loading} className="w-50 py-2 border-0" style={{ background: '#124c83', borderRadius: '12px', fontWeight: 'bold' }}>
+                                                <Button type="submit" disabled={!terminosAceptados || loading} className="w-50 py-2 border-0" style={{ background: '#113d69', borderRadius: '12px', fontWeight: 'bold' }}>
                                                     {loading ? "..." : "Finalizar"}
                                                 </Button>
                                             </div>

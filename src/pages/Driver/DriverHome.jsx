@@ -14,7 +14,7 @@ import fondo from "../Imagenes/AutoresContacto.png";
 import toast from "react-hot-toast";
 
 // Componente para mostrar la imagen del vehículo o un placeholder
-const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#54c7b8" }) => {
+const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#56bca7" }) => {
     const [imageError, setImageError] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
 

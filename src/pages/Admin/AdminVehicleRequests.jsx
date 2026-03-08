@@ -18,7 +18,7 @@ const AdminVehicleRequests = () => {
     const [selectedSolicitud, setSelectedSolicitud] = useState(null);
     const [observaciones, setObservaciones] = useState("");
 
-    const brandColor = "#54c7b8";
+    const brandColor = "#56bca7";
 
     const traerSolicitudes = useCallback(async () => {
         try {

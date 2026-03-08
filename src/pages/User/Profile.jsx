@@ -14,8 +14,8 @@ function Profile() {
   const navigate = useNavigate();
 
   // Colores exactos del DriverProfile
-  const brandColor = "#124c83"; // Azul oscuro
-  const accentColor = "#54c7b8"; // Verde turquesa
+  const brandColor = "#113d69"; // Azul oscuro
+  const accentColor = "#56bca7"; // Verde turquesa
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');

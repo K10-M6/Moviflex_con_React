@@ -278,7 +278,7 @@ function DriverProfile() {
             <Col lg={10}>
               <Card className="shadow border-0 rounded-4 overflow-hidden">
                 <Card.Header className="bg-white border-0 p-4">
-                  <h2 className="fw-bold mb-0" style={{ color: '#124c83' }}>Mi Perfil de Conductor</h2>
+                  <h2 className="fw-bold mb-0" style={{ color: '#113d69' }}>Mi Perfil de Conductor</h2>
                 </Card.Header>
 
                 <Row className="g-0">
@@ -287,7 +287,7 @@ function DriverProfile() {
                       {usuario?.fotoPerfil ? (
                         <img src={usuario.fotoPerfil} alt="Perfil" className="rounded-circle shadow" style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
                       ) : (
-                        <FaUserCircle size={150} color="#124c83" className="shadow-sm rounded-circle bg-white p-2" />
+                        <FaUserCircle size={150} color="#113d69" className="shadow-sm rounded-circle bg-white p-2" />
                       )}
                     </div>
 
@@ -419,7 +419,7 @@ function DriverProfile() {
 
                       <Button
                         className="w-100 border-0 fw-bold py-2"
-                        style={{ backgroundColor: '#54c7b8', color: 'white' }}
+                        style={{ backgroundColor: '#56bca7', color: 'white' }}
                         onClick={guardarCambios}
                         disabled={loading}
                       >

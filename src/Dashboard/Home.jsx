@@ -32,7 +32,7 @@ function Home() {
 
   const [chartData, setChartData] = useState([]);
   const [donutData, setDonutData] = useState([
-    { name: 'Activos', value: 0, color: '#54c7b8' },
+    { name: 'Activos', value: 0, color: '#56bca7' },
     { name: 'Inactivos', value: 0, color: '#ff6b6b' },
     { name: 'Suspendidos', value: 0, color: '#f59e0b' }
   ]);
@@ -51,8 +51,8 @@ function Home() {
     estrella: '#62d8d9',
     badgeFondo: '#113d69',
     badgeTexto: '#ffffff',
-    verdeMenta: '#54c7b8',
-    azulFuerte: '#124c83'
+    verdeMenta: '#56bca7',
+    azulFuerte: '#113d69'
   };
 
   useEffect(() => {
@@ -139,7 +139,7 @@ function Home() {
 
         setStats(prev => ({ ...prev, totalUsuarios: usuarios.length, totalConductores: conductores, totalViajeros: viajeros }));
         setDonutData([
-          { name: 'Activos', value: activos, color: '#54c7b8' },
+          { name: 'Activos', value: activos, color: '#56bca7' },
           { name: 'Inactivos', value: inactivos, color: '#ff6b6b' },
           { name: 'Suspendidos', value: suspendidos, color: '#f59e0b' }
         ]);
@@ -375,8 +375,8 @@ function Home() {
                           <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
                           <Tooltip cursor={{ fill: '#f8f9fa' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
                           <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                          <Bar dataKey="usuarios" fill="#54c7b8" name="Reg. Usuarios" radius={[4, 4, 0, 0]} barSize={25} />
-                          <Bar dataKey="viajes" fill="#124c83" name="Viajes Realizados" radius={[4, 4, 0, 0]} barSize={25} />
+                          <Bar dataKey="usuarios" fill="#56bca7" name="Reg. Usuarios" radius={[4, 4, 0, 0]} barSize={25} />
+                          <Bar dataKey="viajes" fill="#113d69" name="Viajes Realizados" radius={[4, 4, 0, 0]} barSize={25} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

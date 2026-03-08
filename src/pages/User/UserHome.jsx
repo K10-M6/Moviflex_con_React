@@ -16,8 +16,8 @@ const UserHome = () => {
     const navigate = useNavigate();
 
     // Colores exactos del DriverProfile
-    const brandColor = "#124c83"; // Azul oscuro del DriverProfile
-    const accentColor = "#54c7b8"; // Verde turquesa de los botones
+    const brandColor = "#113d69"; // Azul oscuro del DriverProfile
+    const accentColor = "#56bca7"; // Verde turquesa de los botones
     const darkBorder = "#1a1a1a";
 
     const cardStyle = {
