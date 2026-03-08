@@ -111,8 +111,8 @@ const DriverHome = () => {
     const { usuario, token } = useAuth();
     const { socket } = useSocket();
     const navigate = useNavigate();
-    const brandColor = "#54c7b8";
-    const accentColor = brandColor;
+    const brandColor = "#62d8d9"; // Global turquoise accent color
+    const accentColor = "#113d69"; // Global dark blue primary color
 
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
@@ -226,31 +226,78 @@ const DriverHome = () => {
         }
         try {
             setEnviandoReporte(true);
+            const payload = { fotoComprobante };
+
+            // Console log to check the base64 string length payload being sent
+            console.log("Enviando reporte de pago, tamaño de la imagen aprox:", fotoComprobante.length);
+
             const res = await fetch(`${API_URL}/reportes-pago`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ fotoComprobante })
+                body: JSON.stringify(payload)
             });
+
+            console.log("Status de la respuesta:", res.status);
+
             if (res.ok) {
                 toast.success('Comprobante enviado exitosamente. El administrador lo revisará.');
                 setFotoComprobante('');
                 cargarComision();
                 cargarMisReportes();
             } else {
-                const err = await res.json();
-                toast.error(err.message);
+                const errText = await res.text();
+                console.error("Respuesta fallida del servidor:", errText);
+                try {
+                    const errJson = JSON.parse(errText);
+                    toast.error(`Error del servidor: ${errJson.message || errJson.error || 'Petición rechazada'}`);
+                } catch (e) {
+                    toast.error(`Error del servidor (Código: ${res.status})`);
+                }
             }
         } catch (err) {
-            toast.error('Error al enviar comprobante');
+            console.error("Error de red al intentar enviar el comprobante:", err);
+            toast.error('Error de conexión al enviar comprobante');
         } finally {
             setEnviandoReporte(false);
         }
     };
 
-    // Convertir imagen a base64
+    const comprimirImagen = (base64, maxSizeKB = 300) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxDimension = 1200;
+                if (width > height && width > maxDimension) {
+                    height = Math.round((height * maxDimension) / width);
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = Math.round((width * maxDimension) / height);
+                    height = maxDimension;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                let calidad = 0.8;
+                let comprimida = canvas.toDataURL('image/jpeg', calidad);
+                while (comprimida.length > maxSizeKB * 1024 && calidad > 0.3) {
+                    calidad -= 0.1;
+                    comprimida = canvas.toDataURL('image/jpeg', calidad);
+                }
+                resolve(comprimida);
+            };
+            img.onerror = () => resolve(base64); // Fallback en caso de error
+        });
+    };
+
+    // Convertir imagen a base64 y comprimir
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -258,9 +305,17 @@ const DriverHome = () => {
                 toast.error('La imagen no debe superar 5MB');
                 return;
             }
+            const loadingToastId = toast.loading('Procesando imagen...');
             const reader = new FileReader();
-            reader.onloadend = () => {
-                setFotoComprobante(reader.result);
+            reader.onloadend = async () => {
+                try {
+                    const base64Comprimido = await comprimirImagen(reader.result, 300);
+                    setFotoComprobante(base64Comprimido);
+                    toast.success('Imagen lista para enviar', { id: loadingToastId });
+                } catch (error) {
+                    setFotoComprobante(reader.result); // Fallback
+                    toast.dismiss(loadingToastId);
+                }
             };
             reader.readAsDataURL(file);
         }

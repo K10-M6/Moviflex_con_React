@@ -66,6 +66,14 @@ export default function NavbarCustom({ transparent }) {
     }
   };
 
+  // Función para hacer scroll directo al formulario de contacto (sólo en HomeBase)
+  const goToContacto = () => {
+    const seccion = document.getElementById('contacto-seccion');
+    if (seccion) {
+      seccion.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   // Efecto para manejar el scroll cuando se navega desde otra página
   useEffect(() => {
     if (location.pathname === '/' && location.state?.scrollToComoFunciona) {
@@ -116,32 +124,62 @@ export default function NavbarCustom({ transparent }) {
             />
           </Navbar.Brand>
 
-          {/* BOTÓN "CÓMO FUNCIONA" - SIEMPRE VISIBLE */}
-          <Button
-            variant="link"
-            onClick={goToComoFunciona}
-            className="d-flex align-items-center text-decoration-none"
-            style={{
-              color: '#56bca7',
-              fontWeight: '600',
-              fontSize: '1rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.color = '#3da89a';
-              e.target.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.color = '#56bca7';
-              e.target.style.transform = 'scale(1)';
-            }}
-          >
-            <FaQuestionCircle className="me-2" size={20} />
-            ¿Cómo funciona?
-          </Button>
+          {/* BOTÓN "CÓMO FUNCIONA" - SOLO VISIBLE EN HOMEBASE */}
+          {location.pathname === '/' && (
+            <Button
+              variant="link"
+              onClick={goToComoFunciona}
+              className="d-flex align-items-center text-decoration-none"
+              style={{
+                color: '#56bca7',
+                fontWeight: '600',
+                fontSize: '1rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: 'transparent',
+                border: 'none',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.color = '#3da89a';
+                e.target.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = '#56bca7';
+                e.target.style.transform = 'scale(1)';
+              }}
+            >
+              <FaQuestionCircle className="me-2" size={20} />
+              ¿Cómo funciona?
+            </Button>
+          )}
+
+          {/* BOTÓN "CONTÁCTANOS" - SOLO VISIBLE EN HOMEBASE */}
+          {location.pathname === '/' && (
+            <Button
+              variant="link"
+              onClick={goToContacto}
+              className="d-flex align-items-center text-decoration-none"
+              style={{
+                color: '#56bca7',
+                fontWeight: '600',
+                fontSize: '1rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: 'transparent',
+                border: 'none',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.color = '#3da89a';
+                e.target.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.color = '#56bca7';
+                e.target.style.transform = 'scale(1)';
+              }}
+            >
+              Contáctanos
+            </Button>
+          )}
         </div>
 
         <Navbar.Toggle aria-controls="navbar-basico" />
