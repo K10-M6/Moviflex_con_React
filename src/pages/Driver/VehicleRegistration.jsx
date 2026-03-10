@@ -691,12 +691,12 @@ function VehicleRegistration() {
                         type="submit"
                         className="flex-fill py-3 border-0"
                         style={{
-                          background: fotoComprimida ? '#62d8d9' : '#6c757d',
+                          background: (fotoPlaca && fotoAuto1 && fotoAuto2 && fotoAuto3) ? '#62d8d9' : '#6c757d',
                           borderRadius: '12px',
                           fontWeight: 'bold',
                           fontSize: '1rem'
                         }}
-                        disabled={loading || !fotoComprimida || verificandoImagen}
+                        disabled={loading || !fotoPlaca || !fotoAuto1 || !fotoAuto2 || !fotoAuto3 || verificandoImagen}
                       >
                         {loading ? 'Registrando...' : 'Registrar vehículo'}
                       </Button>

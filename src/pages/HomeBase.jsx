@@ -84,15 +84,20 @@ function HomeBase() {
 
   const verdeMenta = '#56bca7';
 
-  const slidesFunciona = [
+  // TARJETAS PARA USUARIOS (4)
+  const slidesUsuario = [
+    { id: 1, titulo: "Regístrate Como Viajero", desc: "¡Crea tu cuenta desde nuestra app!" },
+    { id: 2, titulo: "Busca Rutas", desc: "Busca rutas disponibles para tu destino." },
+    { id: 3, titulo: "Reserva tu Viaje", desc: "Selecciona tu asiento y confirma tu reserva." },
+    { id: 4, titulo: "Viaja Seguro", desc: "Disfruta de un viaje con conductores verificados." },
+  ];
+
+  // TARJETAS PARA CONDUCTORES (4)
+  const slidesConductor = [
     { id: 1, titulo: "Regístrate Como Conductor", desc: "¡Registrate como conductor desde la web!" },
-    { id: 2, titulo: "Regístrate Como Viajero", desc: "¡Crea tu cuenta desde nuestra app!" },
-    { id: 3, titulo: "Busca o Crea Rutas", desc: "Busca rutas disponibles o crea tu propia ruta fija." },
-    { id: 4, titulo: "Comparte tu Viaje", desc: "Invita a otros usuarios a compartir tu trayecto y ahorra en tus viajes." },
-    { id: 5, titulo: "Recibe Notificaciones", desc: "Mantente informado sobre tus rutas y solicitudes en tiempo real." },
-    { id: 6, titulo: "Soporte Técnico", desc: "¿Tienes dudas? Nuestro equipo de soporte está listo para ayudarte." },
-    { id: 7, titulo: "Viajes Seguros", desc: "Todos los conductores y viajeros son verificados para tu seguridad." },
-    { id: 8, titulo: "Historial de Rutas", desc: "Consulta y gestiona tus viajes anteriores fácilmente." },
+    { id: 2, titulo: "Crea Rutas", desc: "Crea tu propia ruta fija y compártela." },
+    { id: 3, titulo: "Recibe Solicitudes", desc: "Acepta viajeros que quieran unirse a tu ruta." },
+    { id: 4, titulo: "Gana Dinero", desc: "Optimiza tus viajes y genera ingresos extras." },
   ];
 
   return (
@@ -165,15 +170,69 @@ function HomeBase() {
         <Container>
           <Row className="text-center mb-5">
             <Col>
-              <h2 className="fw-bold mb-3" style={{ fontSize: '2.8rem', color: '#113d69' }}>¿Cómo Funciona?</h2>
-              <div style={{ width: '60px', height: '4px', backgroundColor: '#56bca7', margin: '0 auto 20px', borderRadius: '2px' }}></div>
-              <p style={{ color: '#113d69', fontSize: '1.1rem' }}>Tres simples pasos para comenzar tu experiencia</p>
+              <h2 className="fw-bold" style={{ fontSize: '2.5rem', color: '#113d69' }}>¿Cómo Funciona?</h2>
+              {/* ELIMINADO EL TEXTO "Tres simples pasos para comenzar tu experiencia" */}
             </Col>
           </Row>
 
+          {/* SECCIÓN PARA USUARIOS */}
+          <h3 className="fw-bold mb-4" style={{ color: '#56bca7', textAlign: 'center' }}>Viajero</h3>
+          <Row className="g-4 mb-5">
+            {slidesUsuario.map((item) => (
+              <Col key={item.id} xs={12} sm={6} lg={3}>
+                <div style={{
+                  background: 'transparent',
+                  padding: '32px 24px',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  color: '#113d69',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  cursor: 'default',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '55px',
+                    height: '55px',
+                    borderTop: '4px solid #56bca7',
+                    borderLeft: '4px solid #56bca7',
+                    borderTopLeftRadius: '30px',
+                  }} />
+                  
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    width: '55px',
+                    height: '55px',
+                    borderBottom: '4px solid #56bca7',
+                    borderRight: '4px solid #56bca7',
+                    borderBottomRightRadius: '30px',
+                  }} />
+                  
+                  <h3 className="fw-bold mb-3" style={{ fontSize: '1.3rem', color: '#56bca7' }}>{item.titulo}</h3>
+                  <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#113d69', marginBottom: 0 }}>{item.desc}</p>
+                </div>
+              </Col>
+            ))}
+          </Row>
+
+          {/* SECCIÓN PARA CONDUCTORES */}
+          <h3 className="fw-bold mb-4" style={{ color: '#56bca7', textAlign: 'center' }}>Conductor</h3>
           <Row className="g-4">
-            {slidesFunciona.map((item) => (
-              <Col key={item.id} xs={12} sm={6} lg={4} xl={3}>
+            {slidesConductor.map((item) => (
+              <Col key={item.id} xs={12} sm={6} lg={3}>
                 <div style={{
                   background: 'white',
                   padding: '40px 24px',
