@@ -1,13 +1,169 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import NavbarCustom from "../../components/Navbar";
+import Navbar from "../../components/Navbar";
 import { API_URL } from "../../config";
-import { Container, Row, Col, Card, Button, Badge, ListGroup } from "react-bootstrap";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
 import { FaUser, FaStar, FaQrcode, FaUserCircle, FaCalendarAlt, FaRoute, FaWallet, FaIdCard, FaHistory } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
 import fondo from "../Imagenes/AutoresContacto.png";
+
+// Componentes personalizados (igual que en DriverProfile)
+const CustomBadge = ({ estado, children }) => {
+    const estilos = {
+        APROBADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        VÁLIDO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        VALIDO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        PENDIENTE: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        REVISION: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        RECHAZADO: { backgroundColor: '#113d69', color: '#ffffff' },
+        VENCIDO: { backgroundColor: '#113d69', color: '#ffffff' }
+    };
+
+    const estilo = estilos[estado?.toUpperCase()] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '2rem',
+            fontSize: '0.75rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {children}
+        </span>
+    );
+};
+
+const CustomButton = ({ variant, onClick, children, disabled, style, className }) => {
+    const getButtonStyle = () => {
+        const baseStyle = {
+            padding: '0.5rem 1rem',
+            borderRadius: '2rem',
+            border: '1px solid',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.6 : 1,
+            transition: 'all 0.2s',
+            fontWeight: '600',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%'
+        };
+
+        switch (variant) {
+            case 'primary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            case 'outline-primary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            case 'outline-success':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            case 'success':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            case 'outline-secondary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#113d69',
+                    borderColor: '#113d69'
+                };
+            case 'secondary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#113d69',
+                    color: '#ffffff',
+                    borderColor: '#113d69'
+                };
+            default:
+                return baseStyle;
+        }
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            style={{ ...getButtonStyle(), ...style }}
+            className={className}
+        >
+            {children}
+        </button>
+    );
+};
+
+const StatsCard = ({ icon, title, value, iconBgColor, iconColor }) => {
+    return (
+        <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '1rem',
+            border: 'none',
+            boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+            height: '100%',
+            padding: '1.5rem'
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                    padding: '0.75rem',
+                    borderRadius: '50%',
+                    backgroundColor: iconBgColor,
+                    color: iconColor,
+                    marginRight: '1rem'
+                }}>
+                    {icon}
+                </div>
+                <div>
+                    <h6 style={{ color: '#6c757d', marginBottom: '0.25rem', fontSize: '0.875rem' }}>{title}</h6>
+                    <h3 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>{value}</h3>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CustomListGroup = ({ children }) => {
+    return (
+        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {children}
+        </div>
+    );
+};
+
+const CustomListItem = ({ children, style }) => {
+    return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0.25rem 0',
+            borderBottom: 'none',
+            ...style
+        }}>
+            {children}
+        </div>
+    );
+};
 
 function Profile() {
   const { usuario, token } = useAuth();
@@ -15,7 +171,7 @@ function Profile() {
 
   // Colores exactos del DriverProfile
   const brandColor = "#113d69"; // Azul oscuro
-  const accentColor = "#56bca7"; // Verde turquesa
+  const accentColor = "#62d8d9"; // Verde turquesa (cambiado de #56bca7 a #62d8d9)
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
@@ -75,7 +231,7 @@ function Profile() {
     obtenerViajes();
   }, [token, usuario?.idUsuarios]);
 
-  // Obtener calificaciones
+  // Obtener calificaciones - CORREGIDO
   useEffect(() => {
     const obtenerCalificaciones = async () => {
       if (!token || !usuario?.idUsuarios) return;
@@ -93,14 +249,37 @@ function Profile() {
 
         if (respuesta.ok) {
           const data = await respuesta.json();
+          console.log("📊 Calificaciones recibidas:", data);
+          
+          // CORRECCIÓN: La estructura es { promedio: { promedio: X, total: Y } }
+          if (data && data.promedio) {
+            setEstadisticas(prev => ({
+              ...prev,
+              promedioCalificacion: data.promedio.promedio || 0,
+              totalCalificaciones: data.promedio.total || 0
+            }));
+          } else {
+            setEstadisticas(prev => ({
+              ...prev,
+              promedioCalificacion: 0,
+              totalCalificaciones: 0
+            }));
+          }
+        } else {
+          console.log("Error en respuesta:", respuesta.status);
           setEstadisticas(prev => ({
             ...prev,
-            promedioCalificacion: Number(data.promedio) || 0,
-            totalCalificaciones: Number(data.totalCalificaciones) || 0
+            promedioCalificacion: 0,
+            totalCalificaciones: 0
           }));
         }
       } catch (error) {
         console.error("Error al obtener calificaciones:", error);
+        setEstadisticas(prev => ({
+          ...prev,
+          promedioCalificacion: 0,
+          totalCalificaciones: 0
+        }));
       } finally {
         setCargando(prev => ({ ...prev, calificaciones: false }));
       }
@@ -137,6 +316,19 @@ function Profile() {
     if (valor === null || valor === undefined) return '0.0';
     const num = Number(valor);
     return isNaN(num) ? '0.0' : num.toFixed(1);
+  };
+
+  // Función para renderizar estrellas (igual que en DriverProfile)
+  const renderStars = (promedio) => {
+    const stars = [];
+    const fullStars = Math.floor(promedio);
+    const hasHalfStar = promedio % 1 >= 0.5;
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) stars.push(<FaStar key={i} style={{ color: accentColor, fontSize: '14px', marginRight: '2px' }} />);
+      else if (i === fullStars + 1 && hasHalfStar) stars.push(<FaStar key={i} style={{ color: accentColor, fontSize: '14px', marginRight: '2px', opacity: 0.5 }} />);
+      else stars.push(<FaStar key={i} style={{ color: '#e9ecef', fontSize: '14px', marginRight: '2px' }} />);
+    }
+    return <div style={{ display: 'flex' }}>{stars}</div>;
   };
 
   const generarQr = () => {
@@ -176,195 +368,239 @@ function Profile() {
         <Container className="py-5">
           <Row className="justify-content-center">
             <Col lg={10}>
-              <Card className="shadow border-0 rounded-4 overflow-hidden">
-                <Card.Header className="bg-white border-0 p-4">
-                  <h2 className="fw-bold mb-0" style={{ color: brandColor }}>
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '1rem',
+                border: 'none',
+                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  padding: '1.5rem',
+                  borderBottom: '1px solid #e9ecef',
+                  backgroundColor: '#ffffff'
+                }}>
+                  <h2 style={{ fontWeight: 'bold', margin: 0, color: brandColor }}>
                     Mi Perfil de Pasajero
                   </h2>
-                </Card.Header>
+                </div>
 
-                <Row className="g-0">
-                  {/* Columna izquierda - Foto y resumen - IGUAL QUE DRIVERPROFILE */}
-                  <Col md={4} className="bg-light text-center p-4 border-end">
-                    <div className="mb-3">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr' }}>
+                  {/* Columna izquierda - Foto y resumen */}
+                  <div style={{
+                    backgroundColor: '#f8f9fa',
+                    padding: '1.5rem',
+                    textAlign: 'center',
+                    borderRight: '1px solid #e9ecef'
+                  }}>
+                    <div style={{ marginBottom: '1rem' }}>
                       {usuario?.fotoPerfil ? (
                         <img
                           src={usuario.fotoPerfil}
                           alt="Perfil"
-                          className="rounded-circle shadow-sm"
                           style={{
                             width: '150px',
                             height: '150px',
+                            borderRadius: '50%',
                             objectFit: 'cover',
+                            boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
                             border: `3px solid ${brandColor}`
                           }}
                         />
                       ) : (
-                        <FaUserCircle size={150} color={brandColor} className="shadow-sm rounded-circle bg-white p-2" />
+                        <FaUserCircle size={150} color={brandColor} style={{ boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)', borderRadius: '50%', backgroundColor: 'white', padding: '0.25rem' }} />
                       )}
                     </div>
 
-                    <h3 className="fw-bold mb-1" style={{ color: '#333' }}>
+                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: brandColor }}>
                       {usuario?.nombre}
                     </h3>
 
                     {estaCargando ? (
-                      <Badge bg="secondary" className="px-3 rounded-pill mb-3">Cargando...</Badge>
+                      <div style={{ marginBottom: '1rem' }}>
+                        <Spinner size="sm" style={{ color: accentColor }} />
+                      </div>
                     ) : (
-                      <Badge style={{ backgroundColor: accentColor }} className="px-3 rounded-pill mb-3 text-white">
-                        <FaStar className="me-1" />
+                      <div style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.5rem',
+                        backgroundColor: accentColor,
+                        color: '#ffffff',
+                        padding: '0.25rem 1rem',
+                        borderRadius: '2rem',
+                        marginBottom: '1rem'
+                      }}>
+                        <FaStar />
                         {formatearCalificacion(estadisticas.promedioCalificacion)}
                         ({estadisticas.totalCalificaciones || 0})
-                      </Badge>
+                      </div>
                     )}
 
-                    {/* Botón de QR - MISMO ESTILO que DriverProfile */}
-                    <Button
-                      onClick={generarQr}
+                    {/* Botón de QR */}
+                    <CustomButton
                       variant="outline-primary"
-                      className="w-100 mb-3 rounded-pill fw-bold"
-                      style={{
-                        borderColor: accentColor,
-                        color: accentColor,
-                        borderWidth: '2px'
-                      }}
+                      onClick={generarQr}
+                      style={{ marginBottom: '1rem' }}
                     >
-                      <FaQrcode className="me-2" />
+                      <FaQrcode style={{ marginRight: '0.5rem' }} />
                       Generar QR de acceso
-                    </Button>
+                    </CustomButton>
 
-                    <hr />
+                    <hr style={{ margin: '1rem 0' }} />
 
-                    {/* Información de estadísticas - MISMO ESTILO que DriverProfile */}
-                    <div className="text-start px-3">
-                      <p className="small text-muted mb-1 text-uppercase fw-bold">
-                        <FaCalendarAlt className="me-2" style={{ color: accentColor }} />
+                    {/* Información de estadísticas */}
+                    <div style={{ textAlign: 'left', padding: '0 1rem' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#6c757d', marginBottom: '0.25rem', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                        <FaCalendarAlt style={{ marginRight: '0.5rem', color: accentColor }} />
                         Miembro desde
                       </p>
-                      <p className="fw-bold mb-3">{formatearFecha(usuario?.creadoEn)}</p>
+                      <p style={{ fontWeight: 'bold', marginBottom: '1rem', color: brandColor }}>{formatearFecha(usuario?.creadoEn)}</p>
 
-                      <p className="small text-muted mb-1 text-uppercase fw-bold">
-                        <FaRoute className="me-2" style={{ color: accentColor }} />
+                      <p style={{ fontSize: '0.75rem', color: '#6c757d', marginBottom: '0.25rem', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                        <FaRoute style={{ marginRight: '0.5rem', color: accentColor }} />
                         Viajes realizados
                       </p>
-                      <p className="fw-bold mb-3">{estadisticas.totalViajes} viajes</p>
+                      <p style={{ fontWeight: 'bold', marginBottom: '1rem', color: brandColor }}>{estadisticas.totalViajes} viajes</p>
 
-                      <p className="small text-muted mb-1 text-uppercase fw-bold">
-                        <FaWallet className="me-2" style={{ color: accentColor }} />
+                      <p style={{ fontSize: '0.75rem', color: '#6c757d', marginBottom: '0.25rem', textTransform: 'uppercase', fontWeight: 'bold' }}>
+                        <FaWallet style={{ marginRight: '0.5rem', color: accentColor }} />
                         Total Gastado
                       </p>
-                      <p className="fw-bold" style={{ color: accentColor, fontSize: '1.2rem' }}>
+                      <p style={{ fontWeight: 'bold', fontSize: '1.2rem', color: accentColor }}>
                         {formatearMoneda(estadisticas.totalGastado)}
                       </p>
                     </div>
-                  </Col>
+                  </div>
 
-                  {/* Columna derecha - Información detallada - ESTILO DRIVERPROFILE */}
-                  <Col md={8} className="p-4 bg-white">
-                    <h4 className="fw-bold mb-4" style={{ color: brandColor }}>
+                  {/* Columna derecha - Información detallada */}
+                  <div style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
+                    <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: brandColor }}>
                       Información de Cuenta
                     </h4>
 
-                    {/* Tarjetas de información - ESTILO DRIVERPROFILE */}
-                    <Row className="mb-4">
-                      <Col md={6} className="mb-3">
-                        <Card className="border-0 rounded-3 h-100" style={{ backgroundColor: '#f8f9fa' }}>
-                          <Card.Body>
-                            <div className="d-flex align-items-center mb-2">
-                              <FaUser size={16} style={{ color: accentColor }} className="me-2" />
-                              <span className="fw-bold small text-uppercase" style={{ color: brandColor }}>
-                                Nombre Completo
-                              </span>
-                            </div>
-                            <p className="fw-bold mb-0 fs-5" style={{ color: '#333' }}>
-                              {usuario?.nombre}
-                            </p>
-                          </Card.Body>
-                        </Card>
-                      </Col>
+                    {/* Tarjetas de información */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        height: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <FaUser style={{ marginRight: '0.5rem', color: accentColor }} />
+                          <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
+                            Nombre Completo
+                          </span>
+                        </div>
+                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor }}>
+                          {usuario?.nombre}
+                        </p>
+                      </div>
 
-                      <Col md={6} className="mb-3">
-                        <Card className="border-0 rounded-3 h-100" style={{ backgroundColor: '#f8f9fa' }}>
-                          <Card.Body>
-                            <div className="d-flex align-items-center mb-2">
-                              <FaIdCard size={16} style={{ color: accentColor }} className="me-2" />
-                              <span className="fw-bold small text-uppercase" style={{ color: brandColor }}>
-                                Teléfono
-                              </span>
-                            </div>
-                            <p className="fw-bold mb-0 fs-5" style={{ color: '#333' }}>
-                              {usuario?.telefono || 'No registrado'}
-                            </p>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    </Row>
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        height: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <FaIdCard style={{ marginRight: '0.5rem', color: accentColor }} />
+                          <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
+                            Teléfono
+                          </span>
+                        </div>
+                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor }}>
+                          {usuario?.telefono || 'No registrado'}
+                        </p>
+                      </div>
+                    </div>
 
-                    <Row className="mb-4">
-                      <Col md={12}>
-                        <Card className="border-0 rounded-3" style={{ backgroundColor: '#f8f9fa' }}>
-                          <Card.Body>
-                            <div className="d-flex align-items-center mb-2">
-                              <FaWallet size={16} style={{ color: accentColor }} className="me-2" />
-                              <span className="fw-bold small text-uppercase" style={{ color: brandColor }}>
-                                Correo Electrónico
-                              </span>
-                            </div>
-                            <p className="fw-bold mb-0 fs-5" style={{ color: '#333' }}>
-                              {usuario?.email}
-                            </p>
-                          </Card.Body>
-                        </Card>
-                      </Col>
-                    </Row>
+                    <div style={{ marginBottom: '1.5rem' }}>
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <FaWallet style={{ marginRight: '0.5rem', color: accentColor }} />
+                          <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
+                            Correo Electrónico
+                          </span>
+                        </div>
+                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor }}>
+                          {usuario?.email}
+                        </p>
+                      </div>
+                    </div>
 
-                    <h4 className="fw-bold mb-3 mt-4" style={{ color: brandColor }}>
+                    <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: brandColor }}>
                       Resumen de Actividad
                     </h4>
 
-                    {/* Tarjetas de estadísticas - MISMO ESTILO que DriverProfile */}
-                    <Row className="g-3 mb-4">
-                      <Col sm={4}>
-                        <Card className="p-3 border-0 rounded-3 h-100 text-center shadow-sm" style={{ backgroundColor: '#fff' }}>
-                          <h5 className="fw-bold mb-0" style={{ color: accentColor, fontSize: '2rem' }}>
-                            {estadisticas.viajesCompletados}
-                          </h5>
-                          <small className="text-muted fw-bold text-uppercase">Completados</small>
-                        </Card>
-                      </Col>
-                      <Col sm={4}>
-                        <Card className="p-3 border-0 rounded-3 h-100 text-center shadow-sm" style={{ backgroundColor: '#fff' }}>
-                          <h5 className="fw-bold mb-0" style={{ color: accentColor, fontSize: '2rem' }}>
-                            {estadisticas.viajesCancelados}
-                          </h5>
-                          <small className="text-muted fw-bold text-uppercase">Cancelados</small>
-                        </Card>
-                      </Col>
-                      <Col sm={4}>
-                        <Card className="p-3 border-0 rounded-3 h-100 text-center shadow-sm" style={{ backgroundColor: '#fff' }}>
-                          <h5 className="fw-bold mb-0 d-flex align-items-center justify-content-center" style={{ color: accentColor, fontSize: '2rem' }}>
-                            <FaStar className="me-2" size={24} style={{ color: accentColor }} />
+                    {/* Tarjetas de estadísticas */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div style={{
+                        backgroundColor: '#ffffff',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                        textAlign: 'center',
+                        height: '100%'
+                      }}>
+                        <h5 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor, fontSize: '2rem' }}>
+                          {estadisticas.viajesCompletados}
+                        </h5>
+                        <small style={{ color: '#6c757d', fontWeight: 'bold', textTransform: 'uppercase' }}>Completados</small>
+                      </div>
+                      <div style={{
+                        backgroundColor: '#ffffff',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                        textAlign: 'center',
+                        height: '100%'
+                      }}>
+                        <h5 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor, fontSize: '2rem' }}>
+                          {estadisticas.viajesCancelados}
+                        </h5>
+                        <small style={{ color: '#6c757d', fontWeight: 'bold', textTransform: 'uppercase' }}>Cancelados</small>
+                      </div>
+                      <div style={{
+                        backgroundColor: '#ffffff',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                        textAlign: 'center',
+                        height: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <FaStar style={{ marginRight: '0.5rem', color: accentColor }} />
+                          <h5 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor, fontSize: '2rem' }}>
                             {formatearCalificacion(estadisticas.promedioCalificacion)}
                           </h5>
-                          <small className="text-muted fw-bold text-uppercase">Calificación</small>
-                        </Card>
-                      </Col>
-                    </Row>
-
-                    {/* Botón de volver - MISMO ESTILO que DriverProfile */}
-                    <div className="d-flex gap-2 mt-4">
-                      <Button
-                        className="w-100 border-0 fw-bold py-2 rounded-pill"
-                        style={{ backgroundColor: accentColor, color: 'white' }}
-                        onClick={() => navigate('/user-home')}
-                      >
-                        <FaHistory className="me-2" />
-                        Volver al Inicio
-                      </Button>
+                        </div>
+                        <small style={{ color: '#6c757d', fontWeight: 'bold', textTransform: 'uppercase' }}>Calificación</small>
+                      </div>
                     </div>
-                  </Col>
-                </Row>
-              </Card>
+
+                    {/* Botón de volver */}
+                    <CustomButton
+                      variant="success"
+                      onClick={() => navigate('/user-home')}
+                    >
+                      <FaHistory style={{ marginRight: '0.5rem' }} />
+                      Volver al Inicio
+                    </CustomButton>
+                  </div>
+                </div>
+              </div>
             </Col>
           </Row>
         </Container>

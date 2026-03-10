@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal } from "react-bootstrap";
-import { FaUser, FaRoute, FaWallet, FaHistory, FaStar, FaCalendarAlt, FaArrowRight, FaChartLine, FaSuitcase } from "react-icons/fa";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { FaUser, FaRoute, FaWallet, FaHistory, FaStar, FaCalendarAlt, FaArrowRight, FaChartLine, FaSearch, FaFilter, FaClock } from "react-icons/fa";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, AreaChart, Area
@@ -11,22 +11,201 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
 import imagencontacto from "../Imagenes/AutoresContacto.png";
 
+// Componentes personalizados
+const EstadoViajeBadge = ({ estado }) => {
+    const estilos = {
+        FINALIZADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        COMPLETADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        EN_CURSO: { backgroundColor: '#113d69', color: '#ffffff' },
+        CANCELADO: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        RESERVADO: { backgroundColor: '#cccbd2af', color: '#113d69' }
+    };
+
+    const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    const getTexto = () => {
+        switch(estado) {
+            case 'FINALIZADO':
+            case 'COMPLETADO': return 'Completado';
+            case 'EN_CURSO': return 'En curso';
+            case 'CANCELADO': return 'Cancelado';
+            case 'RESERVADO': return 'Reservado';
+            default: return estado || 'Desconocido';
+        }
+    };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.8rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {getTexto()}
+        </span>
+    );
+};
+
+const PagoBadge = ({ estado }) => {
+    const estilos = {
+        PAGADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        PENDIENTE: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        FALLIDO: { backgroundColor: '#113d69', color: '#ffffff' }
+    };
+
+    const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.7rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {estado || 'N/A'}
+        </span>
+    );
+};
+
+const StatsBadge = ({ children, bgColor, color, isWhite = false }) => {
+    if (isWhite) {
+        return (
+            <span style={{
+                backgroundColor: '#ffffff',
+                color: '#62d8d9',
+                border: '1px solid #62d8d9',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                display: 'inline-block'
+            }}>
+                {children}
+            </span>
+        );
+    }
+
+    return (
+        <span style={{
+            backgroundColor: bgColor,
+            color: color,
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {children}
+        </span>
+    );
+};
+
+const PeriodoBadge = ({ periodo, actual, onClick, children }) => {
+    const isActive = periodo === actual;
+    return (
+        <span
+            onClick={onClick}
+            style={{
+                cursor: 'pointer',
+                backgroundColor: isActive ? '#62d8d9' : 'transparent',
+                color: isActive ? '#ffffff' : '#113d69',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                display: 'inline-block',
+                transition: 'all 0.2s'
+            }}
+        >
+            {children}
+        </span>
+    );
+};
+
+const AccionButton = ({ variant, onClick, children, disabled, style }) => {
+    const getButtonStyle = () => {
+        const baseStyle = {
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: '1px solid',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.6 : 1,
+            transition: 'all 0.2s',
+            fontWeight: '500',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        };
+
+        if (variant === 'outline-primary') {
+            return {
+                ...baseStyle,
+                backgroundColor: 'transparent',
+                color: '#62d8d9',
+                borderColor: '#62d8d9'
+            };
+        } else if (variant === 'primary') {
+            return {
+                ...baseStyle,
+                backgroundColor: '#62d8d9',
+                color: '#ffffff',
+                borderColor: '#62d8d9'
+            };
+        } else if (variant === 'outline-secondary') {
+            return {
+                ...baseStyle,
+                backgroundColor: 'transparent',
+                color: '#113d69',
+                borderColor: '#113d69'
+            };
+        } else if (variant === 'secondary') {
+            return {
+                ...baseStyle,
+                backgroundColor: '#113d69',
+                color: '#ffffff',
+                borderColor: '#113d69'
+            };
+        } else if (variant === 'link') {
+            return {
+                ...baseStyle,
+                backgroundColor: 'transparent',
+                color: '#113d69',
+                border: 'none',
+                textDecoration: 'none'
+            };
+        }
+        return baseStyle;
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            style={{ ...getButtonStyle(), ...style }}
+        >
+            {children}
+        </button>
+    );
+};
+
+const cardStyle = {
+    background: "#ffffff",
+    borderRadius: '1rem',
+    border: 'none',
+    boxShadow: "0 10px 30px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.02)",
+    overflow: "hidden"
+};
+
 const UserHome = () => {
     const { usuario, token } = useAuth();
     const navigate = useNavigate();
 
-    // Colores exactos del DriverProfile
-    const brandColor = "#113d69"; // Azul oscuro del DriverProfile
-    const accentColor = "#56bca7"; // Verde turquesa de los botones
-    const darkBorder = "#1a1a1a";
-
-    const cardStyle = {
-        background: "rgba(255, 255, 255, 0.95)",
-        borderRadius: '16px',
-        border: 'none',
-        boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-        overflow: "hidden"
-    };
+    const brandColor = "#113d69"; // Azul oscuro
+    const accentColor = "#62d8d9"; // Verde turquesa
 
     const [viajesRecientes, setViajesRecientes] = useState([]);
     const [todosLosViajes, setTodosLosViajes] = useState([]);
@@ -36,6 +215,13 @@ const UserHome = () => {
     const [pagosRecientes, setPagosRecientes] = useState([]);
     const [cargandoPagos, setCargandoPagos] = useState(false);
     const [errorPagos, setErrorPagos] = useState("");
+    
+    // Estados para filtros de viajes
+    const [busquedaViajes, setBusquedaViajes] = useState("");
+    const [filtroEstado, setFiltroEstado] = useState("TODOS");
+    const [viajeSeleccionado, setViajeSeleccionado] = useState(null);
+    const [showDetalleViaje, setShowDetalleViaje] = useState(false);
+
     const [estadisticas, setEstadisticas] = useState({
         totalViajes: 0,
         viajesCompletados: 0,
@@ -81,6 +267,7 @@ const UserHome = () => {
                 }
             } catch (error) {
                 console.error("Error al obtener viajes:", error);
+                setErrorViajes("Error al cargar viajes");
             } finally {
                 setCargandoViajes(false);
             }
@@ -103,6 +290,7 @@ const UserHome = () => {
                 }
             } catch (error) {
                 console.error("Error al cargar pagos:", error);
+                setErrorPagos("Error al cargar pagos");
             } finally {
                 setCargandoPagos(false);
             }
@@ -116,7 +304,6 @@ const UserHome = () => {
             setCargandoStats(true);
             const headers = { "Authorization": "Bearer " + token };
 
-            // Obtenemos gastos (Pagos) y frecuencia (Viajes historial)
             const [resGastos, resViajesHistory] = await Promise.all([
                 fetch(`${API_URL}/estadisticas/ganancias?periodo=${periodo}`, { headers }),
                 fetch(`${API_URL}/estadisticas/viajes?periodo=${periodo}`, { headers })
@@ -137,6 +324,22 @@ const UserHome = () => {
     useEffect(() => {
         traerEstadisticasPasajero();
     }, [token, periodo]);
+
+    // Función para filtrar viajes (igual que en DriverHome)
+    const filtrarViajes = (viajes) => {
+        return viajes.filter(viaje => {
+            const textoBusqueda = busquedaViajes.toLowerCase();
+            const coincideBusqueda = textoBusqueda === '' ||
+                viaje.idViajes.toString().includes(textoBusqueda) ||
+                (viaje.ruta?.nombre?.toLowerCase().includes(textoBusqueda));
+
+            const coincideEstado = filtroEstado === 'TODOS' || viaje.estado === filtroEstado;
+
+            return coincideBusqueda && coincideEstado;
+        });
+    };
+
+    const viajesFiltrados = filtrarViajes(todosLosViajes);
 
     const getEstadoColor = (estado) => {
         switch (estado) {
@@ -160,19 +363,26 @@ const UserHome = () => {
         }
     };
 
-    const getPagoEstadoColor = (estado) => {
-        switch (estado) {
-            case 'PAGADO': return 'success';
-            case 'PENDIENTE': return 'warning';
-            case 'FALLIDO': return 'danger';
-            default: return 'secondary';
-        }
-    };
-
     const formatearFecha = (fecha) => {
         if (!fecha) return 'Fecha no disponible';
         const date = new Date(fecha);
-        return date.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const hoy = new Date();
+        const ayer = new Date(hoy);
+        ayer.setDate(ayer.getDate() - 1);
+
+        if (date.toDateString() === hoy.toDateString()) {
+            return `Hoy, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+        } else if (date.toDateString() === ayer.toDateString()) {
+            return `Ayer, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+        } else {
+            return date.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
     };
 
     const formatearMoneda = (valor) => {
@@ -191,7 +401,7 @@ const UserHome = () => {
         }}>
             <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                backgroundColor: 'rgba(255, 255, 255, 0.4)',
                 zIndex: 0
             }} />
 
@@ -200,246 +410,514 @@ const UserHome = () => {
 
                 <Container className="py-5">
                     {/* Tarjeta de bienvenida */}
-                    <Card className="mb-4 border-0 rounded-4 shadow">
-                        <Card.Body className="p-4 d-flex justify-content-between align-items-center">
+                    <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+                        <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
-                                <h2 className="fw-bold mb-0" style={{ color: brandColor }}>
+                                <h2 style={{ fontWeight: 'bold', margin: 0, color: brandColor }}>
                                     ¡Hola, <span style={{ color: accentColor }}>{usuario?.nombre?.split(' ')[0] || 'Usuario'}</span>!
                                 </h2>
-                                <p className="text-muted mb-0">Gestiona tus viajes y pagos en MoviFlex</p>
+                                <p style={{ color: '#6c757d', margin: 0 }}>Gestiona tus viajes y pagos en MoviFlex</p>
                             </div>
-                            <div className="d-flex align-items-center gap-3">
-                                <div className="text-end d-none d-md-block">
-                                    <span className="small text-uppercase fw-bold text-muted d-block">Gastado {periodo}</span>
-                                    <h3 className="fw-bold mb-0" style={{ color: accentColor }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <div style={{ textAlign: 'right', marginRight: '1rem', display: 'none', '@media (minWidth: 768px)': { display: 'block' } }}>
+                                    <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', fontWeight: 'bold', color: '#6c757d', display: 'block' }}>Gastado {periodo}</span>
+                                    <h3 style={{ fontWeight: 'bold', margin: 0, color: accentColor }}>
                                         {formatearMoneda(statsAvanzadas.gastos.total)}
                                     </h3>
                                 </div>
-                                <div className="bg-light p-1 rounded-3 d-flex gap-1 border">
-                                    <Badge
-                                        bg={periodo === 'diario' ? 'primary' : 'light'}
-                                        text={periodo === 'diario' ? 'white' : 'dark'}
-                                        onClick={() => setPeriodo('diario')}
-                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'diario' ? accentColor : '', color: periodo === 'diario' ? 'white' : '#666' }}
-                                        className="px-3 py-2"
-                                    >Día</Badge>
-                                    <Badge
-                                        bg={periodo === 'mensual' ? 'primary' : 'light'}
-                                        text={periodo === 'mensual' ? 'white' : 'dark'}
-                                        onClick={() => setPeriodo('mensual')}
-                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'mensual' ? accentColor : '', color: periodo === 'mensual' ? 'white' : '#666' }}
-                                        className="px-3 py-2"
-                                    >Mes</Badge>
-                                    <Badge
-                                        bg={periodo === 'anual' ? 'primary' : 'light'}
-                                        text={periodo === 'anual' ? 'white' : 'dark'}
-                                        onClick={() => setPeriodo('anual')}
-                                        style={{ cursor: 'pointer', backgroundColor: periodo === 'anual' ? accentColor : '', color: periodo === 'anual' ? 'white' : '#666' }}
-                                        className="px-3 py-2"
-                                    >Año</Badge>
+                                <div style={{ backgroundColor: '#f8f9fa', padding: '0.25rem', borderRadius: '0.375rem', display: 'flex', gap: '0.25rem', border: '1px solid #dee2e6' }}>
+                                    <PeriodoBadge periodo="diario" actual={periodo} onClick={() => setPeriodo('diario')}>Día</PeriodoBadge>
+                                    <PeriodoBadge periodo="mensual" actual={periodo} onClick={() => setPeriodo('mensual')}>Mes</PeriodoBadge>
+                                    <PeriodoBadge periodo="anual" actual={periodo} onClick={() => setPeriodo('anual')}>Año</PeriodoBadge>
                                 </div>
                             </div>
-                        </Card.Body>
-                    </Card>
+                        </div>
+                    </div>
 
-                    <Row className="g-4 mb-4">
+                    {/* Gráficos */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                         {/* Gráfico de hábitos de gasto */}
-                        <Col lg={7}>
-                            <Card className="border-0 rounded-4 shadow h-100">
-                                <Card.Body className="p-4">
-                                    <div className="d-flex justify-content-between align-items-center mb-4">
-                                        <div className="d-flex align-items-center">
-                                            <FaChartLine size={20} style={{ color: accentColor }} className="me-2" />
-                                            <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Hábitos de Gasto</h5>
-                                        </div>
+                        <div style={{ ...cardStyle, height: '100%' }}>
+                            <div style={{ padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <FaChartLine size={20} style={{ color: accentColor, marginRight: '0.5rem' }} />
+                                        <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Hábitos de Gasto</h5>
                                     </div>
-                                    <div style={{ height: '250px' }}>
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={statsAvanzadas.gastos.historial}>
-                                                <defs>
-                                                    <linearGradient id="colorGastos" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor={accentColor} stopOpacity={0.8} />
-                                                        <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                                <Area type="monotone" dataKey="value" stroke={accentColor} fillOpacity={1} fill="url(#colorGastos)" name="Gastado ($)" />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
+                                    <StatsBadge bgColor="#f8f9fa" color="#113d69">Tendencia {periodo}</StatsBadge>
+                                </div>
+                                <div style={{ height: '250px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={statsAvanzadas.gastos.historial}>
+                                            <defs>
+                                                <linearGradient id="colorGastos" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={accentColor} stopOpacity={0.8} />
+                                                    <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                            <Area type="monotone" dataKey="value" stroke={accentColor} fillOpacity={1} fill="url(#colorGastos)" name="Gastado ($)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Frecuencia de Viajes */}
-                        <Col lg={5}>
-                            <Card className="border-0 rounded-4 shadow h-100">
-                                <Card.Body className="p-4">
-                                    <div className="d-flex justify-content-between align-items-center mb-4">
-                                        <div className="d-flex align-items-center">
-                                            <FaHistory size={20} style={{ color: brandColor }} className="me-2" />
-                                            <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Frecuencia de Viajes</h5>
-                                        </div>
+                        <div style={{ ...cardStyle, height: '100%' }}>
+                            <div style={{ padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <FaHistory size={20} style={{ color: brandColor, marginRight: '0.5rem' }} />
+                                        <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Frecuencia de Viajes</h5>
                                     </div>
-                                    <div style={{ height: '250px' }}>
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <BarChart data={statsAvanzadas.frecuencia.historial}>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                                <Bar dataKey="value" fill={brandColor} radius={[4, 4, 0, 0]} name="Viajes" />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
+                                    <StatsBadge bgColor="#f8f9fa" color="#113d69">Viajes {periodo}</StatsBadge>
+                                </div>
+                                <div style={{ height: '250px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={statsAvanzadas.frecuencia.historial}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                            <Bar dataKey="value" fill={brandColor} radius={[4, 4, 0, 0]} name="Viajes" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                    <Row className="g-4 mb-4">
+                    {/* Mi Actividad Resumen y Pagos Recientes */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                         {/* Mi Actividad Resumen */}
-                        <Col lg={7}>
-                            <Card className="border-0 rounded-4 shadow">
-                                <Card.Body className="p-4">
-                                    <div className="d-flex align-items-center mb-4">
-                                        <FaUser size={22} style={{ color: accentColor }} className="me-2" />
-                                        <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Resumen de Actividad</h5>
+                        <div style={{ ...cardStyle, height: '100%' }}>
+                            <div style={{ padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <FaUser size={22} style={{ color: accentColor, marginRight: '0.5rem' }} />
+                                    <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Resumen de Actividad</h5>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                                    <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center' }}>
+                                        <h3 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor }}>{estadisticas.totalViajes}</h3>
+                                        <small style={{ color: '#6c757d' }}>Totales</small>
                                     </div>
-                                    <Row className="g-3">
-                                        <Col xs={4}>
-                                            <div className="p-3 rounded-3 text-center" style={{ backgroundColor: '#f8f9fa' }}>
-                                                <h3 className="fw-bold mb-0" style={{ color: accentColor }}>{estadisticas.totalViajes}</h3>
-                                                <small className="text-muted">Totales</small>
-                                            </div>
-                                        </Col>
-                                        <Col xs={4}>
-                                            <div className="p-3 rounded-3 text-center" style={{ backgroundColor: '#f8f9fa', cursor: 'pointer' }}
-                                                onClick={() => setShowViajesModal(true)}>
-                                                <h3 className="fw-bold mb-0" style={{ color: brandColor }}>{estadisticas.viajesCompletados}</h3>
-                                                <small className="text-muted fw-bold d-block mb-1">Completados</small>
-                                            </div>
-                                        </Col>
-                                        <Col xs={4}>
-                                            <div className="p-3 rounded-3 text-center" style={{ backgroundColor: '#f8f9fa' }}>
-                                                <h3 className="fw-bold mb-0" style={{ color: '#dc3545' }}>{estadisticas.viajesCancelados}</h3>
-                                                <small className="text-muted">Cancelados</small>
-                                            </div>
-                                        </Col>
-                                    </Row>
-                                    <Button
-                                        variant="link"
-                                        className="mt-4 p-0 text-decoration-none fw-bold small shadow-none"
-                                        style={{ color: brandColor }}
-                                        onClick={() => navigate(`/profile`)}
+                                    <div 
+                                        style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center', cursor: 'pointer' }}
+                                        onClick={() => setShowViajesModal(true)}
                                     >
-                                        CONFIGURAR PERFIL <FaArrowRight size={12} className="ms-1" style={{ color: accentColor }} />
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
+                                        <h3 style={{ fontWeight: 'bold', marginBottom: 0, color: brandColor }}>{estadisticas.viajesCompletados}</h3>
+                                        <small style={{ color: '#6c757d', fontWeight: 'bold' }}>Completados</small>
+                                    </div>
+                                    <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center' }}>
+                                        <h3 style={{ fontWeight: 'bold', marginBottom: 0, color: '#6c757d' }}>{estadisticas.viajesCancelados}</h3>
+                                        <small style={{ color: '#6c757d' }}>Cancelados</small>
+                                    </div>
+                                </div>
+        
+                            </div>
+                        </div>
 
-                        {/* Pagos Recientes */}
-                        <Col lg={5}>
-                            <Card className="border-0 rounded-4 shadow h-100">
-                                <Card.Body className="p-4 d-flex flex-column">
-                                    <div className="d-flex align-items-center mb-4">
-                                        <FaWallet size={22} style={{ color: accentColor }} className="me-2" />
-                                        <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Pagos Recientes</h5>
+                        <div style={{ ...cardStyle, height: '100%' }}>
+                            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <FaWallet size={22} style={{ color: accentColor, marginRight: '0.5rem' }} />
+                                    <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Pagos Recientes</h5>
+                                </div>
+                                
+                                {cargandoPagos ? (
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <Spinner size="sm" style={{ color: accentColor }} />
                                     </div>
-                                    <ListGroup variant="flush">
+                                ) : pagosRecientes.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <p style={{ color: '#6c757d' }}>No hay pagos recientes</p>
+                                    </div>
+                                ) : (
+                                    <div style={{ listStyle: 'none', padding: 0, margin: 0, flex: 1 }}>
                                         {pagosRecientes.slice(0, 3).map((pago) => (
-                                            <ListGroup.Item key={pago.idPago} className="d-flex justify-content-between align-items-center px-0 bg-transparent border-bottom">
+                                            <div key={pago.idPago} style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                padding: '0.75rem 0',
+                                                borderBottom: '1px solid #e9ecef'
+                                            }}>
                                                 <div>
-                                                    <div className="fw-bold small">{pago.tipoPago || 'Viaje'}</div>
-                                                    <small className="text-muted">{new Date(pago.fechaPago).toLocaleDateString()}</small>
+                                                    <div style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor }}>{pago.tipoPago || 'Viaje'}</div>
+                                                    <small style={{ color: '#6c757d' }}>{new Date(pago.fechaPago).toLocaleDateString()}</small>
                                                 </div>
-                                                <div className="text-end">
-                                                    <div className="fw-bold" style={{ color: accentColor }}>{formatearMoneda(pago.monto)}</div>
-                                                    <Badge bg={getPagoEstadoColor(pago.estado)} className="rounded-pill" style={{ fontSize: '0.6rem' }}>
-                                                        {pago.estado}
-                                                    </Badge>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <div style={{ fontWeight: 'bold', color: accentColor }}>{formatearMoneda(pago.monto)}</div>
+                                                    <PagoBadge estado={pago.estado} />
                                                 </div>
-                                            </ListGroup.Item>
+                                            </div>
                                         ))}
-                                    </ListGroup>
-                                    <Button
-                                        className="w-100 mt-auto border-0 fw-bold py-2 rounded-pill mt-3"
-                                        style={{ backgroundColor: accentColor, color: 'white' }}
-                                        onClick={() => navigate("/pagos")}
-                                    >
-                                        HISTORIAL DE PAGOS
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
+                                    </div>
+                                )}
+
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Viajes Recientes */}
-                    <Card className="border-0 rounded-4 shadow">
-                        <Card.Body className="p-4">
-                            <div className="d-flex align-items-center justify-content-between mb-4">
-                                <div className="d-flex align-items-center">
-                                    <FaHistory size={24} style={{ color: accentColor }} className="me-2" />
-                                    <h5 className="mb-0 fw-bold" style={{ color: brandColor }}>Viajes Recientes</h5>
+                    <div style={{ ...cardStyle }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <FaHistory size={24} style={{ color: accentColor, marginRight: '0.5rem' }} />
+                                    <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Viajes Recientes</h5>
                                 </div>
-                                <Button variant="link" style={{ color: brandColor }} className="fw-bold text-decoration-none shadow-none" onClick={() => setShowViajesModal(true)}>
+                                <AccionButton
+                                    variant="link"
+                                    onClick={() => setShowViajesModal(true)}
+                                    style={{ color: brandColor, fontWeight: 'bold' }}
+                                >
                                     Ver Todos
-                                </Button>
+                                </AccionButton>
                             </div>
-                            <ListGroup variant="flush">
-                                {viajesRecientes.map((viaje) => (
-                                    <ListGroup.Item key={viaje.idViajes} className="px-0 bg-transparent py-3">
-                                        <Row className="align-items-center">
-                                            <Col xs={1}><FaRoute size={20} color={accentColor} /></Col>
-                                            <Col xs={4}>
-                                                <p className="mb-0 fw-bold">A {viaje.ruta?.nombre || viaje.destino || "Destino"}</p>
-                                                <small className="text-muted">{formatearFecha(viaje.fechaHoraSalida)}</small>
-                                            </Col>
-                                            <Col xs={3} className="fw-bold" style={{ color: accentColor }}>{formatearMoneda(viaje.precioFinal)}</Col>
-                                            <Col xs={4} className="text-end">
-                                                <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2">
-                                                    {getEstadoTexto(viaje.estado)}
-                                                </Badge>
-                                            </Col>
-                                        </Row>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        </Card.Body>
-                    </Card>
+
+                            {cargandoViajes ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <Spinner animation="border" style={{ color: accentColor }} />
+                                </div>
+                            ) : errorViajes ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <p style={{ color: '#dc3545' }}>{errorViajes}</p>
+                                    <AccionButton variant="outline-secondary" onClick={() => window.location.reload()}>
+                                        Reintentar
+                                    </AccionButton>
+                                </div>
+                            ) : viajesRecientes.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#F3F4F6',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 1rem'
+                                    }}>
+                                        <FaHistory size={24} style={{ color: '#6c757d' }} />
+                                    </div>
+                                    <p style={{ color: '#6c757d', marginBottom: 0 }}>No hay viajes recientes</p>
+                                </div>
+                            ) : (
+                                <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                    {viajesRecientes.map((viaje) => (
+                                        <div
+                                            key={viaje.idViajes}
+                                            style={{
+                                                padding: '0.75rem 0',
+                                                borderBottom: '1px solid #F3F4F6',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => {
+                                                setViajeSeleccionado(viaje);
+                                                setShowDetalleViaje(true);
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                                    <FaRoute size={20} color={accentColor} />
+                                                </div>
+                                                <div style={{ width: '41.67%' }}>
+                                                    <p style={{ marginBottom: 0, fontWeight: 'bold', color: brandColor }}>
+                                                        A {viaje.ruta?.nombre || viaje.destino || "Destino"}
+                                                    </p>
+                                                    <small style={{ color: '#6c757d' }}>
+                                                        {formatearFecha(viaje.fechaHoraSalida)}
+                                                    </small>
+                                                </div>
+                                                <div style={{ width: '25%', fontWeight: 'bold', color: accentColor }}>
+                                                    {formatearMoneda(viaje.precioFinal)}
+                                                </div>
+                                                <div style={{ width: '25%', textAlign: 'right' }}>
+                                                    <EstadoViajeBadge estado={viaje.estado} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </Container>
             </div>
 
-            <Modal show={showViajesModal} onHide={() => setShowViajesModal(false)} size="lg" centered>
-                <Modal.Header closeButton style={{ background: brandColor, color: 'white' }}>
-                    <Modal.Title><FaHistory className="me-2" /> Mis Viajes</Modal.Title>
-                </Modal.Header>
-                <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                    <ListGroup variant="flush">
-                        {todosLosViajes.map((viaje) => (
-                            <ListGroup.Item key={viaje.idViajes} className="px-0 py-3 border-bottom bg-transparent">
-                                <Row className="align-items-center mx-2">
-                                    <Col xs={1}><FaRoute size={20} color={accentColor} /></Col>
-                                    <Col xs={5}>
-                                        <p className="mb-0 fw-bold">{viaje.ruta?.nombre || "Viaje"}</p>
-                                        <small className="text-muted">{formatearFecha(viaje.fechaHoraSalida)}</small>
-                                    </Col>
-                                    <Col xs={3} className="fw-bold" style={{ color: accentColor }}>{formatearMoneda(viaje.precioFinal)}</Col>
-                                    <Col xs={3} className="text-end">
-                                        <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-2 py-1">
-                                            {getEstadoTexto(viaje.estado)}
-                                        </Badge>
-                                    </Col>
-                                </Row>
-                            </ListGroup.Item>
-                        ))}
-                    </ListGroup>
-                </Modal.Body>
-            </Modal>
+            {/* Modal de Historial Completo (igual que en DriverHome) */}
+            {showViajesModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1050
+                }} onClick={() => setShowViajesModal(false)}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '1200px',
+                        width: '95%',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            padding: '1.5rem 1.5rem 0.5rem',
+                            borderBottom: 'none'
+                        }}>
+                            <h5 style={{ fontWeight: '600', color: accentColor }}>
+                                <FaHistory style={{ marginRight: '0.5rem' }} /> Mis Viajes
+                            </h5>
+                        </div>
+                        <div style={{ padding: '1rem 1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '6fr 4fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span style={{
+                                            backgroundColor: 'white',
+                                            padding: '0.375rem 0.75rem',
+                                            border: `1px solid ${accentColor}`,
+                                            borderRadius: '0.375rem 0 0 0.375rem'
+                                        }}>
+                                            <FaSearch color={accentColor} />
+                                        </span>
+                                        <input
+                                            placeholder="Buscar por # de viaje o nombre de ruta..."
+                                            value={busquedaViajes}
+                                            onChange={(e) => setBusquedaViajes(e.target.value)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.375rem 0.75rem',
+                                                border: `1px solid ${accentColor}`,
+                                                borderLeft: 'none',
+                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span style={{
+                                            backgroundColor: 'white',
+                                            padding: '0.375rem 0.75rem',
+                                            border: `1px solid ${brandColor}`,
+                                            borderRadius: '0.375rem 0 0 0.375rem'
+                                        }}>
+                                            <FaFilter color={brandColor} />
+                                        </span>
+                                        <select
+                                            value={filtroEstado}
+                                            onChange={(e) => setFiltroEstado(e.target.value)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.375rem 0.75rem',
+                                                border: `1px solid ${brandColor}`,
+                                                borderLeft: 'none',
+                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                            }}
+                                        >
+                                            <option value="TODOS">Todos los estados</option>
+                                            <option value="FINALIZADO">Completados</option>
+                                            <option value="COMPLETADO">Completados</option>
+                                            <option value="EN_CURSO">En curso</option>
+                                            <option value="CANCELADO">Cancelados</option>
+                                            <option value="RESERVADO">Reservados</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <StatsBadge bgColor={accentColor} color="#ffffff">
+                                        {viajesFiltrados.length} viajes
+                                    </StatsBadge>
+                                </div>
+                            </div>
+
+                            {viajesFiltrados.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#F3F4F6',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 1rem'
+                                    }}>
+                                        <FaHistory size={24} style={{ color: accentColor }} />
+                                    </div>
+                                    <p style={{ color: '#6c757d' }}>No se encontraron viajes con los filtros seleccionados</p>
+                                    <button
+                                        onClick={() => {
+                                            setBusquedaViajes('');
+                                            setFiltroEstado('TODOS');
+                                        }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: accentColor,
+                                            textDecoration: 'underline',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Limpiar filtros
+                                    </button>
+                                </div>
+                            ) : (
+                                <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                    {viajesFiltrados.map((viaje) => (
+                                        <div
+                                            key={viaje.idViajes}
+                                            style={{
+                                                padding: '0.75rem 0',
+                                                borderBottom: '1px solid #F3F4F6',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => {
+                                                setViajeSeleccionado(viaje);
+                                                setShowDetalleViaje(true);
+                                                setShowViajesModal(false);
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                                    <FaRoute size={20} color={accentColor} />
+                                                </div>
+                                                <div style={{ width: '16.67%' }}>
+                                                    <p style={{ marginBottom: 0, fontWeight: '600', color: brandColor }}>Viaje #{viaje.idViajes}</p>
+                                                    <small style={{ color: '#6c757d' }}>
+                                                        {formatearFecha(viaje.fechaHoraSalida)}
+                                                    </small>
+                                                </div>
+                                                <div style={{ width: '25%' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <FaRoute size={12} color={accentColor} style={{ marginRight: '0.25rem' }} />
+                                                        <small style={{ fontWeight: '600', color: brandColor }}>Ruta:</small>
+                                                        <span style={{ marginLeft: '0.5rem', color: '#6c757d', fontSize: '0.875rem' }}>{viaje.ruta?.nombre || 'No disponible'}</span>
+                                                    </div>
+                                                </div>
+                                                <div style={{ width: '16.67%', fontWeight: 'bold', color: accentColor }}>
+                                                    {formatearMoneda(viaje.precioFinal)}
+                                                </div>
+                                                <div style={{ width: '16.67%' }}>
+                                                    <small style={{ color: '#6c757d', display: 'flex', alignItems: 'center' }}>
+                                                        <FaClock style={{ marginRight: '0.25rem' }} size={10} />
+                                                        {viaje.cuposTotales ? `${viaje.cuposTotales - (viaje.cuposDisponibles || 0)}/${viaje.cuposTotales} pasajeros` : 'N/A'}
+                                                    </small>
+                                                </div>
+                                                <div style={{ width: '16.67%', textAlign: 'right' }}>
+                                                    <EstadoViajeBadge estado={viaje.estado} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ padding: '0.5rem 1.5rem 1.5rem', borderTop: 'none' }}>
+                            <AccionButton
+                                variant="outline-secondary"
+                                onClick={() => setShowViajesModal(false)}
+                            >
+                                Cerrar
+                            </AccionButton>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de Detalle de Viaje */}
+            {showDetalleViaje && viajeSeleccionado && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1060
+                }} onClick={() => setShowDetalleViaje(false)}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '800px',
+                        width: '90%',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            background: `linear-gradient(135deg, ${accentColor}20, white)`,
+                            borderBottom: `2px solid ${accentColor}`,
+                            padding: '1.5rem'
+                        }}>
+                            <h5 style={{ fontWeight: '600', color: brandColor }}>
+                                <FaRoute style={{ marginRight: '0.5rem', color: accentColor }} /> Detalle del Viaje #{viajeSeleccionado.idViajes}
+                            </h5>
+                        </div>
+                        <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 140px)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{ backgroundColor: '#F9FAFB', border: `1px solid ${accentColor}20`, borderRadius: '1rem' }}>
+                                    <div style={{ padding: '1rem' }}>
+                                        <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: accentColor }}>Información General</h6>
+                                        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <span style={{ color: '#6c757d' }}>Fecha y hora:</span>
+                                                <span style={{ fontWeight: '600', color: brandColor }}>{formatearFecha(viajeSeleccionado.fechaHoraSalida)}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <span style={{ color: '#6c757d' }}>Estado:</span>
+                                                <EstadoViajeBadge estado={viajeSeleccionado.estado} />
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <span style={{ color: '#6c757d' }}>Precio:</span>
+                                                <span style={{ fontWeight: '600', color: accentColor }}>{formatearMoneda(viajeSeleccionado.precioFinal)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ backgroundColor: '#F9FAFB', border: `1px solid ${brandColor}20`, borderRadius: '1rem' }}>
+                                    <div style={{ padding: '1rem' }}>
+                                        <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: brandColor }}>Ruta del Viaje</h6>
+                                        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            {viajeSeleccionado.ruta?.nombre && (
+                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                    <FaRoute size={14} color={accentColor} style={{ marginRight: '0.5rem', marginTop: '0.25rem' }} />
+                                                    <div>
+                                                        <span style={{ color: '#6c757d' }}>Ruta:</span>
+                                                        <span style={{ fontWeight: '600', display: 'block', color: brandColor }}>{viajeSeleccionado.ruta.nombre}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ padding: '1rem 1.5rem 1.5rem', borderTop: 'none' }}>
+                            <AccionButton
+                                variant="outline-secondary"
+                                onClick={() => setShowDetalleViaje(false)}
+                            >
+                                Cerrar
+                            </AccionButton>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
