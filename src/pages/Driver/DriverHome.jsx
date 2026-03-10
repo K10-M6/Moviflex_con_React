@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { Container, Row, Col, Card, Button, Badge, ListGroup, Modal, Alert, Spinner, Form, InputGroup, Image } from "react-bootstrap";
-import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaArrowLeft, FaHistory, FaClock, FaRoute, FaCheckCircle, FaSearch, FaMapMarkerAlt, FaFilter, FaEye, FaList } from "react-icons/fa";
+import { Container, Row, Col, Card, Modal, Alert, Spinner, Form, Image } from "react-bootstrap";
+import { FaCar, FaIdCard, FaInfoCircle, FaWallet, FaArrowRight, FaFileAlt, FaHistory, FaClock, FaRoute, FaCheckCircle, FaSearch, FaFilter, FaList } from "react-icons/fa";
 import {
-    BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis,
-    CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
+    BarChart, Bar, XAxis, YAxis,
+    CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import Navbar from "../../components/Navbar";
 import { useAuth } from "../context/AuthContext";
@@ -13,8 +13,197 @@ import { API_URL, API_BASE_URL } from "../../config";
 import fondo from "../Imagenes/AutoresContacto.png";
 import toast from "react-hot-toast";
 
-// Componente para mostrar la imagen del vehículo o un placeholder
-const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#56bca7" }) => {
+// Componentes personalizados para mantener consistencia de colores
+const EstadoViajeBadge = ({ estado }) => {
+    const estilos = {
+        FINALIZADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        EN_CURSO: { backgroundColor: '#113d69', color: '#ffffff' },
+        CANCELADO: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        PUBLICADO: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        CREADO: { backgroundColor: '#cccbd2af', color: '#113d69' }
+    };
+
+    const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    const getTexto = () => {
+        switch(estado) {
+            case 'FINALIZADO': return 'Completado';
+            case 'EN_CURSO': return 'En curso';
+            case 'CANCELADO': return 'Cancelado';
+            case 'PUBLICADO': return 'Publicado';
+            case 'CREADO': return 'Creado';
+            default: return estado || 'Desconocido';
+        }
+    };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.8rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {getTexto()}
+        </span>
+    );
+};
+
+const DocumentoBadge = ({ estado }) => {
+    const estilos = {
+        APROBADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        RECHAZADO: { backgroundColor: '#dc3545', color: '#ffffff' },
+        PENDIENTE: { backgroundColor: '#ffc107', color: '#113d69' }
+    };
+
+    const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.8rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {estado || 'No disponible'}
+        </span>
+    );
+};
+
+const StatsCard = ({ icon, title, value, color, bgColor }) => {
+    return (
+        <Card style={{
+            background: "#ffffff",
+            borderRadius: '20px',
+            border: 'none',
+            boxShadow: "0 10px 30px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.02)",
+            borderBottom: `4px solid ${color}`,
+            height: '100%'
+        }}>
+            <Card.Body className="d-flex align-items-center p-4">
+                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                    style={{ width: '50px', height: '50px', backgroundColor: bgColor, color: color }}>
+                    {icon}
+                </div>
+                <div>
+                    <h6 className="text-muted mb-0 small">{title}</h6>
+                    <h4 className="fw-bold mb-0" style={{ color: '#113d69' }}>{value}</h4>
+                </div>
+            </Card.Body>
+        </Card>
+    );
+};
+
+const StatsBadge = ({ children, bgColor, color, isWhite = false }) => {
+    if (isWhite) {
+        return (
+            <span style={{
+                backgroundColor: '#ffffff',
+                color: '#62d8d9',
+                border: '1px solid #62d8d9',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                display: 'inline-block'
+            }}>
+                {children}
+            </span>
+        );
+    }
+
+    return (
+        <span style={{
+            backgroundColor: bgColor,
+            color: color,
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.9rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {children}
+        </span>
+    );
+};
+
+const AccionButton = ({ variant, onClick, children, disabled, style }) => {
+    const getButtonStyle = () => {
+        if (variant === 'outline-primary') {
+            return {
+                backgroundColor: 'transparent',
+                color: '#62d8d9',
+                borderColor: '#62d8d9'
+            };
+        } else if (variant === 'primary') {
+            return {
+                backgroundColor: '#62d8d9',
+                color: '#ffffff',
+                borderColor: '#62d8d9'
+            };
+        } else if (variant === 'outline-secondary') {
+            return {
+                backgroundColor: 'transparent',
+                color: '#113d69',
+                borderColor: '#113d69'
+            };
+        } else if (variant === 'secondary') {
+            return {
+                backgroundColor: '#113d69',
+                color: '#ffffff',
+                borderColor: '#113d69'
+            };
+        }
+        return {};
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            style={{
+                transition: 'all 0.2s',
+                fontWeight: '500',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                border: '1px solid',
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.6 : 1,
+                ...getButtonStyle(),
+                ...style
+            }}
+        >
+            {children}
+        </button>
+    );
+};
+
+const PeriodoBadge = ({ periodo, actual, onClick, children }) => {
+    const isActive = periodo === actual;
+    return (
+        <span
+            onClick={onClick}
+            style={{
+                cursor: 'pointer',
+                backgroundColor: isActive ? '#62d8d9' : 'transparent',
+                color: isActive ? '#ffffff' : '#113d69',
+                padding: '0.5rem 1rem',
+                borderRadius: '0.375rem',
+                fontSize: '0.9rem',
+                fontWeight: '500',
+                display: 'inline-block',
+                transition: 'all 0.2s'
+            }}
+        >
+            {children}
+        </span>
+    );
+};
+
+const VehiculoImage = ({ vehiculo, size = 40, onClick }) => {
     const [imageError, setImageError] = useState(false);
     const [imageUrl, setImageUrl] = useState(null);
 
@@ -36,12 +225,13 @@ const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#56bca7" }) => {
                 width: size,
                 height: size,
                 borderRadius: '12px',
-                backgroundColor: `${brandColor}15`,
+                backgroundColor: '#62d8d915',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
-            }}>
-                <FaCar size={size * 0.4} color={brandColor} />
+                justifyContent: 'center',
+                cursor: onClick ? 'pointer' : 'default'
+            }} onClick={onClick}>
+                <FaCar size={size * 0.4} color="#62d8d9" />
             </div>
         );
     }
@@ -53,26 +243,19 @@ const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#56bca7" }) => {
                 height: size,
                 borderRadius: '12px',
                 overflow: 'hidden',
-                border: `2px solid ${brandColor}`,
+                border: `2px solid #62d8d9`,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                cursor: 'pointer'
-            }}
-                onClick={() => {
-                    if (window.open) {
-                        window.open(imageUrl, '_blank');
-                    }
-                }}>
-                <Image
+                cursor: onClick ? 'pointer' : 'default'
+            }} onClick={onClick}>
+                <img
                     src={imageUrl}
                     alt={`${vehiculo.marca} ${vehiculo.modelo}`}
-                    fluid
                     style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover'
                     }}
                     onError={() => {
-                        console.log("Error cargando imagen:", imageUrl);
                         setImageError(true);
                     }}
                 />
@@ -80,28 +263,28 @@ const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#56bca7" }) => {
         );
     }
 
-    // Placeholder con iniciales
     return (
         <div style={{
             width: size,
             height: size,
             borderRadius: '12px',
-            backgroundColor: `${brandColor}15`,
+            backgroundColor: '#62d8d915',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexDirection: 'column',
             fontSize: size * 0.2,
             fontWeight: 'bold',
-            color: brandColor
-        }}>
+            color: '#62d8d9',
+            cursor: onClick ? 'pointer' : 'default'
+        }} onClick={onClick}>
             {vehiculo.marca && vehiculo.modelo ? (
                 <>
                     <span>{vehiculo.marca.charAt(0)}{vehiculo.modelo.charAt(0)}</span>
-                    <FaCar size={size * 0.3} color={brandColor} style={{ marginTop: 2 }} />
+                    <FaCar size={size * 0.3} color="#62d8d9" style={{ marginTop: 2 }} />
                 </>
             ) : (
-                <FaCar size={size * 0.4} color={brandColor} />
+                <FaCar size={size * 0.4} color="#62d8d9" />
             )}
         </div>
     );
@@ -111,8 +294,6 @@ const DriverHome = () => {
     const { usuario, token } = useAuth();
     const { socket } = useSocket();
     const navigate = useNavigate();
-    const brandColor = "#62d8d9"; // Global turquoise accent color
-    const accentColor = "#113d69"; // Global dark blue primary color
 
     const [showTutorial, setShowTutorial] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
@@ -120,7 +301,6 @@ const DriverHome = () => {
     const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
     const [errorVehiculo, setErrorVehiculo] = useState("");
 
-    // NUEVO: Estado para el modal de lista de vehículos
     const [showVehiculosModal, setShowVehiculosModal] = useState(false);
     const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState(null);
 
@@ -171,7 +351,6 @@ const DriverHome = () => {
     const [enviandoSolicitud, setEnviandoSolicitud] = useState(false);
     const [mensajeSolicitud, setMensajeSolicitud] = useState({ tipo: '', texto: '' });
 
-    // Estado para comisión y reportes de pago
     const [comisionInfo, setComisionInfo] = useState(null);
     const [cargandoComision, setCargandoComision] = useState(false);
     const [fotoComprobante, setFotoComprobante] = useState('');
@@ -183,7 +362,6 @@ const DriverHome = () => {
         if (!hasSeenTutorial) setShowTutorial(true);
     }, []);
 
-    // Cargar comisión acumulada
     const cargarComision = useCallback(async () => {
         if (!token) return;
         try {
@@ -202,7 +380,6 @@ const DriverHome = () => {
         }
     }, [token]);
 
-    // Cargar reportes del conductor
     const cargarMisReportes = useCallback(async () => {
         if (!token) return;
         try {
@@ -218,7 +395,6 @@ const DriverHome = () => {
         }
     }, [token]);
 
-    // Enviar reporte de pago
     const enviarReportePago = async () => {
         if (!fotoComprobante) {
             toast.error('Debes adjuntar la foto del comprobante');
@@ -227,9 +403,6 @@ const DriverHome = () => {
         try {
             setEnviandoReporte(true);
             const payload = { fotoComprobante };
-
-            // Console log to check the base64 string length payload being sent
-            console.log("Enviando reporte de pago, tamaño de la imagen aprox:", fotoComprobante.length);
 
             const res = await fetch(`${API_URL}/reportes-pago`, {
                 method: 'POST',
@@ -240,8 +413,6 @@ const DriverHome = () => {
                 body: JSON.stringify(payload)
             });
 
-            console.log("Status de la respuesta:", res.status);
-
             if (res.ok) {
                 toast.success('Comprobante enviado exitosamente. El administrador lo revisará.');
                 setFotoComprobante('');
@@ -249,7 +420,6 @@ const DriverHome = () => {
                 cargarMisReportes();
             } else {
                 const errText = await res.text();
-                console.error("Respuesta fallida del servidor:", errText);
                 try {
                     const errJson = JSON.parse(errText);
                     toast.error(`Error del servidor: ${errJson.message || errJson.error || 'Petición rechazada'}`);
@@ -258,7 +428,6 @@ const DriverHome = () => {
                 }
             }
         } catch (err) {
-            console.error("Error de red al intentar enviar el comprobante:", err);
             toast.error('Error de conexión al enviar comprobante');
         } finally {
             setEnviandoReporte(false);
@@ -293,11 +462,10 @@ const DriverHome = () => {
                 }
                 resolve(comprimida);
             };
-            img.onerror = () => resolve(base64); // Fallback en caso de error
+            img.onerror = () => resolve(base64);
         });
     };
 
-    // Convertir imagen a base64 y comprimir
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -313,7 +481,7 @@ const DriverHome = () => {
                     setFotoComprobante(base64Comprimido);
                     toast.success('Imagen lista para enviar', { id: loadingToastId });
                 } catch (error) {
-                    setFotoComprobante(reader.result); // Fallback
+                    setFotoComprobante(reader.result);
                     toast.dismiss(loadingToastId);
                 }
             };
@@ -373,7 +541,6 @@ const DriverHome = () => {
                     throw new Error("No tienes permisos para ver documentos");
                 }
                 if (response.status === 404) {
-                    console.log("No se encontraron documentos");
                     setDocumentos([]);
                     setCargandoDocumentos(false);
                     return;
@@ -382,7 +549,6 @@ const DriverHome = () => {
             }
 
             const data = await response.json();
-            console.log("Documentos recibidos:", data);
 
             let documentosArray = [];
 
@@ -397,7 +563,6 @@ const DriverHome = () => {
             setDocumentos(documentosArray);
 
         } catch (error) {
-            console.error("Error al obtener documentos:", error);
             setErrorDocumentos(error.message);
             setDocumentos([]);
         } finally {
@@ -426,7 +591,6 @@ const DriverHome = () => {
 
                 if (respuesta.ok) {
                     const data = await respuesta.json();
-                    console.log("Viajes recibidos:", data);
 
                     const viajesData = Array.isArray(data) ? data : [];
 
@@ -440,16 +604,12 @@ const DriverHome = () => {
                     setEstadisticasViajes({ completados, cancelados, enCurso });
 
                 } else if (respuesta.status === 404) {
-                    console.log("No se encontraron viajes");
                     setViajesRecientes([]);
                     setTodosLosViajes([]);
                 } else {
-                    const errorText = await respuesta.text();
-                    console.log("Error response:", errorText);
                     setErrorViajes(`Error ${respuesta.status}: No se pudieron cargar los viajes`);
                 }
             } catch (error) {
-                console.error("Error de conexión al obtener viajes:", error);
                 setErrorViajes("Error de conexión con el servidor");
             } finally {
                 setCargandoViajes(false);
@@ -510,13 +670,11 @@ const DriverHome = () => {
         traerEstadisticasAvanzadas();
     }, [token, periodo]);
 
-    // Función mejorada para obtener TODOS los vehículos del usuario
     const obtenerVehiculos = useCallback(async () => {
         if (!token) return;
         try {
             setCargandoVehiculo(true);
             setErrorVehiculo("");
-            console.log("Obteniendo vehículos del usuario ID:", usuario?.idUsuarios);
 
             const respuesta = await fetch(`${API_URL}/vehiculos/mis-vehiculos`, {
                 headers: {
@@ -525,13 +683,9 @@ const DriverHome = () => {
                 }
             });
 
-            console.log("Respuesta status:", respuesta.status);
-
             if (respuesta.ok) {
                 const data = await respuesta.json();
-                console.log("Todos los vehículos recibidos:", data);
 
-                // Asegurarse de que siempre sea un array
                 let vehiculosArray = [];
                 if (Array.isArray(data)) {
                     vehiculosArray = data;
@@ -539,21 +693,14 @@ const DriverHome = () => {
                     vehiculosArray = [data];
                 }
 
-                // Filtrar solo los del usuario actual (por si acaso)
                 const vehiculosUsuario = vehiculosArray.filter(v => v.idUsuario === usuario?.idUsuarios);
-                console.log("Vehículos filtrados del usuario:", vehiculosUsuario);
-
                 setVehiculos(vehiculosUsuario);
             } else if (respuesta.status === 404) {
-                console.log("No se encontraron vehículos");
                 setVehiculos([]);
             } else {
-                const errorText = await respuesta.text();
-                console.error("Error response:", errorText);
                 setErrorVehiculo(`Error ${respuesta.status}: No se pudieron cargar los datos`);
             }
         } catch (error) {
-            console.error("Error en obtenerVehiculos:", error);
             setErrorVehiculo("Error de conexión con el servidor");
         } finally {
             setCargandoVehiculo(false);
@@ -564,15 +711,12 @@ const DriverHome = () => {
         obtenerVehiculos();
     }, [obtenerVehiculos]);
 
-    // NUEVA: Función para ver todos los vehículos
     const verTodosLosVehiculos = () => {
         setShowVehiculosModal(true);
     };
 
-    // NUEVA: Función para seleccionar un vehículo como principal
     const seleccionarVehiculoPrincipal = (vehiculo) => {
         setVehiculoSeleccionado(vehiculo);
-        // Aquí puedes guardar en localStorage o en el estado global cuál es el vehículo principal
         localStorage.setItem('vehiculoPrincipalId', vehiculo.idVehiculos);
         toast.success(`Vehículo ${vehiculo.marca} ${vehiculo.modelo} seleccionado como principal`);
         setShowVehiculosModal(false);
@@ -642,28 +786,6 @@ const DriverHome = () => {
         }
     };
 
-    const getEstadoColor = (estado) => {
-        switch (estado) {
-            case 'FINALIZADO': return 'success';
-            case 'CANCELADO': return 'danger';
-            case 'EN_CURSO': return 'warning';
-            case 'PUBLICADO': return 'info';
-            case 'CREADO': return 'secondary';
-            default: return 'secondary';
-        }
-    };
-
-    const getEstadoTexto = (estado) => {
-        switch (estado) {
-            case 'FINALIZADO': return 'Completado';
-            case 'CANCELADO': return 'Cancelado';
-            case 'EN_CURSO': return 'En curso';
-            case 'PUBLICADO': return 'Publicado';
-            case 'CREADO': return 'Creado';
-            default: return estado || 'Desconocido';
-        }
-    };
-
     const formatearFecha = (fecha) => {
         if (!fecha) return 'Fecha no disponible';
         const date = new Date(fecha);
@@ -705,19 +827,6 @@ const DriverHome = () => {
         }
     };
 
-    const getDocumentoBadge = (estado) => {
-        switch (estado?.toUpperCase()) {
-            case 'APROBADO':
-                return <Badge bg="success" className="rounded-pill">Aprobado</Badge>;
-            case 'RECHAZADO':
-                return <Badge bg="danger" className="rounded-pill">Rechazado</Badge>;
-            case 'PENDIENTE':
-                return <Badge bg="warning" className="rounded-pill">Pendiente</Badge>;
-            default:
-                return <Badge bg="secondary" className="rounded-pill">No disponible</Badge>;
-        }
-    };
-
     const obtenerLicencia = () => {
         if (!documentos || documentos.length === 0) return null;
         const licencia = documentos.find(doc =>
@@ -754,8 +863,8 @@ const DriverHome = () => {
         fontWeight: "bold",
         zIndex: 2,
         transition: "all 0.3s ease",
-        background: currentStep >= stepNumber ? brandColor : "#fff",
-        color: currentStep >= stepNumber ? "#fff" : "#333",
+        background: currentStep >= stepNumber ? "#62d8d9" : "#fff",
+        color: currentStep >= stepNumber ? "#fff" : "#113d69",
         border: "none",
         boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
     });
@@ -777,15 +886,20 @@ const DriverHome = () => {
         transition: "transform 0.2s ease, box-shadow 0.2s ease"
     };
 
-    // Determinar el vehículo principal (primero de la lista o el guardado en localStorage)
     const vehiculoPrincipalId = localStorage.getItem('vehiculoPrincipalId');
     const vehiculoPrincipal = vehiculoSeleccionado ||
         (vehiculoPrincipalId ? vehiculos.find(v => v.idVehiculos === parseInt(vehiculoPrincipalId)) : null) ||
         (vehiculos.length > 0 ? vehiculos[0] : null);
 
-    console.log("Usuario actual:", usuario);
-    console.log("Todos los vehículos:", vehiculos);
-    console.log("Vehículo principal:", vehiculoPrincipal);
+    const handleImageClick = (vehiculo) => {
+        if (vehiculo?.fotoVehiculo) {
+            const url = vehiculo.fotoVehiculo.startsWith('http')
+                ? vehiculo.fotoVehiculo
+                : `${API_BASE_URL}${vehiculo.fotoVehiculo}`;
+            setSelectedPhoto(url);
+            setShowPhotoModal(true);
+        }
+    };
 
     return (
         <div style={{
@@ -807,1024 +921,1147 @@ const DriverHome = () => {
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 {/* Tarjeta de bienvenida */}
-                <Card className="mb-4" style={cardStyle}>
-                    <Card.Body className="p-4 d-flex justify-content-between align-items-center">
+                <div style={{
+                    ...cardStyle,
+                    marginBottom: '1.5rem'
+                }}>
+                    <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <div className="d-flex align-items-center gap-2">
-                                <h2 className="fw-bold mb-0" style={{ color: '#333' }}>Panel de Conductor</h2>
-                                <Button
-                                    variant="link"
-                                    className="p-0 ms-2 fw-bold text-decoration-none shadow-none"
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <h2 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>Panel de Conductor</h2>
+                                <button
                                     onClick={repetirTutorial}
-                                    style={{ color: brandColor }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#62d8d9',
+                                        fontWeight: 'bold',
+                                        textDecoration: 'none',
+                                        cursor: 'pointer',
+                                        marginLeft: '0.5rem'
+                                    }}
                                 >
-                                    <FaInfoCircle className="me-1" /> Ayuda
-                                </Button>
+                                    <FaInfoCircle style={{ marginRight: '0.25rem' }} /> Ayuda
+                                </button>
                             </div>
-                            <p className="text-muted mb-0">Bienvenido, gestiona tu actividad diaria</p>
+                            <p style={{ color: '#6c757d', margin: 0 }}>Bienvenido, gestiona tu actividad diaria</p>
                         </div>
-                        <div className="d-flex align-items-center gap-3">
-                            <div className="text-end me-3 d-none d-md-block">
-                                <span className="small text-uppercase fw-bold text-muted d-block">Ganancias {periodo}</span>
-                                <h3 className="fw-bold mb-0" style={{ color: brandColor }}>${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{ textAlign: 'right', marginRight: '1rem', display: 'none', '@media (minWidth: 768px)': { display: 'block' } }}>
+                                <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', fontWeight: 'bold', color: '#6c757d', display: 'block' }}>Ganancias {periodo}</span>
+                                <h3 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h3>
                             </div>
-                            <div className="bg-light p-1 rounded-3 d-flex gap-1 border">
-                                <Badge
-                                    bg={periodo === 'diario' ? 'primary' : 'light'}
-                                    text={periodo === 'diario' ? 'white' : 'dark'}
-                                    className="cursor-pointer py-2 px-3"
-                                    onClick={() => setPeriodo('diario')}
-                                    style={{ cursor: 'pointer', backgroundColor: periodo === 'diario' ? brandColor : '' }}
-                                >Día</Badge>
-                                <Badge
-                                    bg={periodo === 'mensual' ? 'primary' : 'light'}
-                                    text={periodo === 'mensual' ? 'white' : 'dark'}
-                                    className="cursor-pointer py-2 px-3"
-                                    onClick={() => setPeriodo('mensual')}
-                                    style={{ cursor: 'pointer', backgroundColor: periodo === 'mensual' ? brandColor : '' }}
-                                >Mes</Badge>
-                                <Badge
-                                    bg={periodo === 'anual' ? 'primary' : 'light'}
-                                    text={periodo === 'anual' ? 'white' : 'dark'}
-                                    className="cursor-pointer py-2 px-3"
-                                    onClick={() => setPeriodo('anual')}
-                                    style={{ cursor: 'pointer', backgroundColor: periodo === 'anual' ? brandColor : '' }}
-                                >Año</Badge>
+                            <div style={{ backgroundColor: '#f8f9fa', padding: '0.25rem', borderRadius: '0.375rem', display: 'flex', gap: '0.25rem', border: '1px solid #dee2e6' }}>
+                                <PeriodoBadge periodo="diario" actual={periodo} onClick={() => setPeriodo('diario')}>Día</PeriodoBadge>
+                                <PeriodoBadge periodo="mensual" actual={periodo} onClick={() => setPeriodo('mensual')}>Mes</PeriodoBadge>
+                                <PeriodoBadge periodo="anual" actual={periodo} onClick={() => setPeriodo('anual')}>Año</PeriodoBadge>
                             </div>
                         </div>
-                    </Card.Body>
-                </Card>
+                    </div>
+                </div>
 
-                {/* Nuevas tarjetas de analíticas */}
-                <Row className="g-4 mb-4">
-                    <Col xs={12} sm={6} lg={3}>
-                        <Card style={{ ...cardStyle, borderBottom: `4px solid ${brandColor}` }}>
-                            <Card.Body className="d-flex align-items-center p-4">
-                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                    style={{ width: '50px', height: '50px', backgroundColor: `${brandColor}15`, color: brandColor }}>
-                                    <FaWallet size={20} />
-                                </div>
-                                <div>
-                                    <h6 className="text-muted mb-0 small">Ganancias</h6>
-                                    <h4 className="fw-bold mb-0">${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h4>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col xs={12} sm={6} lg={3}>
-                        <Card style={{ ...cardStyle, borderBottom: '4px solid #3b82f6' }}>
-                            <Card.Body className="d-flex align-items-center p-4">
-                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                    style={{ width: '50px', height: '50px', backgroundColor: '#dbeafe', color: '#3b82f6' }}>
-                                    <FaClock size={20} />
-                                </div>
-                                <div>
-                                    <h6 className="text-muted mb-0 small">Tiempo en Línea</h6>
-                                    <h4 className="fw-bold mb-0">{statsAvanzadas.tiempoEnLinea.totalHoras}h</h4>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col xs={12} sm={6} lg={3}>
-                        <Card
-                            style={{ ...cardStyle, borderBottom: '4px solid #10b981', cursor: 'pointer' }}
-                            onClick={() => {
-                                setBusquedaViajes('');
-                                setFiltroEstado('FINALIZADO');
-                                setShowHistorialCompleto(true);
-                            }}
-                        >
-                            <Card.Body className="d-flex align-items-center p-4">
-                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                    style={{ width: '50px', height: '50px', backgroundColor: '#d1fae5', color: '#10b981' }}>
-                                    <FaCheckCircle size={20} />
-                                </div>
-                                <div>
-                                    <h6 className="text-muted mb-0 small">Viajes Finalizados</h6>
-                                    <h4 className="fw-bold mb-0">{statsAvanzadas.resumenViajes.total}</h4>
-                                    <small className="text-success fw-bold mt-1" style={{ fontSize: '0.75rem' }}>Ver lista de viajes</small>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col xs={12} sm={6} lg={3}>
-                        <Card style={{ ...cardStyle, borderBottom: '4px solid #f59e0b' }}>
-                            <Card.Body className="d-flex align-items-center p-4">
-                                <div className="rounded-circle d-flex align-items-center justify-content-center me-3"
-                                    style={{ width: '50px', height: '50px', backgroundColor: '#fef3c7', color: '#f59e0b' }}>
-                                    <FaRoute size={20} />
-                                </div>
-                                <div>
-                                    <h6 className="text-muted mb-0 small">Ruta Principal</h6>
-                                    <h4 className="fw-bold mb-0" style={{ fontSize: '0.9rem' }}>
-                                        {statsAvanzadas.rutasFrecuentes[0]?.name || 'N/A'}
-                                    </h4>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                {/* Tarjetas de estadísticas */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <StatsCard
+                        icon={<FaWallet size={20} />}
+                        title="Ganancias"
+                        value={`$${Number(statsAvanzadas.ganancias.total).toLocaleString()}`}
+                        color="#62d8d9"
+                        bgColor="#62d8d915"
+                    />
+                    <StatsCard
+                        icon={<FaClock size={20} />}
+                        title="Tiempo en Línea"
+                        value={`${statsAvanzadas.tiempoEnLinea.totalHoras}h`}
+                        color="#113d69"
+                        bgColor="#113d6915"
+                    />
+                    <StatsCard
+                        icon={<FaCheckCircle size={20} />}
+                        title="Viajes Finalizados"
+                        value={statsAvanzadas.resumenViajes.total}
+                        color="#62d8d9"
+                        bgColor="#62d8d915"
+                    />
+                    <StatsCard
+                        icon={<FaRoute size={20} />}
+                        title="Ruta Principal"
+                        value={statsAvanzadas.rutasFrecuentes[0]?.name || 'N/A'}
+                        color="#113d69"
+                        bgColor="#113d6915"
+                    />
+                </div>
 
-                <Row className="g-4 mb-4">
-                    <Col lg={4}>
-                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
-                            <Card.Body className="p-4">
-                                <div className="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 className="fw-bold mb-0" style={{ color: brandColor }}>Ganancias</h5>
-                                    <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill shadow-sm">Tendencia {periodo}</Badge>
-                                </div>
-                                <div style={{ height: '250px' }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={statsAvanzadas.ganancias.historial}>
-                                            <defs>
-                                                <linearGradient id="colorGanancias" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor={accentColor} stopOpacity={0.8} />
-                                                    <stop offset="95%" stopColor={accentColor} stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                                            <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                            <Area type="monotone" dataKey="value" stroke={accentColor} fillOpacity={1} fill="url(#colorGanancias)" name="Ganancias ($)" />
-                                        </AreaChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col lg={4}>
-                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
-                            <Card.Body className="p-4">
-                                <div className="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 className="fw-bold mb-0" style={{ color: brandColor }}>Frecuencia</h5>
-                                    <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill shadow-sm">Viajes {periodo}</Badge>
-                                </div>
-                                <div style={{ height: '250px' }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={statsAvanzadas.resumenViajes.historial}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                                            <Tooltip cursor={{ fill: 'rgba(84, 199, 184, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                            <Bar dataKey="value" fill={brandColor} radius={[4, 4, 0, 0]} name="Viajes" barSize={20} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                    <Col lg={4}>
-                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
-                            <Card.Body className="p-4">
-                                <div className="d-flex justify-content-between align-items-center mb-4">
-                                    <h5 className="fw-bold mb-0" style={{ color: brandColor }}>Actividad</h5>
-                                    <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill shadow-sm">Horas {periodo}</Badge>
-                                </div>
-                                <div style={{ height: '250px' }}>
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={statsAvanzadas.tiempoEnLinea.historial}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
-                                            <Tooltip cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                            <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Horas" barSize={20} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                {/* Gráficos */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ ...cardStyle, height: '100%' }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <h5 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>Ganancias</h5>
+                                <StatsBadge bgColor="#f8f9fa" color="#113d69">Tendencia {periodo}</StatsBadge>
+                            </div>
+                            <div style={{ height: '250px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={statsAvanzadas.ganancias.historial}>
+                                        <defs>
+                                            <linearGradient id="colorGanancias" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#113d69" stopOpacity={0.8} />
+                                                <stop offset="95%" stopColor="#113d69" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                        <Area type="monotone" dataKey="value" stroke="#113d69" fillOpacity={1} fill="url(#colorGanancias)" name="Ganancias ($)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
 
-                {/* ========== SECCIÓN COMISIÓN PLATAFORMA ========== */}
-                <Row className="g-4 mb-4">
-                    <Col lg={6}>
-                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
-                            <Card.Body className="p-4">
-                                <div className="d-flex align-items-center mb-3">
-                                    <div style={{
-                                        width: '40px', height: '40px', borderRadius: '12px',
-                                        backgroundColor: '#fef3c715', display: 'flex',
-                                        alignItems: 'center', justifyContent: 'center', marginRight: '12px'
-                                    }}>
-                                        <FaWallet size={20} style={{ color: '#f59e0b' }} />
+                    <div style={{ ...cardStyle, height: '100%' }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <h5 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>Frecuencia</h5>
+                                <StatsBadge bgColor="#f8f9fa" color="#113d69">Viajes {periodo}</StatsBadge>
+                            </div>
+                            <div style={{ height: '250px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={statsAvanzadas.resumenViajes.historial}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                        <Tooltip cursor={{ fill: 'rgba(84, 199, 184, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                        <Bar dataKey="value" fill="#62d8d9" radius={[4, 4, 0, 0]} name="Viajes" barSize={20} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ ...cardStyle, height: '100%' }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <h5 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>Actividad</h5>
+                                <StatsBadge bgColor="#f8f9fa" color="#113d69">Horas {periodo}</StatsBadge>
+                            </div>
+                            <div style={{ height: '250px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={statsAvanzadas.tiempoEnLinea.historial}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 10 }} />
+                                        <Tooltip cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                        <Bar dataKey="value" fill="#113d69" radius={[4, 4, 0, 0]} name="Horas" barSize={20} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Comisión y Comprobante */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ ...cardStyle, height: '100%' }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div style={{
+                                    width: '40px', height: '40px', borderRadius: '12px',
+                                    backgroundColor: '#62d8d915', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center', marginRight: '12px'
+                                }}>
+                                    <FaWallet size={20} style={{ color: '#62d8d9' }} />
+                                </div>
+                                <h5 style={{ margin: 0, fontWeight: 'bold', color: '#113d69' }}>Comisión del Mes (10%)</h5>
+                            </div>
+
+                            {cargandoComision ? (
+                                <div style={{ textAlign: 'center', padding: '1rem' }}><Spinner size="sm" style={{ color: '#62d8d9' }} /></div>
+                            ) : comisionInfo ? (
+                                <>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
+                                        <span style={{ color: '#6c757d' }}>Ingresos del mes</span>
+                                        <span style={{ fontWeight: 'bold', color: '#113d69' }}>${comisionInfo.totalIngresos?.toLocaleString()} COP</span>
                                     </div>
-                                    <h5 className="mb-0 fw-bold" style={{ color: '#333' }}>Comisión del Mes (10%)</h5>
-                                </div>
-
-                                {cargandoComision ? (
-                                    <div className="text-center py-3"><Spinner size="sm" style={{ color: brandColor }} /></div>
-                                ) : comisionInfo ? (
-                                    <>
-                                        <div className="d-flex justify-content-between p-3 rounded-3 mb-2" style={{ backgroundColor: '#f8f9fa' }}>
-                                            <span className="text-muted">Ingresos del mes</span>
-                                            <span className="fw-bold">${comisionInfo.totalIngresos?.toLocaleString()} COP</span>
-                                        </div>
-                                        <div className="d-flex justify-content-between p-3 rounded-3 mb-2" style={{ backgroundColor: '#fff3cd' }}>
-                                            <span className="fw-semibold">Comisión a pagar (10%)</span>
-                                            <span className="fw-bold" style={{ color: '#e67e22' }}>${comisionInfo.totalComision?.toLocaleString()} COP</span>
-                                        </div>
-                                        <div className="d-flex justify-content-between p-3 rounded-3 mb-2" style={{ backgroundColor: '#f8f9fa' }}>
-                                            <span className="text-muted">Viajes completados</span>
-                                            <span className="fw-bold">{comisionInfo.viajesCompletados}</span>
-                                        </div>
-                                        <div className="d-flex justify-content-between p-3 rounded-3" style={{ backgroundColor: comisionInfo.reporteEnviado ? '#d4edda' : '#f8d7da' }}>
-                                            <span>Estado del reporte</span>
-                                            <Badge bg={comisionInfo.estadoReporte === 'APROBADO' ? 'success' : comisionInfo.estadoReporte === 'PENDIENTE' ? 'warning' : comisionInfo.reporteEnviado ? 'danger' : 'secondary'}>
-                                                {comisionInfo.estadoReporte || 'Sin enviar'}
-                                            </Badge>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <p className="text-muted">No hay datos disponibles</p>
-                                )}
-                            </Card.Body>
-                        </Card>
-                    </Col>
-
-                    <Col lg={6}>
-                        <Card style={cardStyle} className="h-100 border-0 shadow-sm">
-                            <Card.Body className="p-4">
-                                <div className="d-flex align-items-center mb-3">
-                                    <div style={{
-                                        width: '40px', height: '40px', borderRadius: '12px',
-                                        backgroundColor: `${brandColor}15`, display: 'flex',
-                                        alignItems: 'center', justifyContent: 'center', marginRight: '12px'
-                                    }}>
-                                        <FaFileAlt size={20} style={{ color: brandColor }} />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#62d8d915', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
+                                        <span style={{ fontWeight: '600' }}>Comisión a pagar (10%)</span>
+                                        <span style={{ fontWeight: 'bold', color: '#62d8d9' }}>${comisionInfo.totalComision?.toLocaleString()} COP</span>
                                     </div>
-                                    <h5 className="mb-0 fw-bold" style={{ color: '#333' }}>Enviar Comprobante de Pago</h5>
-                                </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
+                                        <span style={{ color: '#6c757d' }}>Viajes completados</span>
+                                        <span style={{ fontWeight: 'bold', color: '#113d69' }}>{comisionInfo.viajesCompletados}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: comisionInfo.reporteEnviado ? '#62d8d915' : '#f8d7da', borderRadius: '0.375rem' }}>
+                                        <span>Estado del reporte</span>
+                                        <DocumentoBadge estado={comisionInfo.estadoReporte || 'Sin enviar'} />
+                                    </div>
+                                </>
+                            ) : (
+                                <p style={{ color: '#6c757d' }}>No hay datos disponibles</p>
+                            )}
+                        </div>
+                    </div>
 
-                                {comisionInfo?.reporteEnviado && comisionInfo?.estadoReporte !== 'RECHAZADO' ? (
-                                    <Alert variant={comisionInfo.estadoReporte === 'APROBADO' ? 'success' : 'info'}
-                                        style={{ borderRadius: '10px' }}>
-                                        {comisionInfo.estadoReporte === 'APROBADO'
-                                            ? '✅ Tu comprobante ha sido aprobado. ¡Gracias!'
-                                            : '⏳ Tu comprobante está pendiente de revisión por el administrador.'}
-                                    </Alert>
-                                ) : (
-                                    <>
-                                        <Form.Group className="mb-3">
-                                            <Form.Label className="small text-muted">Foto del comprobante de pago</Form.Label>
-                                            <Form.Control
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                style={{ borderRadius: '8px' }}
+                    <div style={{ ...cardStyle, height: '100%' }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div style={{
+                                    width: '40px', height: '40px', borderRadius: '12px',
+                                    backgroundColor: '#113d6915', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center', marginRight: '12px'
+                                }}>
+                                    <FaFileAlt size={20} style={{ color: '#113d69' }} />
+                                </div>
+                                <h5 style={{ margin: 0, fontWeight: 'bold', color: '#62d8d9' }}>Enviar Comprobante de Pago</h5>
+                            </div>
+
+                            {comisionInfo?.reporteEnviado && comisionInfo?.estadoReporte !== 'RECHAZADO' ? (
+                                <div style={{
+                                    padding: '1rem',
+                                    backgroundColor: comisionInfo.estadoReporte === 'APROBADO' ? '#d4edda' : '#cce5ff',
+                                    borderRadius: '0.375rem',
+                                    color: comisionInfo.estadoReporte === 'APROBADO' ? '#155724' : '#004085'
+                                }}>
+                                    {comisionInfo.estadoReporte === 'APROBADO'
+                                        ? '✅ Tu comprobante ha sido aprobado. ¡Gracias!'
+                                        : '⏳ Tu comprobante está pendiente de revisión por el administrador.'}
+                                </div>
+                            ) : (
+                                <>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <label style={{ fontSize: '0.875rem', color: '#6c757d', display: 'block', marginBottom: '0.5rem' }}>Foto del comprobante de pago</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.375rem 0.75rem',
+                                                borderRadius: '0.375rem',
+                                                border: '1px solid #ced4da'
+                                            }}
+                                        />
+                                    </div>
+
+                                    {fotoComprobante && (
+                                        <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
+                                            <img
+                                                src={fotoComprobante}
+                                                style={{ maxHeight: '200px', borderRadius: '0.375rem', border: '1px solid #62d8d9' }}
+                                                alt="Comprobante"
                                             />
-                                        </Form.Group>
-
-                                        {fotoComprobante && (
-                                            <div className="mb-3 text-center">
-                                                <Image
-                                                    src={fotoComprobante}
-                                                    style={{ maxHeight: '200px', borderRadius: '10px', border: '1px solid #eee' }}
-                                                    fluid
-                                                />
-                                            </div>
-                                        )}
-
-                                        <Button
-                                            className="w-100"
-                                            style={{ backgroundColor: brandColor, border: 'none', borderRadius: '10px', padding: '10px' }}
-                                            onClick={enviarReportePago}
-                                            disabled={enviandoReporte || !fotoComprobante}
-                                        >
-                                            {enviandoReporte ? <Spinner size="sm" className="me-2" /> : null}
-                                            Enviar Comprobante
-                                        </Button>
-                                    </>
-                                )}
-
-                                {/* Historial de reportes */}
-                                {misReportes.length > 0 && (
-                                    <div className="mt-3">
-                                        <h6 className="text-muted small mb-2">Historial de reportes</h6>
-                                        {misReportes.slice(0, 3).map(reporte => (
-                                            <div key={reporte.idReporte}
-                                                className="d-flex justify-content-between align-items-center p-2 rounded-2 mb-1"
-                                                style={{ backgroundColor: '#f8f9fa', fontSize: '0.85rem' }}>
-                                                <span>{new Date(reporte.mesCorrespondiente).toLocaleDateString('es-CO', { year: 'numeric', month: 'short' })}</span>
-                                                <span>${Number(reporte.montoComision).toLocaleString()}</span>
-                                                <Badge bg={reporte.estado === 'APROBADO' ? 'success' : reporte.estado === 'PENDIENTE' ? 'warning' : 'danger'} style={{ fontSize: '0.7rem' }}>
-                                                    {reporte.estado}
-                                                </Badge>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
-
-                <Row className="g-4 mb-4">
-                    {/* Tarjeta de Vehículo */}
-                    <Col lg={7}>
-                        <Card className="h-100" style={cardStyle}>
-                            <Card.Body className="p-4">
-                                <div className="d-flex align-items-center justify-content-between mb-4">
-                                    <div className="d-flex align-items-center">
-                                        <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '12px',
-                                            backgroundColor: `${brandColor}15`,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            marginRight: '12px'
-                                        }}>
-                                            <FaCar size={20} style={{ color: brandColor }} />
                                         </div>
-                                        <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Vehículo Activo</h5>
-                                    </div>
-
-                                    {/* NUEVO: Botón para ver todos los vehículos */}
-                                    {vehiculos.length > 1 && (
-                                        <Button
-                                            variant="outline-info"
-                                            size="sm"
-                                            className="rounded-pill"
-                                            onClick={verTodosLosVehiculos}
-                                            style={{ borderColor: brandColor, color: brandColor }}
-                                        >
-                                            <FaList className="me-1" /> Ver todos ({vehiculos.length})
-                                        </Button>
                                     )}
+
+                                    <AccionButton
+                                        variant="primary"
+                                        onClick={enviarReportePago}
+                                        disabled={enviandoReporte || !fotoComprobante}
+                                        style={{ width: '100%' }}
+                                    >
+                                        {enviandoReporte ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
+                                        Enviar Comprobante
+                                    </AccionButton>
+                                </>
+                            )}
+
+                            {misReportes.length > 0 && (
+                                <div style={{ marginTop: '1rem' }}>
+                                    <h6 style={{ color: '#6c757d', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Historial de reportes</h6>
+                                    {misReportes.slice(0, 3).map(reporte => (
+                                        <div key={reporte.idReporte}
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                padding: '0.5rem',
+                                                backgroundColor: '#f8f9fa',
+                                                borderRadius: '0.25rem',
+                                                marginBottom: '0.25rem',
+                                                fontSize: '0.85rem'
+                                            }}>
+                                            <span style={{ color: '#113d69' }}>{new Date(reporte.mesCorrespondiente).toLocaleDateString('es-CO', { year: 'numeric', month: 'short' })}</span>
+                                            <span style={{ color: '#62d8d9' }}>${Number(reporte.montoComision).toLocaleString()}</span>
+                                            <DocumentoBadge estado={reporte.estado} />
+                                        </div>
+                                    ))}
                                 </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
 
-                                {cargandoVehiculo ? (
-                                    <div className="text-center py-5">
-                                        <Spinner animation="border" style={{ color: brandColor }} />
-                                    </div>
-                                ) : errorVehiculo ? (
-                                    <div className="text-center py-4" style={{ backgroundColor: '#FEF2F2', borderRadius: '16px' }}>
-                                        <p className="small text-danger mb-2">{errorVehiculo}</p>
-                                        <Button variant="outline-secondary" size="sm" onClick={() => window.location.reload()}>Reintentar</Button>
-                                    </div>
-                                ) : vehiculoPrincipal ? (
-                                    <div style={{
-                                        padding: '16px',
-                                        borderRadius: '16px',
-                                        backgroundColor: '#F9FAFB',
-                                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
-                                    }}>
-                                        <Row className="align-items-center">
-                                            <Col xs={3} className="text-center">
-                                                <VehiculoImage vehiculo={vehiculoPrincipal} size={60} brandColor={brandColor} />
-                                            </Col>
-                                            <Col xs={9}>
-                                                <h6 className="fw-semibold mb-1" style={{ color: '#333', fontSize: '1.1rem' }}>
-                                                    {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}
-                                                </h6>
-                                                <p className="mb-1 text-muted small">Placa: <span className="text-dark fw-semibold">{vehiculoPrincipal.placa}</span></p>
-                                                <p className="mb-0 text-muted small">Capacidad: {vehiculoPrincipal.capacidad} pasajeros</p>
-                                                {vehiculoPrincipal.placaValidada && (
-                                                    <Badge bg="success" className="mt-2 rounded-pill">
-                                                        <FaCheckCircle className="me-1" size={10} /> Placa validada
-                                                    </Badge>
-                                                )}
-                                                {vehiculoPrincipal.fotoVehiculo && (
-                                                    <Button
-                                                        variant="link"
-                                                        size="sm"
-                                                        className="p-0 text-decoration-none mt-2"
-                                                        onClick={() => {
-                                                            const url = vehiculoPrincipal.fotoVehiculo.startsWith('http')
-                                                                ? vehiculoPrincipal.fotoVehiculo
-                                                                : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`;
-                                                            setSelectedPhoto(url);
-                                                            setShowPhotoModal(true);
-                                                        }}
-                                                    >
-                                                        <FaEye className="me-1" /> Ver foto completa
-                                                    </Button>
-                                                )}
-                                            </Col>
-                                        </Row>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-4" style={{ backgroundColor: '#F9FAFB', borderRadius: '16px' }}>
-                                        <p className="text-muted small mb-3">No tienes un vehículo registrado</p>
-                                        <Button
-                                            style={{ backgroundColor: brandColor, border: 'none', color: 'white' }}
-                                            className="fw-semibold px-4 py-2"
-                                            onClick={() => navigate("/vehicle-registration")}
-                                        >
-                                            Registrar ahora
-                                        </Button>
-                                    </div>
-                                )}
-
-                                {vehiculoPrincipal && (
-                                    <div className="d-flex flex-column gap-2 mt-3">
-                                        <Button
-                                            variant="outline-primary"
-                                            className="w-100 fw-semibold rounded-pill py-2"
-                                            style={{ borderColor: brandColor, color: brandColor }}
-                                            onClick={handleAbrirSolicitud}
-                                        >
-                                            Solicitar Cambio de Datos
-                                        </Button>
-                                        <Button
-                                            variant="link"
-                                            className="p-0 text-decoration-none fw-semibold small shadow-none"
-                                            style={{ color: '#666' }}
-                                            onClick={() => navigate("/vehicle-registration")}
-                                        >
-                                            Registrar Otro Vehículo
-                                            <FaArrowRight size={12} className="ms-1" style={{ color: brandColor }} />
-                                        </Button>
-                                    </div>
-                                )}
-                            </Card.Body>
-                        </Card>
-                    </Col>
-
-                    <Col lg={5}>
-                        <Card className="h-100" style={cardStyle}>
-                            <Card.Body className="p-4 d-flex flex-column">
-                                <div className="d-flex align-items-center mb-4">
+                {/* Vehículo y Licencia */}
+                <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ ...cardStyle, height: '100%' }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <div style={{
                                         width: '40px',
                                         height: '40px',
                                         borderRadius: '12px',
-                                        backgroundColor: `${brandColor}15`,
+                                        backgroundColor: '#62d8d915',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         marginRight: '12px'
                                     }}>
-                                        <FaIdCard size={20} style={{ color: brandColor }} />
+                                        <FaCar size={20} style={{ color: '#62d8d9' }} />
                                     </div>
-                                    <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Licencia de Conducir</h5>
+                                    <h5 style={{ margin: 0, fontWeight: '600', color: '#113d69' }}>Vehículo Activo</h5>
                                 </div>
 
-                                {cargandoDocumentos ? (
-                                    <div className="text-center py-4">
-                                        <Spinner animation="border" size="sm" style={{ color: brandColor }} />
-                                        <p className="mt-2 text-muted small">Cargando documentos...</p>
-                                    </div>
-                                ) : errorDocumentos ? (
-                                    <Alert variant="danger" className="py-2">
-                                        <small>{errorDocumentos}</small>
-                                    </Alert>
-                                ) : licencia ? (
-                                    <div className="mb-auto">
-                                        <ListGroup variant="flush">
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                <span className="text-muted small">Número</span>
-                                                <span className="fw-semibold" style={{ color: '#333' }}>{licencia.numeroDocumento || 'Sin número'}</span>
-                                            </ListGroup.Item>
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                <span className="text-muted small">Expedición</span>
-                                                <span className="fw-semibold" style={{ color: '#333' }}>{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
-                                            </ListGroup.Item>
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                <span className="text-muted small">Subida</span>
-                                                <span className="fw-semibold" style={{ color: '#333' }}>{formatearFechaSubida(licencia.fechaSubida)}</span>
-                                            </ListGroup.Item>
-                                            <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 border-0 py-2">
-                                                <span className="text-muted small">Estado</span>
-                                                {getDocumentoBadge(licencia.estado)}
-                                            </ListGroup.Item>
-                                        </ListGroup>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-4">
-                                        <p className="text-muted small">No tienes una licencia registrada</p>
-                                        <Button
-                                            className="mt-2 fw-semibold py-2"
-                                            style={{ backgroundColor: brandColor, border: 'none', color: 'white' }}
-                                            onClick={() => navigate("/documentacion")}
-                                        >
-                                            Subir licencia
-                                        </Button>
-                                    </div>
-                                )}
-
-                                {licencia && (
-                                    <Button
-                                        className="w-100 mt-4 fw-semibold py-2"
+                                {vehiculos.length > 1 && (
+                                    <button
+                                        onClick={verTodosLosVehiculos}
                                         style={{
-                                            backgroundColor: brandColor,
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '12px',
-                                            boxShadow: '0 4px 12px rgba(84, 199, 184, 0.3)'
+                                            background: 'none',
+                                            border: `1px solid #62d8d9`,
+                                            color: '#62d8d9',
+                                            borderRadius: '2rem',
+                                            padding: '0.25rem 0.75rem',
+                                            fontSize: '0.875rem',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.25rem'
                                         }}
-                                        onClick={() => navigate("/documentacion")}
                                     >
-                                        ACTUALIZAR LICENCIA
-                                    </Button>
+                                        <FaList /> Ver todos ({vehiculos.length})
+                                    </button>
                                 )}
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                            </div>
 
-                <Row className="mt-4">
-                    <Col lg={12}>
-                        {documentos && documentos.some(d => d.estado === 'RECHAZADO') && (
-                            <Alert variant="danger" className="border-0 mb-4" style={{ borderRadius: '16px', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)' }}>
-                                <div className="d-flex align-items-center">
-                                    <FaInfoCircle size={24} className="me-3" />
-                                    <div>
-                                        <h5 className="mb-1 fw-semibold">Documentación Rechazada</h5>
-                                        <p className="mb-0 small">Tu documentación no ha sido aprobada. No podrás publicar nuevos viajes hasta que actualices tus documentos.</p>
+                            {cargandoVehiculo ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <Spinner animation="border" style={{ color: '#62d8d9' }} />
+                                </div>
+                            ) : errorVehiculo ? (
+                                <div style={{ textAlign: 'center', padding: '1.5rem', backgroundColor: '#FEF2F2', borderRadius: '1rem' }}>
+                                    <p style={{ fontSize: '0.875rem', color: '#dc3545', marginBottom: '0.5rem' }}>{errorVehiculo}</p>
+                                    <AccionButton variant="outline-secondary" onClick={() => window.location.reload()}>Reintentar</AccionButton>
+                                </div>
+                            ) : vehiculoPrincipal ? (
+                                <div style={{
+                                    padding: '1rem',
+                                    borderRadius: '1rem',
+                                    backgroundColor: '#F9FAFB',
+                                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <div style={{ width: '25%', textAlign: 'center' }}>
+                                            <VehiculoImage
+                                                vehiculo={vehiculoPrincipal}
+                                                size={60}
+                                                onClick={() => handleImageClick(vehiculoPrincipal)}
+                                            />
+                                        </div>
+                                        <div style={{ width: '75%' }}>
+                                            <h6 style={{ fontWeight: '600', marginBottom: '0.25rem', color: '#113d69', fontSize: '1.1rem' }}>
+                                                {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}
+                                            </h6>
+                                            <p style={{ marginBottom: '0.25rem', color: '#6c757d', fontSize: '0.875rem' }}>Placa: <span style={{ fontWeight: '600', color: '#62d8d9' }}>{vehiculoPrincipal.placa}</span></p>
+                                            <p style={{ marginBottom: 0, color: '#6c757d', fontSize: '0.875rem' }}>Capacidad: {vehiculoPrincipal.capacidad} pasajeros</p>
+                                            {vehiculoPrincipal.placaValidada && (
+                                                <span style={{
+                                                    marginTop: '0.5rem',
+                                                    display: 'inline-block',
+                                                    padding: '0.25rem 0.75rem',
+                                                    borderRadius: '2rem',
+                                                    backgroundColor: '#62d8d9',
+                                                    color: 'white',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '500'
+                                                }}>
+                                                    <FaCheckCircle style={{ marginRight: '0.25rem' }} size={10} /> Placa validada
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <Button
-                                        variant="danger"
-                                        className="ms-auto rounded-pill px-4 fw-semibold border-0"
-                                        style={{ boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)' }}
-                                        onClick={() => navigate("/documentacion")}
+                                </div>
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '1.5rem', backgroundColor: '#F9FAFB', borderRadius: '1rem' }}>
+                                    <p style={{ color: '#6c757d', fontSize: '0.875rem', marginBottom: '0.75rem' }}>No tienes un vehículo registrado</p>
+                                    <AccionButton
+                                        variant="primary"
+                                        onClick={() => navigate("/vehicle-registration")}
                                     >
-                                        ACTUALIZAR
-                                    </Button>
+                                        Registrar ahora
+                                    </AccionButton>
                                 </div>
-                            </Alert>
-                        )}
+                            )}
 
-                        {/* Tarjeta de Viajes */}
-                        <Card className="border-0" style={{ borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
-                            <Card.Body className="p-4">
-                                <div className="d-flex align-items-center justify-content-between mb-4">
-                                    <div className="d-flex align-items-center">
-                                        <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '12px',
-                                            backgroundColor: `${brandColor}15`,
+                            {vehiculoPrincipal && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+                                    <AccionButton
+                                        variant="outline-primary"
+                                        onClick={handleAbrirSolicitud}
+                                        style={{ width: '100%' }}
+                                    >
+                                        Solicitar Cambio de Datos
+                                    </AccionButton>
+                                    <button
+                                        onClick={() => navigate("/vehicle-registration")}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            padding: 0,
+                                            color: '#113d69',
+                                            fontWeight: '600',
+                                            fontSize: '0.875rem',
+                                            textDecoration: 'none',
+                                            cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            marginRight: '12px'
-                                        }}>
-                                            <FaHistory size={20} style={{ color: brandColor }} />
+                                            gap: '0.25rem'
+                                        }}
+                                    >
+                                        Registrar Otro Vehículo
+                                        <FaArrowRight size={12} style={{ color: '#62d8d9' }} />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div style={{ ...cardStyle, height: '100%' }}>
+                        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '12px',
+                                    backgroundColor: '#113d6915',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginRight: '12px'
+                                }}>
+                                    <FaIdCard size={20} style={{ color: '#113d69' }} />
+                                </div>
+                                <h5 style={{ margin: 0, fontWeight: '600', color: '#62d8d9' }}>Licencia de Conducir</h5>
+                            </div>
+
+                            {cargandoDocumentos ? (
+                                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                                    <Spinner animation="border" size="sm" style={{ color: '#62d8d9' }} />
+                                    <p style={{ marginTop: '0.5rem', color: '#6c757d', fontSize: '0.875rem' }}>Cargando documentos...</p>
+                                </div>
+                            ) : errorDocumentos ? (
+                                <div style={{ padding: '0.5rem', backgroundColor: '#f8d7da', borderRadius: '0.25rem', color: '#721c24' }}>
+                                    <small>{errorDocumentos}</small>
+                                </div>
+                            ) : licencia ? (
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ marginBottom: 'auto' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Número</span>
+                                            <span style={{ fontWeight: '600', color: '#113d69' }}>{licencia.numeroDocumento || 'Sin número'}</span>
                                         </div>
-                                        <h5 className="mb-0 fw-semibold" style={{ color: '#333' }}>Viajes Recientes</h5>
-                                    </div>
-                                    <div className="d-flex gap-2">
-                                        <Badge bg="success" className="rounded-pill px-3 py-2 fw-normal">
-                                            {estadisticasViajes.completados} Completados
-                                        </Badge>
-                                        {estadisticasViajes.enCurso > 0 && (
-                                            <Badge bg="warning" className="rounded-pill px-3 py-2 fw-normal">
-                                                {estadisticasViajes.enCurso} En curso
-                                            </Badge>
-                                        )}
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Expedición</span>
+                                            <span style={{ fontWeight: '600', color: '#62d8d9' }}>{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Subida</span>
+                                            <span style={{ fontWeight: '600', color: '#113d69' }}>{formatearFechaSubida(licencia.fechaSubida)}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Estado</span>
+                                            <DocumentoBadge estado={licencia.estado} />
+                                        </div>
                                     </div>
                                 </div>
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                                    <p style={{ color: '#6c757d', fontSize: '0.875rem' }}>No tienes una licencia registrada</p>
+                                    <AccionButton
+                                        variant="primary"
+                                        onClick={() => navigate("/documentacion")}
+                                        style={{ marginTop: '0.5rem' }}
+                                    >
+                                        Subir licencia
+                                    </AccionButton>
+                                </div>
+                            )}
 
-                                {cargandoViajes ? (
-                                    <div className="text-center py-4">
-                                        <Spinner animation="border" style={{ color: brandColor }} />
-                                        <p className="mt-2 text-muted small">Cargando viajes...</p>
+                            {licencia && (
+                                <AccionButton
+                                    variant="secondary"
+                                    onClick={() => navigate("/documentacion")}
+                                    style={{ width: '100%', marginTop: '1rem' }}
+                                >
+                                    ACTUALIZAR LICENCIA
+                                </AccionButton>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Viajes Recientes */}
+                <div style={{ marginTop: '1rem' }}>
+                    {documentos && documentos.some(d => d.estado === 'RECHAZADO') && (
+                        <div style={{
+                            padding: '1rem',
+                            backgroundColor: '#f8d7da',
+                            borderRadius: '1rem',
+                            marginBottom: '1rem',
+                            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}>
+                            <FaInfoCircle size={24} style={{ marginRight: '0.75rem', color: '#dc3545' }} />
+                            <div style={{ flex: 1 }}>
+                                <h5 style={{ marginBottom: '0.25rem', fontWeight: '600' }}>Documentación Rechazada</h5>
+                                <p style={{ marginBottom: 0, fontSize: '0.875rem' }}>Tu documentación no ha sido aprobada. No podrás publicar nuevos viajes hasta que actualices tus documentos.</p>
+                            </div>
+                            <AccionButton
+                                variant="danger"
+                                onClick={() => navigate("/documentacion")}
+                                style={{ marginLeft: '1rem' }}
+                            >
+                                ACTUALIZAR
+                            </AccionButton>
+                        </div>
+                    )}
+
+                    <div style={{ ...cardStyle, borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
+                        <div style={{ padding: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '12px',
+                                        backgroundColor: '#62d8d915',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginRight: '12px'
+                                    }}>
+                                        <FaHistory size={20} style={{ color: '#62d8d9' }} />
                                     </div>
-                                ) : errorViajes ? (
-                                    <div className="text-center py-4">
-                                        <p className="text-danger small">{errorViajes}</p>
-                                        <Button
-                                            variant="outline-secondary"
-                                            size="sm"
-                                            onClick={() => window.location.reload()}
-                                        >
-                                            Reintentar
-                                        </Button>
+                                    <h5 style={{ margin: 0, fontWeight: '600', color: '#113d69' }}>Viajes Recientes</h5>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <StatsBadge bgColor="#62d8d9" color="#ffffff">
+                                        {estadisticasViajes.completados} Completados
+                                    </StatsBadge>
+                                    {estadisticasViajes.enCurso > 0 && (
+                                        <StatsBadge bgColor="#113d69" color="#ffffff">
+                                            {estadisticasViajes.enCurso} En curso
+                                        </StatsBadge>
+                                    )}
+                                </div>
+                            </div>
+
+                            {cargandoViajes ? (
+                                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                                    <Spinner animation="border" style={{ color: '#62d8d9' }} />
+                                    <p style={{ marginTop: '0.5rem', color: '#6c757d', fontSize: '0.875rem' }}>Cargando viajes...</p>
+                                </div>
+                            ) : errorViajes ? (
+                                <div style={{ textAlign: 'center', padding: '1rem' }}>
+                                    <p style={{ color: '#dc3545', fontSize: '0.875rem' }}>{errorViajes}</p>
+                                    <AccionButton variant="outline-secondary" onClick={() => window.location.reload()}>
+                                        Reintentar
+                                    </AccionButton>
+                                </div>
+                            ) : viajesRecientes.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#F3F4F6',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 1rem'
+                                    }}>
+                                        <FaHistory size={24} style={{ color: '#6c757d' }} />
                                     </div>
-                                ) : viajesRecientes.length === 0 ? (
-                                    <div className="text-center py-5">
-                                        <div style={{
-                                            width: '60px',
-                                            height: '60px',
-                                            borderRadius: '50%',
-                                            backgroundColor: '#F3F4F6',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            margin: '0 auto 16px'
-                                        }}>
-                                            <FaHistory size={24} className="text-muted" />
-                                        </div>
-                                        <p className="text-muted mb-0">No hay viajes recientes</p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <ListGroup variant="flush">
-                                            {viajesRecientes.map((viaje) => (
-                                                <ListGroup.Item
-                                                    key={viaje.idViajes}
-                                                    className="px-0 border-0 py-3"
-                                                    style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
-                                                    onClick={() => {
-                                                        setViajeSeleccionado(viaje);
-                                                        setShowDetalleViaje(true);
-                                                    }}
-                                                >
-                                                    <Row className="align-items-center">
-                                                        <Col xs={1} className="text-center">
-                                                            {vehiculoPrincipal ? (
-                                                                <VehiculoImage vehiculo={vehiculoPrincipal} size={32} brandColor={brandColor} />
-                                                            ) : (
-                                                                <div style={{
-                                                                    width: '32px',
-                                                                    height: '32px',
-                                                                    borderRadius: '10px',
-                                                                    backgroundColor: `${brandColor}10`,
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center'
-                                                                }}>
-                                                                    <FaCar size={16} color={brandColor} />
-                                                                </div>
-                                                            )}
-                                                        </Col>
-                                                        <Col xs={3}>
-                                                            <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
-                                                            <small className="text-muted">
-                                                                {formatearFecha(viaje.fechaHoraSalida)}
-                                                            </small>
-                                                        </Col>
-                                                        <Col xs={4}>
-                                                            <div className="d-flex align-items-center">
-                                                                <FaRoute size={12} color={brandColor} className="me-1" />
-                                                                <small className="text-truncate" style={{ maxWidth: '150px' }}>
-                                                                    {viaje.ruta?.nombre || 'Ruta no disponible'}
-                                                                </small>
+                                    <p style={{ color: '#6c757d', marginBottom: 0 }}>No hay viajes recientes</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                        {viajesRecientes.map((viaje) => (
+                                            <div
+                                                key={viaje.idViajes}
+                                                style={{
+                                                    padding: '0.75rem 0',
+                                                    borderBottom: '1px solid #F3F4F6',
+                                                    cursor: 'pointer'
+                                                }}
+                                                onClick={() => {
+                                                    setViajeSeleccionado(viaje);
+                                                    setShowDetalleViaje(true);
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                    <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                                        {vehiculoPrincipal ? (
+                                                            <VehiculoImage
+                                                                vehiculo={vehiculoPrincipal}
+                                                                size={32}
+                                                                onClick={() => handleImageClick(vehiculoPrincipal)}
+                                                            />
+                                                        ) : (
+                                                            <div style={{
+                                                                width: '32px',
+                                                                height: '32px',
+                                                                borderRadius: '10px',
+                                                                backgroundColor: '#62d8d910',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                margin: '0 auto'
+                                                            }}>
+                                                                <FaCar size={16} color="#62d8d9" />
                                                             </div>
-                                                        </Col>
-                                                        <Col xs={2}>
-                                                            <small className="text-muted">
-                                                                {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                                        )}
+                                                    </div>
+                                                    <div style={{ width: '25%' }}>
+                                                        <p style={{ marginBottom: 0, fontWeight: '600', color: '#113d69' }}>Viaje #{viaje.idViajes}</p>
+                                                        <small style={{ color: '#6c757d' }}>
+                                                            {formatearFecha(viaje.fechaHoraSalida)}
+                                                        </small>
+                                                    </div>
+                                                    <div style={{ width: '33.33%' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                            <FaRoute size={12} color="#62d8d9" style={{ marginRight: '0.25rem' }} />
+                                                            <small style={{ color: '#113d69' }}>
+                                                                {viaje.ruta?.nombre || 'Ruta no disponible'}
                                                             </small>
-                                                        </Col>
-                                                        <Col xs={2} className="text-end">
-                                                            <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2 fw-normal">
-                                                                {getEstadoTexto(viaje.estado)}
-                                                            </Badge>
-                                                        </Col>
-                                                    </Row>
-                                                </ListGroup.Item>
-                                            ))}
-                                        </ListGroup>
-
-                                        {todosLosViajes.length > 3 && (
-                                            <div className="text-center mt-4">
-                                                <Button
-                                                    variant="outline-secondary"
-                                                    onClick={() => setShowHistorialCompleto(true)}
-                                                    className="rounded-pill px-4 py-2 fw-semibold border-0"
-                                                    style={{ backgroundColor: '#F9FAFB', color: '#666' }}
-                                                >
-                                                    Ver historial completo ({todosLosViajes.length} viajes)
-                                                </Button>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ width: '16.67%' }}>
+                                                        <small style={{ color: '#6c757d' }}>
+                                                            {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                                        </small>
+                                                    </div>
+                                                    <div style={{ width: '16.67%', textAlign: 'right' }}>
+                                                        <EstadoViajeBadge estado={viaje.estado} />
+                                                    </div>
+                                                </div>
                                             </div>
-                                        )}
-                                    </>
-                                )}
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
+                                        ))}
+                                    </div>
+
+                                    {todosLosViajes.length > 3 && (
+                                        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                                            <AccionButton
+                                                variant="outline-secondary"
+                                                onClick={() => setShowHistorialCompleto(true)}
+                                            >
+                                                Ver historial completo ({todosLosViajes.length} viajes)
+                                            </AccionButton>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </Container>
 
-            {/* NUEVO: Modal para ver todos los vehículos */}
-            <Modal show={showVehiculosModal} onHide={() => setShowVehiculosModal(false)} size="lg" centered>
-                <Modal.Header closeButton style={{ background: brandColor, color: 'white', borderBottom: 'none' }}>
-                    <Modal.Title className="fw-semibold">
-                        <FaCar className="me-2" /> Mis Vehículos ({vehiculos.length})
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1.5rem' }}>
-                    {vehiculos.length === 0 ? (
-                        <div className="text-center py-5">
-                            <FaCar size={50} className="text-muted mb-3" />
-                            <p className="text-muted">No tienes vehículos registrados</p>
-                            <Button
-                                style={{ backgroundColor: brandColor, border: 'none' }}
+            {/* Modal de vehículos */}
+            {showVehiculosModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1050
+                }} onClick={() => setShowVehiculosModal(false)}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '800px',
+                        width: '90%',
+                        maxHeight: '80vh',
+                        overflow: 'hidden'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            backgroundColor: '#62d8d9',
+                            color: 'white',
+                            padding: '1rem',
+                            borderBottom: 'none'
+                        }}>
+                            <h5 style={{ margin: 0, fontWeight: '600' }}>
+                                <FaCar style={{ marginRight: '0.5rem' }} /> Mis Vehículos ({vehiculos.length})
+                            </h5>
+                        </div>
+                        <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(80vh - 120px)' }}>
+                            {vehiculos.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <FaCar size={50} style={{ color: '#62d8d9' }} />
+                                    <p style={{ color: '#6c757d', marginTop: '1rem' }}>No tienes vehículos registrados</p>
+                                    <AccionButton
+                                        variant="primary"
+                                        onClick={() => {
+                                            setShowVehiculosModal(false);
+                                            navigate("/vehicle-registration");
+                                        }}
+                                    >
+                                        Registrar Vehículo
+                                    </AccionButton>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                                    {vehiculos.map((vehiculo) => (
+                                        <div
+                                            key={vehiculo.idVehiculos}
+                                            style={{
+                                                border: vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos ? `2px solid #62d8d9` : `1px solid #113d6920`,
+                                                borderRadius: '0.5rem',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => seleccionarVehiculoPrincipal(vehiculo)}
+                                        >
+                                            <div style={{ padding: '1rem' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                    <VehiculoImage
+                                                        vehiculo={vehiculo}
+                                                        size={50}
+                                                        onClick={() => handleImageClick(vehiculo)}
+                                                    />
+                                                    <div style={{ flex: 1 }}>
+                                                        <h6 style={{ fontWeight: '600', marginBottom: '0.25rem', color: '#113d69' }}>
+                                                            {vehiculo.marca} {vehiculo.modelo}
+                                                            {vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos && (
+                                                                <span style={{
+                                                                    marginLeft: '0.5rem',
+                                                                    padding: '0.25rem 0.5rem',
+                                                                    backgroundColor: '#62d8d9',
+                                                                    color: 'white',
+                                                                    borderRadius: '0.25rem',
+                                                                    fontSize: '0.75rem'
+                                                                }}>Activo</span>
+                                                            )}
+                                                        </h6>
+                                                        <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem', color: '#6c757d' }}>Placa: <span style={{ color: '#62d8d9' }}>{vehiculo.placa}</span></p>
+                                                        <p style={{ marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>Capacidad: {vehiculo.capacidad} pasajeros</p>
+                                                        {vehiculo.placaValidada && (
+                                                            <span style={{
+                                                                marginTop: '0.25rem',
+                                                                display: 'inline-block',
+                                                                padding: '0.25rem 0.5rem',
+                                                                backgroundColor: '#62d8d9',
+                                                                color: 'white',
+                                                                borderRadius: '2rem',
+                                                                fontSize: '0.75rem'
+                                                            }}>Placa validada</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ padding: '1rem', borderTop: 'none', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            <AccionButton variant="outline-secondary" onClick={() => setShowVehiculosModal(false)}>
+                                Cerrar
+                            </AccionButton>
+                            <AccionButton
+                                variant="secondary"
                                 onClick={() => {
                                     setShowVehiculosModal(false);
                                     navigate("/vehicle-registration");
                                 }}
                             >
-                                Registrar Vehículo
-                            </Button>
+                                Registrar Nuevo Vehículo
+                            </AccionButton>
                         </div>
-                    ) : (
-                        <Row>
-                            {vehiculos.map((vehiculo, index) => (
-                                <Col md={6} key={vehiculo.idVehiculos} className="mb-3">
-                                    <Card style={{
-                                        border: vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos ? `2px solid ${brandColor}` : '1px solid #e0e0e0',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer'
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de foto */}
+            {showPhotoModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1050
+                }} onClick={() => setShowPhotoModal(false)}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '800px',
+                        width: '90%',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            padding: '1rem',
+                            borderBottom: `2px solid #62d8d9`,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <h5 style={{ margin: 0, color: '#113d69' }}>
+                                <FaCar style={{ marginRight: '0.5rem', color: '#62d8d9' }} /> Foto del Vehículo
+                            </h5>
+                            <button
+                                onClick={() => setShowPhotoModal(false)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '1.5rem',
+                                    cursor: 'pointer',
+                                    color: '#6c757d'
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div style={{ textAlign: 'center', backgroundColor: '#1a1a1a', padding: 0 }}>
+                            {selectedPhoto && (
+                                <img
+                                    src={selectedPhoto}
+                                    style={{ maxHeight: '70vh', maxWidth: '100%', objectFit: 'contain' }}
+                                    alt="Vehículo"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
                                     }}
-                                        onClick={() => seleccionarVehiculoPrincipal(vehiculo)}>
-                                        <Card.Body>
-                                            <div className="d-flex align-items-center gap-3">
-                                                <VehiculoImage vehiculo={vehiculo} size={50} brandColor={brandColor} />
-                                                <div className="flex-grow-1">
-                                                    <h6 className="fw-semibold mb-1">
-                                                        {vehiculo.marca} {vehiculo.modelo}
-                                                        {vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos && (
-                                                            <Badge bg="success" className="ms-2">Activo</Badge>
-                                                        )}
-                                                    </h6>
-                                                    <p className="mb-1 small text-muted">Placa: {vehiculo.placa}</p>
-                                                    <p className="mb-0 small text-muted">Capacidad: {vehiculo.capacidad} pasajeros</p>
-                                                    {vehiculo.placaValidada && (
-                                                        <Badge bg="success" className="mt-1" pill>Placa validada</Badge>
+                                />
+                            )}
+                        </div>
+                        <div style={{ padding: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                            <AccionButton variant="outline-secondary" onClick={() => setShowPhotoModal(false)}>
+                                Cerrar
+                            </AccionButton>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de historial completo */}
+            {showHistorialCompleto && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1050
+                }} onClick={() => setShowHistorialCompleto(false)}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '1200px',
+                        width: '95%',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            padding: '1.5rem 1.5rem 0.5rem',
+                            borderBottom: 'none'
+                        }}>
+                            <h5 style={{ fontWeight: '600', color: '#62d8d9' }}>
+                                <FaHistory style={{ marginRight: '0.5rem' }} /> Historial Completo de Viajes
+                            </h5>
+                        </div>
+                        <div style={{ padding: '1rem 1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '6fr 4fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span style={{
+                                            backgroundColor: 'white',
+                                            padding: '0.375rem 0.75rem',
+                                            border: `1px solid #62d8d9`,
+                                            borderRadius: '0.375rem 0 0 0.375rem'
+                                        }}>
+                                            <FaSearch color="#62d8d9" />
+                                        </span>
+                                        <input
+                                            placeholder="Buscar por # de viaje o nombre de ruta..."
+                                            value={busquedaViajes}
+                                            onChange={(e) => setBusquedaViajes(e.target.value)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.375rem 0.75rem',
+                                                border: `1px solid #62d8d9`,
+                                                borderLeft: 'none',
+                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span style={{
+                                            backgroundColor: 'white',
+                                            padding: '0.375rem 0.75rem',
+                                            border: `1px solid #113d69`,
+                                            borderRadius: '0.375rem 0 0 0.375rem'
+                                        }}>
+                                            <FaFilter color="#113d69" />
+                                        </span>
+                                        <select
+                                            value={filtroEstado}
+                                            onChange={(e) => setFiltroEstado(e.target.value)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '0.375rem 0.75rem',
+                                                border: `1px solid #113d69`,
+                                                borderLeft: 'none',
+                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                            }}
+                                        >
+                                            <option value="TODOS">Todos los estados</option>
+                                            <option value="FINALIZADO">Completados</option>
+                                            <option value="EN_CURSO">En curso</option>
+                                            <option value="CANCELADO">Cancelados</option>
+                                            <option value="PUBLICADO">Publicados</option>
+                                            <option value="CREADO">Creados</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <StatsBadge bgColor="#62d8d9" color="#ffffff">
+                                        {viajesFiltrados.length} viajes
+                                    </StatsBadge>
+                                </div>
+                            </div>
+
+                            {viajesFiltrados.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#F3F4F6',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 1rem'
+                                    }}>
+                                        <FaHistory size={24} style={{ color: '#62d8d9' }} />
+                                    </div>
+                                    <p style={{ color: '#6c757d' }}>No se encontraron viajes con los filtros seleccionados</p>
+                                    <button
+                                        onClick={() => {
+                                            setBusquedaViajes('');
+                                            setFiltroEstado('TODOS');
+                                        }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: '#62d8d9',
+                                            textDecoration: 'underline',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Limpiar filtros
+                                    </button>
+                                </div>
+                            ) : (
+                                <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                    {viajesFiltrados.map((viaje) => (
+                                        <div
+                                            key={viaje.idViajes}
+                                            style={{
+                                                padding: '0.75rem 0',
+                                                borderBottom: '1px solid #F3F4F6',
+                                                cursor: 'pointer'
+                                            }}
+                                            onClick={() => {
+                                                setViajeSeleccionado(viaje);
+                                                setShowDetalleViaje(true);
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                                    {vehiculoPrincipal ? (
+                                                        <VehiculoImage
+                                                            vehiculo={vehiculoPrincipal}
+                                                            size={40}
+                                                            onClick={() => handleImageClick(vehiculoPrincipal)}
+                                                        />
+                                                    ) : (
+                                                        <div style={{
+                                                            width: '40px',
+                                                            height: '40px',
+                                                            borderRadius: '12px',
+                                                            backgroundColor: '#62d8d910',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            margin: '0 auto'
+                                                        }}>
+                                                            <FaCar size={20} color="#62d8d9" />
+                                                        </div>
                                                     )}
                                                 </div>
+                                                <div style={{ width: '16.67%' }}>
+                                                    <p style={{ marginBottom: 0, fontWeight: '600', color: '#113d69' }}>Viaje #{viaje.idViajes}</p>
+                                                    <small style={{ color: '#6c757d' }}>
+                                                        {formatearFecha(viaje.fechaHoraSalida)}
+                                                    </small>
+                                                </div>
+                                                <div style={{ width: '25%' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <FaRoute size={12} color="#62d8d9" style={{ marginRight: '0.25rem' }} />
+                                                        <small style={{ fontWeight: '600', color: '#113d69' }}>Ruta:</small>
+                                                        <span style={{ marginLeft: '0.5rem', color: '#6c757d', fontSize: '0.875rem' }}>{viaje.ruta?.nombre || 'No disponible'}</span>
+                                                    </div>
+                                                </div>
+                                                <div style={{ width: '16.67%' }}>
+                                                    <small style={{ color: '#6c757d' }}>
+                                                        {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
+                                                    </small>
+                                                </div>
+                                                <div style={{ width: '16.67%' }}>
+                                                    <small style={{ color: '#6c757d', display: 'block' }}>
+                                                        <FaClock style={{ marginRight: '0.25rem' }} size={10} />
+                                                        {Math.round((viaje.cuposTotales - viaje.cuposDisponibles) * 100 / viaje.cuposTotales)}% ocupado
+                                                    </small>
+                                                </div>
+                                                <div style={{ width: '16.67%', textAlign: 'right' }}>
+                                                    <EstadoViajeBadge estado={viaje.estado} />
+                                                </div>
                                             </div>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            ))}
-                        </Row>
-                    )}
-                </Modal.Body>
-                <Modal.Footer style={{ borderTop: 'none' }}>
-                    <Button variant="secondary" onClick={() => setShowVehiculosModal(false)}>
-                        Cerrar
-                    </Button>
-                    <Button
-                        style={{ backgroundColor: brandColor, border: 'none' }}
-                        onClick={() => {
-                            setShowVehiculosModal(false);
-                            navigate("/vehicle-registration");
-                        }}
-                    >
-                        Registrar Nuevo Vehículo
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Modal para ver la foto del vehículo */}
-            <Modal show={showPhotoModal} onHide={() => setShowPhotoModal(false)} size="lg" centered>
-                <Modal.Header closeButton>
-                    <Modal.Title><FaCar className="me-2" /> Foto del Vehículo</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="text-center bg-dark p-0">
-                    {selectedPhoto && (
-                        <Image
-                            src={selectedPhoto}
-                            fluid
-                            style={{ maxHeight: '70vh', objectFit: 'contain' }}
-                            onError={(e) => {
-                                console.log("Error cargando imagen en modal:", selectedPhoto);
-                                e.target.style.display = 'none';
-                            }}
-                        />
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowPhotoModal(false)}>
-                        Cerrar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Modal de Historial Completo con Búsqueda */}
-            <Modal show={showHistorialCompleto} onHide={() => setShowHistorialCompleto(false)} size="xl" centered>
-                <Modal.Header closeButton style={{ borderBottom: 'none', padding: '1.5rem 1.5rem 0.5rem' }}>
-                    <Modal.Title className="fw-semibold" style={{ color: brandColor }}>
-                        <FaHistory className="me-2" /> Historial Completo de Viajes
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto', padding: '1rem 1.5rem' }}>
-
-                    <Row className="mb-4 g-3">
-                        <Col md={6}>
-                            <InputGroup>
-                                <InputGroup.Text style={{ backgroundColor: 'white', borderColor: '#e0e0e0' }}>
-                                    <FaSearch color={brandColor} />
-                                </InputGroup.Text>
-                                <Form.Control
-                                    placeholder="Buscar por # de viaje o nombre de ruta..."
-                                    value={busquedaViajes}
-                                    onChange={(e) => setBusquedaViajes(e.target.value)}
-                                    style={{ borderColor: '#e0e0e0' }}
-                                />
-                            </InputGroup>
-                        </Col>
-                        <Col md={4}>
-                            <InputGroup>
-                                <InputGroup.Text style={{ backgroundColor: 'white', borderColor: '#e0e0e0' }}>
-                                    <FaFilter color={brandColor} />
-                                </InputGroup.Text>
-                                <Form.Select
-                                    value={filtroEstado}
-                                    onChange={(e) => setFiltroEstado(e.target.value)}
-                                    style={{ borderColor: '#e0e0e0' }}
-                                >
-                                    <option value="TODOS">Todos los estados</option>
-                                    <option value="FINALIZADO">Completados</option>
-                                    <option value="EN_CURSO">En curso</option>
-                                    <option value="CANCELADO">Cancelados</option>
-                                    <option value="PUBLICADO">Publicados</option>
-                                    <option value="CREADO">Creados</option>
-                                </Form.Select>
-                            </InputGroup>
-                        </Col>
-                        <Col md={2} className="text-end">
-                            <Badge bg="light" text="dark" className="p-3" style={{ fontSize: '0.9rem' }}>
-                                {viajesFiltrados.length} viajes
-                            </Badge>
-                        </Col>
-                    </Row>
-
-                    {viajesFiltrados.length === 0 ? (
-                        <div className="text-center py-5">
-                            <div style={{
-                                width: '60px',
-                                height: '60px',
-                                borderRadius: '50%',
-                                backgroundColor: '#F3F4F6',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: '0 auto 16px'
-                            }}>
-                                <FaHistory size={24} className="text-muted" />
-                            </div>
-                            <p className="text-muted">No se encontraron viajes con los filtros seleccionados</p>
-                            <Button
-                                variant="link"
-                                onClick={() => {
-                                    setBusquedaViajes('');
-                                    setFiltroEstado('TODOS');
-                                }}
-                                style={{ color: brandColor }}
-                            >
-                                Limpiar filtros
-                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    ) : (
-                        <ListGroup variant="flush">
-                            {viajesFiltrados.map((viaje) => (
-                                <ListGroup.Item
-                                    key={viaje.idViajes}
-                                    className="py-3 border-0"
-                                    style={{ borderBottom: '1px solid #F3F4F6', cursor: 'pointer' }}
-                                    onClick={() => {
-                                        setViajeSeleccionado(viaje);
-                                        setShowDetalleViaje(true);
-                                    }}
-                                >
-                                    <Row className="align-items-center">
-                                        <Col xs={1} className="text-center">
-                                            {vehiculoPrincipal ? (
-                                                <VehiculoImage vehiculo={vehiculoPrincipal} size={40} brandColor={brandColor} />
-                                            ) : (
-                                                <div style={{
-                                                    width: '40px',
-                                                    height: '40px',
-                                                    borderRadius: '12px',
-                                                    backgroundColor: `${brandColor}10`,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}>
-                                                    <FaCar size={20} color={brandColor} />
+                        <div style={{ padding: '0.5rem 1.5rem 1.5rem', borderTop: 'none' }}>
+                            <AccionButton
+                                variant="outline-secondary"
+                                onClick={() => setShowHistorialCompleto(false)}
+                            >
+                                Cerrar
+                            </AccionButton>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de detalle de viaje */}
+            {showDetalleViaje && viajeSeleccionado && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1050
+                }} onClick={() => setShowDetalleViaje(false)}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '800px',
+                        width: '90%',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            background: `linear-gradient(135deg, #62d8d920, white)`,
+                            borderBottom: `2px solid #62d8d9`,
+                            padding: '1.5rem'
+                        }}>
+                            <h5 style={{ fontWeight: '600', color: '#113d69' }}>
+                                <FaCar style={{ marginRight: '0.5rem', color: '#62d8d9' }} /> Detalle del Viaje #{viajeSeleccionado.idViajes}
+                            </h5>
+                        </div>
+                        <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 140px)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{ backgroundColor: '#F9FAFB', border: `1px solid #62d8d920`, borderRadius: '1rem' }}>
+                                    <div style={{ padding: '1rem' }}>
+                                        <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: '#62d8d9' }}>Información General</h6>
+                                        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <span style={{ color: '#6c757d' }}>Fecha y hora:</span>
+                                                <span style={{ fontWeight: '600', color: '#113d69' }}>{formatearFecha(viajeSeleccionado.fechaHoraSalida)}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <span style={{ color: '#6c757d' }}>Estado:</span>
+                                                <EstadoViajeBadge estado={viajeSeleccionado.estado} />
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <span style={{ color: '#6c757d' }}>Capacidad:</span>
+                                                <span style={{ fontWeight: '600', color: '#113d69' }}>{viajeSeleccionado.cuposTotales} pasajeros</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <span style={{ color: '#6c757d' }}>Ocupación:</span>
+                                                <span style={{ fontWeight: '600', color: '#62d8d9' }}>
+                                                    {viajeSeleccionado.cuposTotales - viajeSeleccionado.cuposDisponibles} / {viajeSeleccionado.cuposTotales}
+                                                    ({Math.round((viajeSeleccionado.cuposTotales - viajeSeleccionado.cuposDisponibles) * 100 / viajeSeleccionado.cuposTotales)}%)
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ backgroundColor: '#F9FAFB', border: `1px solid #113d6920`, borderRadius: '1rem' }}>
+                                    <div style={{ padding: '1rem' }}>
+                                        <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: '#113d69' }}>Ruta del Viaje</h6>
+                                        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                            {viajeSeleccionado.ruta?.nombre && (
+                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                    <FaRoute size={14} color="#62d8d9" style={{ marginRight: '0.5rem', marginTop: '0.25rem' }} />
+                                                    <div>
+                                                        <span style={{ color: '#6c757d' }}>Ruta:</span>
+                                                        <span style={{ fontWeight: '600', display: 'block', color: '#113d69' }}>{viajeSeleccionado.ruta.nombre}</span>
+                                                    </div>
                                                 </div>
                                             )}
-                                        </Col>
-                                        <Col xs={2}>
-                                            <p className="mb-0 fw-semibold" style={{ color: '#333' }}>Viaje #{viaje.idViajes}</p>
-                                            <small className="text-muted">
-                                                {formatearFecha(viaje.fechaHoraSalida)}
-                                            </small>
-                                        </Col>
-                                        <Col xs={3}>
-                                            <div className="d-flex align-items-center">
-                                                <FaRoute size={12} color={brandColor} className="me-1" />
-                                                <small className="fw-semibold">Ruta:</small>
-                                                <span className="ms-2 text-muted small">{viaje.ruta?.nombre || 'No disponible'}</span>
-                                            </div>
-                                        </Col>
-                                        <Col xs={2}>
-                                            <small className="text-muted">
-                                                {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
-                                            </small>
-                                        </Col>
-                                        <Col xs={2}>
-                                            <small className="text-muted d-block">
-                                                <FaClock className="me-1" size={10} />
-                                                {Math.round((viaje.cuposTotales - viaje.cuposDisponibles) * 100 / viaje.cuposTotales)}% ocupado
-                                            </small>
-                                        </Col>
-                                        <Col xs={2} className="text-end">
-                                            <Badge bg={getEstadoColor(viaje.estado)} className="rounded-pill px-3 py-2 fw-normal">
-                                                {getEstadoTexto(viaje.estado)}
-                                            </Badge>
-                                        </Col>
-                                    </Row>
-                                </ListGroup.Item>
-                            ))}
-                        </ListGroup>
-                    )}
-                </Modal.Body>
-                <Modal.Footer style={{ borderTop: 'none', padding: '0.5rem 1.5rem 1.5rem' }}>
-                    <Button
-                        variant="outline-secondary"
-                        onClick={() => setShowHistorialCompleto(false)}
-                        className="rounded-pill px-4 border-0"
-                        style={{ backgroundColor: '#F9FAFB', color: '#666' }}
-                    >
-                        Cerrar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Modal de Detalle de Viaje */}
-            <Modal show={showDetalleViaje} onHide={() => setShowDetalleViaje(false)} size="lg" centered>
-                <Modal.Header closeButton style={{ background: `linear-gradient(135deg, ${brandColor}20, white)`, borderBottom: 'none', padding: '1.5rem' }}>
-                    <Modal.Title className="fw-semibold" style={{ color: '#333' }}>
-                        <FaCar className="me-2" style={{ color: brandColor }} /> Detalle del Viaje #{viajeSeleccionado?.idViajes}
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="p-4">
-                    {viajeSeleccionado && (
-                        <>
-                            <Row className="mb-4">
-                                <Col md={6}>
-                                    <Card style={{ backgroundColor: '#F9FAFB', border: 'none', borderRadius: '16px' }}>
-                                        <Card.Body>
-                                            <h6 className="fw-bold mb-3" style={{ color: brandColor }}>Información General</h6>
-                                            <ListGroup variant="flush">
-                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
-                                                    <span className="text-muted">Fecha y hora:</span>
-                                                    <span className="fw-semibold">{formatearFecha(viajeSeleccionado.fechaHoraSalida)}</span>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
-                                                    <span className="text-muted">Estado:</span>
-                                                    <Badge bg={getEstadoColor(viajeSeleccionado.estado)} className="rounded-pill px-3 py-2">
-                                                        {getEstadoTexto(viajeSeleccionado.estado)}
-                                                    </Badge>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
-                                                    <span className="text-muted">Capacidad:</span>
-                                                    <span className="fw-semibold">{viajeSeleccionado.cuposTotales} pasajeros</span>
-                                                </ListGroup.Item>
-                                                <ListGroup.Item className="d-flex justify-content-between px-0 border-0 bg-transparent">
-                                                    <span className="text-muted">Ocupación:</span>
-                                                    <span className="fw-semibold">
-                                                        {viajeSeleccionado.cuposTotales - viajeSeleccionado.cuposDisponibles} / {viajeSeleccionado.cuposTotales}
-                                                        ({Math.round((viajeSeleccionado.cuposTotales - viajeSeleccionado.cuposDisponibles) * 100 / viajeSeleccionado.cuposTotales)}%)
-                                                    </span>
-                                                </ListGroup.Item>
-                                            </ListGroup>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                                <Col md={6}>
-                                    <Card style={{ backgroundColor: '#F9FAFB', border: 'none', borderRadius: '16px' }}>
-                                        <Card.Body>
-                                            <h6 className="fw-bold mb-3" style={{ color: brandColor }}>Ruta del Viaje</h6>
-                                            <ListGroup variant="flush">
-                                                {viajeSeleccionado.ruta?.nombre && (
-                                                    <ListGroup.Item className="d-flex px-0 border-0 bg-transparent">
-                                                        <FaRoute size={14} color="#3b82f6" className="me-2 mt-1" />
-                                                        <div>
-                                                            <span className="text-muted">Ruta:</span>
-                                                            <span className="fw-semibold d-block">{viajeSeleccionado.ruta.nombre}</span>
-                                                        </div>
-                                                    </ListGroup.Item>
-                                                )}
-                                                {viajeSeleccionado.ruta?.descripcion && (
-                                                    <ListGroup.Item className="d-flex px-0 border-0 bg-transparent">
-                                                        <FaInfoCircle size={14} color="#666" className="me-2 mt-1" />
-                                                        <div>
-                                                            <span className="text-muted">Descripción:</span>
-                                                            <span className="d-block">{viajeSeleccionado.ruta.descripcion}</span>
-                                                        </div>
-                                                    </ListGroup.Item>
-                                                )}
-                                            </ListGroup>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            </Row>
+                                            {viajeSeleccionado.ruta?.descripcion && (
+                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                    <FaInfoCircle size={14} color="#62d8d9" style={{ marginRight: '0.5rem', marginTop: '0.25rem' }} />
+                                                    <div>
+                                                        <span style={{ color: '#6c757d' }}>Descripción:</span>
+                                                        <span style={{ display: 'block', color: '#113d69' }}>{viajeSeleccionado.ruta.descripcion}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
                             {viajeSeleccionado.ruta?.paradas && viajeSeleccionado.ruta.paradas.length > 0 && (
-                                <Card style={{ backgroundColor: '#F9FAFB', border: 'none', borderRadius: '16px' }}>
-                                    <Card.Body>
-                                        <h6 className="fw-bold mb-3" style={{ color: brandColor }}>Paradas del Recorrido</h6>
-                                        <ListGroup variant="flush">
+                                <div style={{ backgroundColor: '#F9FAFB', border: `1px solid #62d8d920`, borderRadius: '1rem' }}>
+                                    <div style={{ padding: '1rem' }}>
+                                        <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: '#62d8d9' }}>Paradas del Recorrido</h6>
+                                        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                             {viajeSeleccionado.ruta.paradas
                                                 .sort((a, b) => a.orden - b.orden)
                                                 .map((parada, index) => (
-                                                    <ListGroup.Item key={parada.idParada} className="d-flex align-items-center px-0 border-0 bg-transparent">
+                                                    <div key={parada.idParada} style={{ display: 'flex', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
                                                         <div style={{
                                                             width: '24px',
                                                             height: '24px',
                                                             borderRadius: '50%',
-                                                            backgroundColor: index === 0 ? brandColor : index === viajeSeleccionado.ruta.paradas.length - 1 ? '#f59e0b' : '#e0e0e0',
-                                                            color: index === 0 || index === viajeSeleccionado.ruta.paradas.length - 1 ? 'white' : '#666',
+                                                            backgroundColor: index === 0 ? '#62d8d9' : index === viajeSeleccionado.ruta.paradas.length - 1 ? '#113d69' : '#e0e0e0',
+                                                            color: 'white',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
@@ -1834,229 +2071,316 @@ const DriverHome = () => {
                                                             {index + 1}
                                                         </div>
                                                         <div>
-                                                            <span className="fw-semibold">{parada.nombre || `Parada ${parada.orden}`}</span>
+                                                            <span style={{ fontWeight: '600', color: '#113d69' }}>{parada.nombre || `Parada ${parada.orden}`}</span>
                                                             {parada.tipo && (
-                                                                <Badge bg="light" text="dark" className="ms-2" style={{ fontSize: '10px' }}>
+                                                                <span style={{
+                                                                    marginLeft: '0.5rem',
+                                                                    padding: '0.125rem 0.375rem',
+                                                                    backgroundColor: '#62d8d9',
+                                                                    color: 'white',
+                                                                    borderRadius: '0.25rem',
+                                                                    fontSize: '10px'
+                                                                }}>
                                                                     {parada.tipo}
-                                                                </Badge>
+                                                                </span>
                                                             )}
                                                         </div>
-                                                    </ListGroup.Item>
+                                                    </div>
                                                 ))}
-                                        </ListGroup>
-                                    </Card.Body>
-                                </Card>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
-                        </>
-                    )}
-                </Modal.Body>
-                <Modal.Footer style={{ borderTop: 'none', padding: '1rem 1.5rem 1.5rem' }}>
-                    <Button
-                        variant="outline-secondary"
-                        onClick={() => setShowDetalleViaje(false)}
-                        className="rounded-pill px-4"
-                        style={{ borderColor: '#e0e0e0', color: '#666' }}
-                    >
-                        Cerrar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {/* Modal de Tutorial */}
-            <Modal show={showTutorial} onHide={saltarTutorial} centered size="lg" backdrop="static">
-                <Modal.Body className="p-5" style={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-                    <div className="d-flex align-items-center justify-content-center mb-5">
-                        <div style={stepCircleStyle(1)}>1</div>
-                        <div style={stepLineStyle(1)}></div>
-                        <div style={stepCircleStyle(2)}>2</div>
-                        <div style={stepLineStyle(2)}></div>
-                        <div style={stepCircleStyle(3)}>3</div>
+                        </div>
+                        <div style={{ padding: '1rem 1.5rem 1.5rem', borderTop: 'none' }}>
+                            <AccionButton
+                                variant="outline-secondary"
+                                onClick={() => setShowDetalleViaje(false)}
+                            >
+                                Cerrar
+                            </AccionButton>
+                        </div>
                     </div>
+                </div>
+            )}
 
-                    <div className="text-center" style={{ minHeight: '200px' }}>
-                        {currentStep === 1 && (
-                            <div>
-                                <div style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    borderRadius: '50%',
-                                    backgroundColor: `${brandColor}15`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto 20px'
-                                }}>
-                                    <FaWallet size={40} style={{ color: brandColor }} />
-                                </div>
-                                <h3 className="fw-semibold mb-3" style={{ color: '#333' }}>Tus Ganancias</h3>
-                                <p className="text-muted">Monitorea tus ingresos diarios de forma transparente.</p>
-                            </div>
-                        )}
-                        {currentStep === 2 && (
-                            <div>
-                                <div style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    borderRadius: '50%',
-                                    backgroundColor: `${brandColor}15`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto 20px'
-                                }}>
-                                    {vehiculoPrincipal?.fotoVehiculo ? (
-                                        <Image
-                                            src={vehiculoPrincipal.fotoVehiculo.startsWith('http')
-                                                ? vehiculoPrincipal.fotoVehiculo
-                                                : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`}
-                                            alt="Vehículo"
-                                            style={{
-                                                width: '60px',
-                                                height: '60px',
-                                                borderRadius: '50%',
-                                                objectFit: 'cover'
-                                            }}
-                                            onError={(e) => {
-                                                console.error("Error en imagen del tutorial:", e);
-                                                e.target.style.display = 'none';
-                                            }}
-                                        />
-                                    ) : (
-                                        <FaCar size={40} style={{ color: brandColor }} />
-                                    )}
-                                </div>
-                                <h3 className="fw-semibold mb-3" style={{ color: '#333' }}>Vehículo</h3>
-                                <p className="text-muted">Seguridad garantizada para ti y tus pasajeros.</p>
-                            </div>
-                        )}
-                        {currentStep === 3 && (
-                            <div>
-                                <div style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    borderRadius: '50%',
-                                    backgroundColor: `${brandColor}15`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto 20px'
-                                }}>
-                                    <FaFileAlt size={40} style={{ color: brandColor }} />
-                                </div>
-                                <h3 className="fw-semibold mb-3" style={{ color: '#333' }}>Documentación</h3>
-                                <p className="text-muted">¡Casi listo! Solo falta validar tu documentación oficial.</p>
-                            </div>
-                        )}
-                    </div>
+            {/* Modal de tutorial */}
+            {showTutorial && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1060
+                }} onClick={saltarTutorial}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '1.5rem',
+                        maxWidth: '600px',
+                        width: '90%',
+                        padding: '2rem'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
+                            <div style={stepCircleStyle(1)}>1</div>
+                            <div style={stepLineStyle(1)}></div>
+                            <div style={stepCircleStyle(2)}>2</div>
+                            <div style={stepLineStyle(2)}></div>
+                            <div style={stepCircleStyle(3)}>3</div>
+                        </div>
 
-                    <div className="mt-5 d-flex flex-column align-items-center">
-                        <div className="d-flex gap-3 w-100 justify-content-center">
-                            {currentStep > 1 && (
-                                <Button
-                                    variant="outline-secondary"
-                                    onClick={manejarAtras}
-                                    className="rounded-pill px-4 border-0"
-                                    style={{ backgroundColor: '#F3F4F6', color: '#666' }}
+                        <div style={{ textAlign: 'center', minHeight: '200px' }}>
+                            {currentStep === 1 && (
+                                <div>
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#62d8d915',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 1rem'
+                                    }}>
+                                        <FaWallet size={40} style={{ color: '#62d8d9' }} />
+                                    </div>
+                                    <h3 style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#113d69' }}>Tus Ganancias</h3>
+                                    <p style={{ color: '#6c757d' }}>Monitorea tus ingresos diarios de forma transparente.</p>
+                                </div>
+                            )}
+                            {currentStep === 2 && (
+                                <div>
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#62d8d915',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 1rem'
+                                    }}>
+                                        {vehiculoPrincipal?.fotoVehiculo ? (
+                                            <img
+                                                src={vehiculoPrincipal.fotoVehiculo.startsWith('http')
+                                                    ? vehiculoPrincipal.fotoVehiculo
+                                                    : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`}
+                                                alt="Vehículo"
+                                                style={{
+                                                    width: '60px',
+                                                    height: '60px',
+                                                    borderRadius: '50%',
+                                                    objectFit: 'cover',
+                                                    cursor: 'pointer',
+                                                    border: `2px solid #62d8d9`
+                                                }}
+                                                onClick={() => handleImageClick(vehiculoPrincipal)}
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                }}
+                                            />
+                                        ) : (
+                                            <FaCar size={40} style={{ color: '#62d8d9' }} />
+                                        )}
+                                    </div>
+                                    <h3 style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#113d69' }}>Vehículo</h3>
+                                    <p style={{ color: '#6c757d' }}>Seguridad garantizada para ti y tus pasajeros.</p>
+                                </div>
+                            )}
+                            {currentStep === 3 && (
+                                <div>
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#113d6915',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 1rem'
+                                    }}>
+                                        <FaFileAlt size={40} style={{ color: '#113d69' }} />
+                                    </div>
+                                    <h3 style={{ fontWeight: '600', marginBottom: '0.75rem', color: '#62d8d9' }}>Documentación</h3>
+                                    <p style={{ color: '#6c757d' }}>¡Casi listo! Solo falta validar tu documentación oficial.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center' }}>
+                                {currentStep > 1 && (
+                                    <AccionButton
+                                        variant="outline-secondary"
+                                        onClick={manejarAtras}
+                                    >
+                                        Atrás
+                                    </AccionButton>
+                                )}
+                                <AccionButton
+                                    variant="primary"
+                                    onClick={manejarSiguiente}
                                 >
-                                    Atrás
-                                </Button>
-                            )}
-                            <Button
-                                style={{ backgroundColor: brandColor, border: 'none', color: 'white', boxShadow: '0 4px 12px rgba(84, 199, 184, 0.3)' }}
-                                className="px-5 fw-semibold rounded-pill"
-                                onClick={manejarSiguiente}
+                                    {currentStep === 3 ? "Finalizar" : "Siguiente"}
+                                </AccionButton>
+                            </div>
+                            <button
+                                onClick={saltarTutorial}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#6c757d',
+                                    marginTop: '0.75rem',
+                                    fontSize: '0.875rem',
+                                    textDecoration: 'none',
+                                    cursor: 'pointer'
+                                }}
                             >
-                                {currentStep === 3 ? "Finalizar" : "Siguiente"}
-                            </Button>
+                                Saltar recorrido
+                            </button>
                         </div>
-                        <Button variant="link" className="text-muted mt-3 text-decoration-none small shadow-none" onClick={saltarTutorial}>
-                            Saltar recorrido
-                        </Button>
                     </div>
-                </Modal.Body>
-            </Modal>
+                </div>
+            )}
 
-            {/* Modal de Solicitud de Cambio de Vehículo */}
-            <Modal show={showSolicitudModal} onHide={() => !enviandoSolicitud && setShowSolicitudModal(false)} centered>
-                <Modal.Header closeButton={!enviandoSolicitud} className="border-0 pb-0">
-                    <Modal.Title className="fw-bold" style={{ color: '#333' }}>
-                        Solicitar Cambio de Vehículo
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="p-4">
-                    <p className="text-muted small mb-4">
-                        Completa los nuevos datos. Tu solicitud será revisada por un administrador antes de aplicarse.
-                    </p>
+            {/* Modal de solicitud de cambio */}
+            {showSolicitudModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1050
+                }} onClick={() => !enviandoSolicitud && setShowSolicitudModal(false)}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '500px',
+                        width: '90%',
+                        padding: '1.5rem'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <h5 style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#113d69' }}>
+                            Solicitar Cambio de Vehículo
+                        </h5>
+                        <p style={{ color: '#6c757d', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                            Completa los nuevos datos. Tu solicitud será revisada por un administrador antes de aplicarse.
+                        </p>
 
-                    {mensajeSolicitud.texto && (
-                        <Alert variant={mensajeSolicitud.tipo} className="py-2 small">
-                            {mensajeSolicitud.texto}
-                        </Alert>
-                    )}
+                        {mensajeSolicitud.texto && (
+                            <div style={{
+                                padding: '0.5rem',
+                                backgroundColor: mensajeSolicitud.tipo === 'success' ? '#d4edda' : '#f8d7da',
+                                borderRadius: '0.25rem',
+                                fontSize: '0.875rem',
+                                marginBottom: '1rem',
+                                color: mensajeSolicitud.tipo === 'success' ? '#155724' : '#721c24'
+                            }}>
+                                {mensajeSolicitud.texto}
+                            </div>
+                        )}
 
-                    <form onSubmit={enviarSolicitudCambio}>
-                        <div className="mb-3">
-                            <label className="form-label small fw-bold text-muted">Marca</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                value={formDataSolicitud.marca}
-                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, marca: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="mb-3">
-                            <label className="form-label small fw-bold text-muted">Modelo</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                value={formDataSolicitud.modelo}
-                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, modelo: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="mb-3">
-                            <label className="form-label small fw-bold text-muted">Placa</label>
-                            <input
-                                type="text"
-                                className="form-control"
-                                value={formDataSolicitud.placa}
-                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, placa: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="form-label small fw-bold text-muted">Capacidad (Pasajeros)</label>
-                            <input
-                                type="number"
-                                className="form-control"
-                                value={formDataSolicitud.capacidad}
-                                onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, capacidad: e.target.value })}
-                                required
-                            />
-                        </div>
+                        <form onSubmit={enviarSolicitudCambio}>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>Marca</label>
+                                <input
+                                    type="text"
+                                    value={formDataSolicitud.marca}
+                                    onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, marca: e.target.value })}
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.375rem 0.75rem',
+                                        border: `1px solid #62d8d9`,
+                                        borderRadius: '0.375rem'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>Modelo</label>
+                                <input
+                                    type="text"
+                                    value={formDataSolicitud.modelo}
+                                    onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, modelo: e.target.value })}
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.375rem 0.75rem',
+                                        border: `1px solid #62d8d9`,
+                                        borderRadius: '0.375rem'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>Placa</label>
+                                <input
+                                    type="text"
+                                    value={formDataSolicitud.placa}
+                                    onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, placa: e.target.value })}
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.375rem 0.75rem',
+                                        border: `1px solid #62d8d9`,
+                                        borderRadius: '0.375rem'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>Capacidad (Pasajeros)</label>
+                                <input
+                                    type="number"
+                                    value={formDataSolicitud.capacidad}
+                                    onChange={(e) => setFormDataSolicitud({ ...formDataSolicitud, capacidad: e.target.value })}
+                                    required
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.375rem 0.75rem',
+                                        border: `1px solid #62d8d9`,
+                                        borderRadius: '0.375rem'
+                                    }}
+                                />
+                            </div>
 
-                        <div className="d-flex gap-2">
-                            <Button
-                                variant="light"
-                                className="w-100 fw-semibold py-2 rounded-pill"
-                                onClick={() => setShowSolicitudModal(false)}
-                                disabled={enviandoSolicitud}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                className="w-100 fw-semibold py-2 rounded-pill border-0"
-                                style={{ backgroundColor: brandColor, color: 'white' }}
-                                disabled={enviandoSolicitud}
-                            >
-                                {enviandoSolicitud ? <Spinner animation="border" size="sm" /> : "Enviar Solicitud"}
-                            </Button>
-                        </div>
-                    </form>
-                </Modal.Body>
-            </Modal>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <AccionButton
+                                    variant="outline-secondary"
+                                    onClick={() => setShowSolicitudModal(false)}
+                                    disabled={enviandoSolicitud}
+                                    style={{ flex: 1 }}
+                                >
+                                    Cancelar
+                                </AccionButton>
+                                <button
+                                    type="submit"
+                                    disabled={enviandoSolicitud}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: '#62d8d9',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '0.375rem',
+                                        fontWeight: '500',
+                                        cursor: enviandoSolicitud ? 'not-allowed' : 'pointer',
+                                        opacity: enviandoSolicitud ? 0.6 : 1
+                                    }}
+                                >
+                                    {enviandoSolicitud ? <Spinner animation="border" size="sm" /> : "Enviar Solicitud"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
