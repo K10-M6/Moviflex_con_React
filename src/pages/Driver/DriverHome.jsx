@@ -15,19 +15,12 @@ import toast from "react-hot-toast";
 // Componente para mostrar la imagen del vehículo o un placeholder
 const VehiculoImage = ({ vehiculo, size = 40, brandColor = "#54c7b8" }) => {
     const [imageError, setImageError] = useState(false);
-    const [imageUrl, setImageUrl] = useState(null);
     
-    useEffect(() => {
-        if (vehiculo?.fotoVehiculo) {
-            const url = vehiculo.fotoVehiculo.startsWith('http') 
-                ? vehiculo.fotoVehiculo 
-                : `https://backendmovi-production-c657.up.railway.app${vehiculo.fotoVehiculo}`;
-            setImageUrl(url);
-            setImageError(false);
-        } else {
-            setImageUrl(null);
-        }
-    }, [vehiculo]);
+    const imageUrl = vehiculo?.fotoVehiculo
+        ? vehiculo.fotoVehiculo.startsWith('http') 
+            ? vehiculo.fotoVehiculo 
+            : `https://backendmovi-production-c657.up.railway.app${vehiculo.fotoVehiculo}`
+        : null;
 
     if (!vehiculo) {
         return (

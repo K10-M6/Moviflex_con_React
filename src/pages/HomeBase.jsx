@@ -19,7 +19,7 @@ import JuanOcampo from './Autores/JuanOcampo.PNG';
 import Kevin from './Autores/Kevin.PNG';
 
 function HomeBase() {
-    // =======================
+  // =======================
   // ESTADOS FORMULARIO
   // =======================
 
@@ -32,6 +32,9 @@ function HomeBase() {
 
   const [mensajeEstado, setMensajeEstado] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // ESTADO PARA CONTROLAR LA VISIBILIDAD DEL FORMULARIO DE CONTACTO
+  const [mostrarContacto, setMostrarContacto] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -79,15 +82,20 @@ function HomeBase() {
 
   const verdeMenta = '#56bca7';
 
-  const slidesFunciona = [
+  // TARJETAS PARA USUARIOS (4)
+  const slidesUsuario = [
+    { id: 1, titulo: "Regístrate Como Viajero", desc: "¡Crea tu cuenta desde nuestra app!" },
+    { id: 2, titulo: "Busca Rutas", desc: "Busca rutas disponibles para tu destino." },
+    { id: 3, titulo: "Reserva tu Viaje", desc: "Selecciona tu asiento y confirma tu reserva." },
+    { id: 4, titulo: "Viaja Seguro", desc: "Disfruta de un viaje con conductores verificados." },
+  ];
+
+  // TARJETAS PARA CONDUCTORES (4)
+  const slidesConductor = [
     { id: 1, titulo: "Regístrate Como Conductor", desc: "¡Registrate como conductor desde la web!" },
-    { id: 2, titulo: "Regístrate Como Viajero", desc: "¡Crea tu cuenta desde nuestra app!" },
-    { id: 3, titulo: "Busca o Crea Rutas", desc: "Busca rutas disponibles o crea tu propia ruta fija." },
-    { id: 4, titulo: "Comparte tu Viaje", desc: "Invita a otros usuarios a compartir tu trayecto y ahorra en tus viajes." },
-    { id: 5, titulo: "Recibe Notificaciones", desc: "Mantente informado sobre tus rutas y solicitudes en tiempo real." },
-    { id: 6, titulo: "Soporte Técnico", desc: "¿Tienes dudas? Nuestro equipo de soporte está listo para ayudarte." },
-    { id: 7, titulo: "Viajes Seguros", desc: "Todos los conductores y viajeros son verificados para tu seguridad." },
-    { id: 8, titulo: "Historial de Rutas", desc: "Consulta y gestiona tus viajes anteriores fácilmente." },
+    { id: 2, titulo: "Crea Rutas", desc: "Crea tu propia ruta fija y compártela." },
+    { id: 3, titulo: "Recibe Solicitudes", desc: "Acepta viajeros que quieran unirse a tu ruta." },
+    { id: 4, titulo: "Gana Dinero", desc: "Optimiza tus viajes y genera ingresos extras." },
   ];
 
   return (
@@ -156,13 +164,68 @@ function HomeBase() {
           <Row className="text-center mb-5">
             <Col>
               <h2 className="fw-bold" style={{ fontSize: '2.5rem', color: '#113d69' }}>¿Cómo Funciona?</h2>
-              <p style={{color: '#113d69'}}>Tres simples pasos para comenzar tu experiencia</p>
+              {/* ELIMINADO EL TEXTO "Tres simples pasos para comenzar tu experiencia" */}
             </Col>
           </Row>
 
+          {/* SECCIÓN PARA USUARIOS */}
+          <h3 className="fw-bold mb-4" style={{ color: '#56bca7', textAlign: 'center' }}>Viajero</h3>
+          <Row className="g-4 mb-5">
+            {slidesUsuario.map((item) => (
+              <Col key={item.id} xs={12} sm={6} lg={3}>
+                <div style={{
+                  background: 'transparent',
+                  padding: '32px 24px',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  color: '#113d69',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  cursor: 'default',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '55px',
+                    height: '55px',
+                    borderTop: '4px solid #56bca7',
+                    borderLeft: '4px solid #56bca7',
+                    borderTopLeftRadius: '30px',
+                  }} />
+                  
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    width: '55px',
+                    height: '55px',
+                    borderBottom: '4px solid #56bca7',
+                    borderRight: '4px solid #56bca7',
+                    borderBottomRightRadius: '30px',
+                  }} />
+                  
+                  <h3 className="fw-bold mb-3" style={{ fontSize: '1.3rem', color: '#56bca7' }}>{item.titulo}</h3>
+                  <p style={{ fontSize: '1rem', lineHeight: '1.5', color: '#113d69', marginBottom: 0 }}>{item.desc}</p>
+                </div>
+              </Col>
+            ))}
+          </Row>
+
+          {/* SECCIÓN PARA CONDUCTORES */}
+          <h3 className="fw-bold mb-4" style={{ color: '#56bca7', textAlign: 'center' }}>Conductor</h3>
           <Row className="g-4">
-            {slidesFunciona.map((item) => (
-              <Col key={item.id} xs={12} sm={6} lg={4} xl={3}>
+            {slidesConductor.map((item) => (
+              <Col key={item.id} xs={12} sm={6} lg={3}>
                 <div style={{
                   background: 'transparent',
                   padding: '32px 24px',
@@ -274,113 +337,144 @@ function HomeBase() {
           </Col>
         </Row>
       </Container>
-      {/* SECCIÓN CONTACTO */}
-<Container className="py-5">
-  <Row className="justify-content-center">
-    <Col lg={8}>
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '30px',
-        padding: '50px',
-        boxShadow: '0 15px 35px rgba(0,0,0,0.1)'
-      }}>
-        <div className="text-center mb-4">
-          <h2 className="fw-bold" style={{ color: '#113d69' }}>
-            Contáctanos
-          </h2>
-          <p style={{ color: '#113d69' }}>
-            ¿Tienes dudas o sugerencias?
-          </p>
-        </div>
 
-        <form onSubmit={handleSubmit}>
-
-          <Row className="mb-3">
-            <Col md={6}>
-              <input
-                type="text"
-                name="nombre"
-                placeholder="Nombre completo"
-                value={formData.nombre}
-                onChange={handleChange}
-                className="form-control"
-                required
-              />
-            </Col>
-
-            <Col md={6}>
-              <input
-                type="email"
-                name="correo"
-                placeholder="Correo electrónico"
-                value={formData.correo}
-                onChange={handleChange}
-                className="form-control"
-                required
-              />
-            </Col>
-          </Row>
-
-          <div className="mb-3">
-            <select
-              name="tipo"
-              value={formData.tipo}
-              onChange={handleChange}
-              className="form-select"
-              required
-            >
-              <option value="">Seleccione tipo</option>
-              <option value="Soporte">Soporte</option>
-              <option value="Sugerencia">Sugerencia</option>
-              <option value="Reclamo">Reclamo</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <textarea
-              name="mensaje"
-              rows="4"
-              placeholder="Escribe tu mensaje..."
-              value={formData.mensaje}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
-          </div>
-
-          <div className="text-center">
+      {/* BOTÓN DE CONTÁCTANOS */}
+      <Container className="py-3">
+        <Row className="justify-content-center">
+          <Col className="text-center">
             <Button
-              type="submit"
+              onClick={() => setMostrarContacto(!mostrarContacto)}
               style={{
                 backgroundColor: verdeMenta,
                 border: 'none',
-                padding: '10px 40px',
-                borderRadius: '30px'
+                padding: '12px 50px',
+                borderRadius: '50px',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 15px rgba(86, 188, 167, 0.4)',
+                transition: 'all 0.3s ease'
               }}
-              disabled={loading}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#3da89a';
+                e.target.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = verdeMenta;
+                e.target.style.transform = 'scale(1)';
+              }}
             >
-              {loading ? 'Enviando...' : 'Enviar Mensaje'}
+              {mostrarContacto ? 'Cerrar Contáctanos' : 'Contáctanos'}
             </Button>
-          </div>
+          </Col>
+        </Row>
+      </Container>
 
-          {mensajeEstado && (
-            <p className="text-center mt-4 fw-semibold"
-              style={{
-                color: mensajeEstado.includes('Error')
-                  ? 'red'
-                  : verdeMenta
+      {/* SECCIÓN CONTACTO - CONDICIONAL (SOLO SE MUESTRA SI mostrarContacto ES TRUE) */}
+      {mostrarContacto && (
+        <Container className="py-5">
+          <Row className="justify-content-center">
+            <Col lg={8}>
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '30px',
+                padding: '50px',
+                boxShadow: '0 15px 35px rgba(0,0,0,0.1)'
               }}>
-              {mensajeEstado}
-            </p>
-          )}
+                <div className="text-center mb-4">
+                  <h2 className="fw-bold" style={{ color: '#113d69' }}>
+                    Contáctanos
+                  </h2>
+                  <p style={{ color: '#113d69' }}>
+                    ¿Tienes dudas o sugerencias?
+                  </p>
+                </div>
 
-        </form>
-      </div>
-    </Col>
-  </Row>
-</Container>
+                <form onSubmit={handleSubmit}>
+                  <Row className="mb-3">
+                    <Col md={6}>
+                      <input
+                        type="text"
+                        name="nombre"
+                        placeholder="Nombre completo"
+                        value={formData.nombre}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                      />
+                    </Col>
 
+                    <Col md={6}>
+                      <input
+                        type="email"
+                        name="correo"
+                        placeholder="Correo electrónico"
+                        value={formData.correo}
+                        onChange={handleChange}
+                        className="form-control"
+                        required
+                      />
+                    </Col>
+                  </Row>
+
+                  <div className="mb-3">
+                    <select
+                      name="tipo"
+                      value={formData.tipo}
+                      onChange={handleChange}
+                      className="form-select"
+                      required
+                    >
+                      <option value="">Seleccione tipo</option>
+                      <option value="Soporte">Soporte</option>
+                      <option value="Sugerencia">Sugerencia</option>
+                      <option value="Reclamo">Reclamo</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+
+                  <div className="mb-4">
+                    <textarea
+                      name="mensaje"
+                      rows="4"
+                      placeholder="Escribe tu mensaje..."
+                      value={formData.mensaje}
+                      onChange={handleChange}
+                      className="form-control"
+                      required
+                    />
+                  </div>
+
+                  <div className="text-center">
+                    <Button
+                      type="submit"
+                      style={{
+                        backgroundColor: verdeMenta,
+                        border: 'none',
+                        padding: '10px 40px',
+                        borderRadius: '30px'
+                      }}
+                      disabled={loading}
+                    >
+                      {loading ? 'Enviando...' : 'Enviar Mensaje'}
+                    </Button>
+                  </div>
+
+                  {mensajeEstado && (
+                    <p className="text-center mt-4 fw-semibold"
+                      style={{
+                        color: mensajeEstado.includes('Error')
+                          ? 'red'
+                          : verdeMenta
+                      }}>
+                      {mensajeEstado}
+                    </p>
+                  )}
+                </form>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      )}
 
       <footer className="py-5 text-white text-center mt-auto" style={{ background: '#cccbd2af' }}>
         <Container>
