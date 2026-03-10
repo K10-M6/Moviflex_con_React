@@ -13,7 +13,6 @@ import { API_URL, API_BASE_URL } from "../../config";
 import fondo from "../Imagenes/AutoresContacto.png";
 import toast from "react-hot-toast";
 
-// Componentes personalizados para mantener consistencia de colores
 const EstadoViajeBadge = ({ estado }) => {
     const estilos = {
         FINALIZADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
@@ -920,7 +919,6 @@ const DriverHome = () => {
             <Navbar transparent={true} />
 
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
-                {/* Tarjeta de bienvenida */}
                 <div style={{
                     ...cardStyle,
                     marginBottom: '1.5rem'
@@ -992,7 +990,6 @@ const DriverHome = () => {
                     />
                 </div>
 
-                {/* Gráficos */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
@@ -1061,7 +1058,6 @@ const DriverHome = () => {
                     </div>
                 </div>
 
-                {/* Comisión y Comprobante */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
@@ -1192,7 +1188,6 @@ const DriverHome = () => {
                     </div>
                 </div>
 
-                {/* Vehículo y Licencia */}
                 <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
@@ -1401,7 +1396,6 @@ const DriverHome = () => {
                     </div>
                 </div>
 
-                {/* Viajes Recientes */}
                 <div style={{ marginTop: '1rem' }}>
                     {documentos && documentos.some(d => d.estado === 'RECHAZADO') && (
                         <div style={{
@@ -1569,7 +1563,6 @@ const DriverHome = () => {
                 </div>
             </Container>
 
-            {/* Modal de vehículos */}
             {showVehiculosModal && (
                 <div style={{
                     position: 'fixed',
@@ -1688,7 +1681,6 @@ const DriverHome = () => {
                 </div>
             )}
 
-            {/* Modal de foto */}
             {showPhotoModal && (
                 <div style={{
                     position: 'fixed',
@@ -1754,7 +1746,6 @@ const DriverHome = () => {
                 </div>
             )}
 
-            {/* Modal de historial completo */}
             {showHistorialCompleto && (
                 <div style={{
                     position: 'fixed',
@@ -1961,7 +1952,6 @@ const DriverHome = () => {
                 </div>
             )}
 
-            {/* Modal de detalle de viaje */}
             {showDetalleViaje && viajeSeleccionado && (
                 <div style={{
                     position: 'fixed',
@@ -2103,8 +2093,6 @@ const DriverHome = () => {
                     </div>
                 </div>
             )}
-
-            {/* Modal de tutorial */}
             {showTutorial && (
                 <div style={{
                     position: 'fixed',
@@ -2246,8 +2234,6 @@ const DriverHome = () => {
                     </div>
                 </div>
             )}
-
-            {/* Modal de solicitud de cambio */}
             {showSolicitudModal && (
                 <div style={{
                     position: 'fixed',

@@ -1,11 +1,134 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Table, Badge, Button, Modal, Form, Card, Row, Col, Spinner, Image } from 'react-bootstrap';
+import { Container, Modal, Form, Card, Row, Col, Spinner } from 'react-bootstrap';
 import { BsCheckCircleFill, BsXCircleFill, BsEyeFill, BsCalendar3, BsFunnelFill } from 'react-icons/bs';
 import { useAuth } from '../../pages/context/AuthContext';
 import { API_URL } from '../../config';
 import toast from 'react-hot-toast';
 
-// Removido API_URL local ya que se usa el central de config.js
+// Componentes personalizados
+const CustomBadge = ({ estado, children }) => {
+    const estilos = {
+        PENDIENTE: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        APROBADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        RECHAZADO: { backgroundColor: '#113d69', color: '#ffffff' }
+    };
+
+    const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {children}
+        </span>
+    );
+};
+
+const CustomButton = ({ variant, onClick, children, disabled, style, className, size }) => {
+    const getButtonStyle = () => {
+        const baseStyle = {
+            padding: size === 'sm' ? '0.25rem 0.5rem' : '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            border: '1px solid',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.6 : 1,
+            transition: 'all 0.2s',
+            fontWeight: '500',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.25rem'
+        };
+
+        switch (variant) {
+            case 'primary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            case 'success':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            case 'danger':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#113d69',
+                    color: '#ffffff',
+                    borderColor: '#113d69'
+                };
+            case 'outline-warning':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#113d69',
+                    borderColor: '#113d69'
+                };
+            case 'outline-danger':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#113d69',
+                    borderColor: '#113d69'
+                };
+            case 'outline-secondary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            case 'secondary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#cccbd2af',
+                    color: '#113d69',
+                    borderColor: 'transparent'
+                };
+            default:
+                return baseStyle;
+        }
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            style={{ ...getButtonStyle(), ...style }}
+            className={className}
+        >
+            {children}
+        </button>
+    );
+};
+
+const StatsCard = ({ color, bgColor, borderColor, count, label }) => {
+    return (
+        <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '0.75rem',
+            border: 'none',
+            boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+            textAlign: 'center',
+            borderLeft: `4px solid ${borderColor}`,
+            padding: '1rem'
+        }}>
+            <h2 style={{ fontWeight: 'bold', color: color, margin: 0 }}>
+                {count}
+            </h2>
+            <small style={{ color: '#6c757d' }}>{label}</small>
+        </div>
+    );
+};
 
 function AdminReportesPago() {
     const { token } = useAuth();
@@ -118,15 +241,6 @@ function AdminReportesPago() {
         }
     };
 
-    const getBadgeColor = (estado) => {
-        switch (estado) {
-            case 'PENDIENTE': return 'warning';
-            case 'APROBADO': return 'success';
-            case 'RECHAZADO': return 'danger';
-            default: return 'secondary';
-        }
-    };
-
     const enviarRecordatorios = async () => {
         try {
             setProcesando(true);
@@ -177,310 +291,393 @@ function AdminReportesPago() {
     };
 
     return (
-        <Container fluid className="p-4">
+        <div style={{ padding: '1.5rem' }}>
             {/* Header */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <div>
-                    <h3 className="fw-bold mb-1" style={{ color: '#2d3436' }}>
+                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: '#113d69' }}>
                         💰 Reportes de Pago
                     </h3>
-                    <p className="text-muted mb-0">Gestión de comprobantes de pago de conductores</p>
+                    <p style={{ color: '#6c757d', margin: 0 }}>Gestión de comprobantes de pago de conductores</p>
                 </div>
-                <div className="d-flex gap-2">
-                    <Button
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <CustomButton
                         variant="outline-warning"
                         onClick={enviarRecordatorios}
                         disabled={procesando}
-                        style={{ borderRadius: '10px' }}
                     >
-                        {procesando ? <Spinner size="sm" className="me-2" /> : null}
+                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
                         ⚠️ Enviar Recordatorios
-                    </Button>
-                    <Button
+                    </CustomButton>
+                    <CustomButton
                         variant="outline-danger"
                         onClick={verificarMensuales}
                         disabled={procesando}
-                        style={{ borderRadius: '10px' }}
                     >
-                        {procesando ? <Spinner size="sm" className="me-2" /> : null}
+                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
                         Verificar Pagos Mensuales
-                    </Button>
+                    </CustomButton>
                 </div>
             </div>
 
             {/* Filtros */}
-            <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: '12px' }}>
-                <Card.Body>
-                    <Row className="g-3 align-items-end">
-                        <Col md={4}>
-                            <Form.Group>
-                                <Form.Label className="text-muted small">
-                                    <BsFunnelFill className="me-1" /> Estado
-                                </Form.Label>
-                                <Form.Select
-                                    value={filtroEstado}
-                                    onChange={(e) => setFiltroEstado(e.target.value)}
-                                    style={{ borderRadius: '8px' }}
-                                >
-                                    <option value="">Todos</option>
-                                    <option value="PENDIENTE">Pendiente</option>
-                                    <option value="APROBADO">Aprobado</option>
-                                    <option value="RECHAZADO">Rechazado</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={4}>
-                            <Form.Group>
-                                <Form.Label className="text-muted small">
-                                    <BsCalendar3 className="me-1" /> Mes
-                                </Form.Label>
-                                <Form.Control
-                                    type="month"
-                                    value={filtroMes}
-                                    onChange={(e) => setFiltroMes(e.target.value)}
-                                    style={{ borderRadius: '8px' }}
-                                />
-                            </Form.Group>
-                        </Col>
-                        <Col md={4}>
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => { setFiltroEstado(''); setFiltroMes(''); }}
-                                style={{ borderRadius: '8px' }}
-                                className="w-100"
-                            >
-                                Limpiar filtros
-                            </Button>
-                        </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
+            <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '0.75rem',
+                border: 'none',
+                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                marginBottom: '1.5rem',
+                padding: '1rem'
+            }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignItems: 'end' }}>
+                    <div>
+                        <label style={{ fontSize: '0.875rem', color: '#6c757d', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                            <BsFunnelFill /> Estado
+                        </label>
+                        <select
+                            value={filtroEstado}
+                            onChange={(e) => setFiltroEstado(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.375rem 0.75rem',
+                                borderRadius: '0.375rem',
+                                border: '1px solid #ced4da'
+                            }}
+                        >
+                            <option value="">Todos</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="APROBADO">Aprobado</option>
+                            <option value="RECHAZADO">Rechazado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style={{ fontSize: '0.875rem', color: '#6c757d', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.25rem' }}>
+                            <BsCalendar3 /> Mes
+                        </label>
+                        <input
+                            type="month"
+                            value={filtroMes}
+                            onChange={(e) => setFiltroMes(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.375rem 0.75rem',
+                                borderRadius: '0.375rem',
+                                border: '1px solid #ced4da'
+                            }}
+                        />
+                    </div>
+                    <div>
+                        <CustomButton
+                            variant="outline-secondary"
+                            onClick={() => { setFiltroEstado(''); setFiltroMes(''); }}
+                            style={{ width: '100%' }}
+                        >
+                            Limpiar filtros
+                        </CustomButton>
+                    </div>
+                </div>
+            </div>
 
             {/* Resumen rápido */}
-            <Row className="mb-4 g-3">
-                <Col md={4}>
-                    <Card className="border-0 shadow-sm text-center" style={{ borderRadius: '12px', borderLeft: '4px solid #f39c12' }}>
-                        <Card.Body>
-                            <h2 className="fw-bold" style={{ color: '#f39c12' }}>
-                                {reportes.filter(r => r.estado === 'PENDIENTE').length}
-                            </h2>
-                            <small className="text-muted">Pendientes</small>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col md={4}>
-                    <Card className="border-0 shadow-sm text-center" style={{ borderRadius: '12px', borderLeft: '4px solid #27ae60' }}>
-                        <Card.Body>
-                            <h2 className="fw-bold" style={{ color: '#27ae60' }}>
-                                {reportes.filter(r => r.estado === 'APROBADO').length}
-                            </h2>
-                            <small className="text-muted">Aprobados</small>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col md={4}>
-                    <Card className="border-0 shadow-sm text-center" style={{ borderRadius: '12px', borderLeft: '4px solid #e74c3c' }}>
-                        <Card.Body>
-                            <h2 className="fw-bold" style={{ color: '#e74c3c' }}>
-                                {reportes.filter(r => r.estado === 'RECHAZADO').length}
-                            </h2>
-                            <small className="text-muted">Rechazados</small>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+                <StatsCard
+                    count={reportes.filter(r => r.estado === 'PENDIENTE').length}
+                    label="Pendientes"
+                    color="#113d69"
+                    borderColor="#62d8d9"
+                />
+                <StatsCard
+                    count={reportes.filter(r => r.estado === 'APROBADO').length}
+                    label="Aprobados"
+                    color="#62d8d9"
+                    borderColor="#62d8d9"
+                />
+                <StatsCard
+                    count={reportes.filter(r => r.estado === 'RECHAZADO').length}
+                    label="Rechazados"
+                    color="#113d69"
+                    borderColor="#113d69"
+                />
+            </div>
 
             {/* Tabla */}
-            <Card className="border-0 shadow-sm" style={{ borderRadius: '12px' }}>
-                <Card.Body className="p-0">
-                    {loading ? (
-                        <div className="text-center py-5">
-                            <Spinner animation="border" style={{ color: '#4acfbd' }} />
-                        </div>
-                    ) : reportes.length === 0 ? (
-                        <div className="text-center py-5">
-                            <p className="text-muted">No hay reportes de pago</p>
-                        </div>
-                    ) : (
-                        <Table responsive hover className="mb-0">
+            <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '0.75rem',
+                border: 'none',
+                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                overflow: 'hidden'
+            }}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                        <Spinner animation="border" style={{ color: '#62d8d9' }} />
+                    </div>
+                ) : reportes.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                        <p style={{ color: '#6c757d' }}>No hay reportes de pago</p>
+                    </div>
+                ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead style={{ backgroundColor: '#f8f9fa' }}>
                                 <tr>
-                                    <th className="ps-4">Conductor</th>
-                                    <th>Mes</th>
-                                    <th>Monto Comisión</th>
-                                    <th>Fecha Envío</th>
-                                    <th>Estado</th>
-                                    <th className="text-center">Acciones</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Conductor</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Mes</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Monto Comisión</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Fecha Envío</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Estado</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#113d69' }}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {reportes.map(reporte => (
-                                    <tr key={reporte.idReporte}>
-                                        <td className="ps-4">
-                                            <div className="d-flex align-items-center">
+                                    <tr key={reporte.idReporte} style={{ borderBottom: '1px solid #e9ecef' }}>
+                                        <td style={{ padding: '0.75rem 1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
                                                 {reporte.usuario?.fotoPerfil ? (
-                                                    <Image
+                                                    <img
                                                         src={reporte.usuario.fotoPerfil}
-                                                        roundedCircle
-                                                        width={35} height={35}
-                                                        className="me-2"
-                                                        style={{ objectFit: 'cover' }}
+                                                        alt=""
+                                                        style={{
+                                                            width: '35px',
+                                                            height: '35px',
+                                                            borderRadius: '50%',
+                                                            marginRight: '0.5rem',
+                                                            objectFit: 'cover',
+                                                            border: `2px solid #62d8d9`
+                                                        }}
                                                     />
                                                 ) : (
-                                                    <div className="rounded-circle me-2 d-flex align-items-center justify-content-center"
-                                                        style={{ width: 35, height: 35, backgroundColor: '#4acfbd', color: 'white', fontWeight: 'bold' }}>
+                                                    <div style={{
+                                                        width: '35px',
+                                                        height: '35px',
+                                                        borderRadius: '50%',
+                                                        marginRight: '0.5rem',
+                                                        backgroundColor: '#62d8d9',
+                                                        color: '#ffffff',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontWeight: 'bold',
+                                                        border: `2px solid #62d8d9`
+                                                    }}>
                                                         {reporte.usuario?.nombre?.charAt(0) || 'C'}
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <div className="fw-semibold">{reporte.usuario?.nombre}</div>
-                                                    <small className="text-muted">{reporte.usuario?.email}</small>
+                                                    <div style={{ fontWeight: '600', color: '#113d69' }}>{reporte.usuario?.nombre}</div>
+                                                    <small style={{ color: '#6c757d' }}>{reporte.usuario?.email}</small>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>{formatearMes(reporte.mesCorrespondiente)}</td>
-                                        <td className="fw-bold">${Number(reporte.montoComision).toLocaleString()} COP</td>
-                                        <td>{formatearFecha(reporte.fechaEnvio)}</td>
-                                        <td>
-                                            <Badge bg={getBadgeColor(reporte.estado)} style={{ borderRadius: '6px', padding: '5px 10px' }}>
+                                        <td style={{ padding: '0.75rem 1rem', color: '#113d69' }}>{formatearMes(reporte.mesCorrespondiente)}</td>
+                                        <td style={{ padding: '0.75rem 1rem', fontWeight: 'bold', color: '#62d8d9' }}>${Number(reporte.montoComision).toLocaleString()} COP</td>
+                                        <td style={{ padding: '0.75rem 1rem', color: '#113d69' }}>{formatearFecha(reporte.fechaEnvio)}</td>
+                                        <td style={{ padding: '0.75rem 1rem' }}>
+                                            <CustomBadge estado={reporte.estado}>
                                                 {reporte.estado}
-                                            </Badge>
+                                            </CustomBadge>
                                         </td>
-                                        <td className="text-center">
-                                            <Button
+                                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                                            <CustomButton
                                                 size="sm"
-                                                variant="outline-primary"
-                                                className="me-1"
+                                                variant="outline-secondary"
                                                 onClick={() => { setReporteSeleccionado(reporte); setShowModal(true); }}
-                                                style={{ borderRadius: '6px' }}
+                                                style={{ marginRight: '0.25rem' }}
                                             >
                                                 <BsEyeFill /> Ver
-                                            </Button>
+                                            </CustomButton>
                                             {reporte.estado === 'PENDIENTE' && (
                                                 <>
-                                                    <Button
+                                                    <CustomButton
                                                         size="sm"
                                                         variant="success"
-                                                        className="me-1"
                                                         onClick={() => aprobarReporte(reporte.idReporte)}
                                                         disabled={procesando}
-                                                        style={{ borderRadius: '6px' }}
+                                                        style={{ marginRight: '0.25rem' }}
                                                     >
                                                         <BsCheckCircleFill />
-                                                    </Button>
-                                                    <Button
+                                                    </CustomButton>
+                                                    <CustomButton
                                                         size="sm"
                                                         variant="danger"
                                                         onClick={() => { setReporteSeleccionado(reporte); setShowRechazarModal(true); }}
-                                                        style={{ borderRadius: '6px' }}
                                                     >
                                                         <BsXCircleFill />
-                                                    </Button>
+                                                    </CustomButton>
                                                 </>
                                             )}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
-                        </Table>
-                    )}
-                </Card.Body>
-            </Card>
+                        </table>
+                    </div>
+                )}
+            </div>
 
             {/* Modal Ver Detalle */}
-            <Modal show={showModal} onHide={handleCloseModal} onExited={handleModalExited} size="lg" centered>
-                <Modal.Header closeButton style={{ borderBottom: '2px solid #4acfbd' }}>
-                    <Modal.Title>Detalle del Reporte de Pago</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {reporteSeleccionado && (
-                        <Row>
-                            <Col md={6}>
-                                <p><strong>Conductor:</strong> {reporteSeleccionado.usuario?.nombre}</p>
-                                <p><strong>Email:</strong> {reporteSeleccionado.usuario?.email}</p>
-                                <p><strong>Mes:</strong> {formatearMes(reporteSeleccionado.mesCorrespondiente)}</p>
-                                <p><strong>Monto:</strong> <span className="fw-bold" style={{ color: '#4acfbd' }}>${Number(reporteSeleccionado.montoComision).toLocaleString()} COP</span></p>
-                                <p><strong>Estado:</strong> <Badge bg={getBadgeColor(reporteSeleccionado.estado)}>{reporteSeleccionado.estado}</Badge></p>
-                                <p><strong>Fecha de envío:</strong> {formatearFecha(reporteSeleccionado.fechaEnvio)}</p>
-                                {reporteSeleccionado.fechaRevision && (
-                                    <p><strong>Fecha revisión:</strong> {formatearFecha(reporteSeleccionado.fechaRevision)}</p>
-                                )}
-                                {reporteSeleccionado.observaciones && (
-                                    <p><strong>Observaciones:</strong> {reporteSeleccionado.observaciones}</p>
-                                )}
-                            </Col>
-                            <Col md={6}>
-                                <p className="fw-bold">Comprobante de pago:</p>
-                                <Image
-                                    src={reporteSeleccionado.fotoComprobante}
-                                    fluid
-                                    style={{ borderRadius: '10px', maxHeight: '400px', objectFit: 'contain', border: '1px solid #eee' }}
-                                />
-                            </Col>
-                        </Row>
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    {reporteSeleccionado?.estado === 'PENDIENTE' && (
-                        <>
-                            <Button
-                                variant="success"
-                                onClick={() => aprobarReporte(reporteSeleccionado.idReporte)}
-                                disabled={procesando}
-                                style={{ borderRadius: '8px' }}
+            {showModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1050
+                }} onClick={handleCloseModal}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '800px',
+                        width: '90%',
+                        maxHeight: '90vh',
+                        overflow: 'hidden'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{
+                            padding: '1rem',
+                            borderBottom: `2px solid #62d8d9`,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <h5 style={{ margin: 0, color: '#113d69' }}>Detalle del Reporte de Pago</h5>
+                            <button
+                                onClick={handleCloseModal}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '1.5rem',
+                                    cursor: 'pointer',
+                                    color: '#6c757d'
+                                }}
                             >
-                                {procesando ? <Spinner size="sm" className="me-1" /> : <BsCheckCircleFill className="me-1" />}
-                                Aprobar
-                            </Button>
-                            <Button
-                                variant="danger"
-                                onClick={() => setShowRechazarModal(true)}
-                                style={{ borderRadius: '8px' }}
-                            >
-                                <BsXCircleFill className="me-1" /> Rechazar
-                            </Button>
-                        </>
-                    )}
-                    <Button variant="secondary" onClick={handleCloseModal} style={{ borderRadius: '8px' }}>
-                        Cerrar
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+                                ×
+                            </button>
+                        </div>
+                        <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 140px)' }}>
+                            {reporteSeleccionado && (
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Conductor:</strong> <span style={{ color: '#113d69' }}>{reporteSeleccionado.usuario?.nombre}</span></p>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Email:</strong> <span style={{ color: '#113d69' }}>{reporteSeleccionado.usuario?.email}</span></p>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Mes:</strong> <span style={{ color: '#113d69' }}>{formatearMes(reporteSeleccionado.mesCorrespondiente)}</span></p>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Monto:</strong> <span style={{ fontWeight: 'bold', color: '#62d8d9' }}>${Number(reporteSeleccionado.montoComision).toLocaleString()} COP</span></p>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Estado:</strong> <CustomBadge estado={reporteSeleccionado.estado}>{reporteSeleccionado.estado}</CustomBadge></p>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Fecha de envío:</strong> <span style={{ color: '#113d69' }}>{formatearFecha(reporteSeleccionado.fechaEnvio)}</span></p>
+                                        {reporteSeleccionado.fechaRevision && (
+                                            <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Fecha revisión:</strong> <span style={{ color: '#113d69' }}>{formatearFecha(reporteSeleccionado.fechaRevision)}</span></p>
+                                        )}
+                                        {reporteSeleccionado.observaciones && (
+                                            <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Observaciones:</strong> <span style={{ color: '#113d69' }}>{reporteSeleccionado.observaciones}</span></p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p style={{ fontWeight: 'bold', color: '#113d69' }}>Comprobante de pago:</p>
+                                        <img
+                                            src={reporteSeleccionado.fotoComprobante}
+                                            alt="Comprobante"
+                                            style={{
+                                                width: '100%',
+                                                borderRadius: '0.375rem',
+                                                maxHeight: '400px',
+                                                objectFit: 'contain',
+                                                border: '1px solid #62d8d9'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ padding: '1rem', borderTop: '1px solid #e9ecef', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            {reporteSeleccionado?.estado === 'PENDIENTE' && (
+                                <>
+                                    <CustomButton
+                                        variant="success"
+                                        onClick={() => aprobarReporte(reporteSeleccionado.idReporte)}
+                                        disabled={procesando}
+                                    >
+                                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : <BsCheckCircleFill style={{ marginRight: '0.25rem' }} />}
+                                        Aprobar
+                                    </CustomButton>
+                                    <CustomButton
+                                        variant="danger"
+                                        onClick={() => setShowRechazarModal(true)}
+                                    >
+                                        <BsXCircleFill style={{ marginRight: '0.25rem' }} /> Rechazar
+                                    </CustomButton>
+                                </>
+                            )}
+                            <CustomButton variant="secondary" onClick={handleCloseModal}>
+                                Cerrar
+                            </CustomButton>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal Rechazar */}
-            <Modal show={showRechazarModal} onHide={handleCloseRechazarModal} onExited={handleRechazarModalExited} centered>
-                <Modal.Header closeButton style={{ borderBottom: '2px solid #e74c3c' }}>
-                    <Modal.Title>Rechazar Reporte</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form.Group>
-                        <Form.Label>Motivo del rechazo</Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            rows={3}
-                            value={observaciones}
-                            onChange={(e) => setObservaciones(e.target.value)}
-                            placeholder="Ingrese el motivo del rechazo..."
-                            style={{ borderRadius: '8px' }}
-                        />
-                    </Form.Group>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseRechazarModal} style={{ borderRadius: '8px' }}>
-                        Cancelar
-                    </Button>
-                    <Button
-                        variant="danger"
-                        onClick={() => rechazarReporte(reporteSeleccionado?.idReporte)}
-                        disabled={procesando}
-                        style={{ borderRadius: '8px' }}
-                    >
-                        {procesando ? <Spinner size="sm" className="me-1" /> : null}
-                        Confirmar Rechazo
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </Container>
+            {showRechazarModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1060
+                }} onClick={handleCloseRechazarModal}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '0.5rem',
+                        maxWidth: '500px',
+                        width: '90%',
+                        padding: '1.5rem'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <h5 style={{ marginBottom: '1rem', color: '#113d69', borderBottom: `2px solid #113d69`, paddingBottom: '0.5rem' }}>
+                            Rechazar Reporte
+                        </h5>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ fontSize: '0.875rem', fontWeight: '500', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>
+                                Motivo del rechazo
+                            </label>
+                            <textarea
+                                rows={3}
+                                value={observaciones}
+                                onChange={(e) => setObservaciones(e.target.value)}
+                                placeholder="Ingrese el motivo del rechazo..."
+                                style={{
+                                    width: '100%',
+                                    padding: '0.375rem 0.75rem',
+                                    borderRadius: '0.375rem',
+                                    border: '1px solid #ced4da'
+                                }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                            <CustomButton variant="secondary" onClick={handleCloseRechazarModal}>
+                                Cancelar
+                            </CustomButton>
+                            <CustomButton
+                                variant="danger"
+                                onClick={() => rechazarReporte(reporteSeleccionado?.idReporte)}
+                                disabled={procesando}
+                            >
+                                {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : null}
+                                Confirmar Rechazo
+                            </CustomButton>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 

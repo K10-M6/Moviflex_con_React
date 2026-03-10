@@ -1,488 +1,710 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../pages/context/AuthContext";
 import { API_URL } from "../config";
-import { Container, Row, Col, Card, Alert, Spinner, ListGroup, Badge, Image, Button } from "react-bootstrap";
-import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill, BsStarFill, BsStarHalf, BsStar, BsCircleFill, BsArrowRepeat, BsCashStack, BsGraphUp } from "react-icons/bs";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill, BsStarFill, BsStarHalf, BsStar, BsCircleFill, BsArrowRepeat, BsCashStack } from "react-icons/bs";
 import { useSocket } from "../pages/context/SocketContext";
-import { FaMedal, FaChartLine } from "react-icons/fa";
+import { FaMedal } from "react-icons/fa";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import fondo from "../pages/Imagenes/AutoresContacto.png";
 import imagenDashboard from "../pages/Imagenes/HomeBaseImage.png";
 
+// Componentes personalizados
+const CustomBadge = ({ color, bgColor, onClick, children, isActive, activeColor }) => {
+    const estilo = {
+        backgroundColor: isActive ? activeColor : bgColor,
+        color: isActive ? '#ffffff' : color,
+        padding: '0.5rem 1rem',
+        borderRadius: '2rem',
+        fontSize: '0.9rem',
+        fontWeight: '500',
+        display: 'inline-block',
+        cursor: onClick ? 'pointer' : 'default',
+        border: '1px solid #dee2e6'
+    };
+
+    return (
+        <span style={estilo} onClick={onClick}>
+            {children}
+        </span>
+    );
+};
+
+const StatsCard = ({ icon, title, value, iconBgColor, iconColor }) => {
+    return (
+        <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '1rem',
+            border: 'none',
+            boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+            height: '100%',
+            padding: '1.5rem'
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                    padding: '0.75rem',
+                    borderRadius: '50%',
+                    backgroundColor: iconBgColor,
+                    color: iconColor,
+                    marginRight: '1rem'
+                }}>
+                    {icon}
+                </div>
+                <div>
+                    <h6 style={{ color: '#6c757d', marginBottom: '0.25rem', fontSize: '0.875rem' }}>{title}</h6>
+                    <h3 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>{value}</h3>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CustomListGroup = ({ children }) => {
+    return (
+        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {children}
+        </div>
+    );
+};
+
+const CustomListItem = ({ children, style }) => {
+    return (
+        <div style={{
+            padding: '1rem 0',
+            borderBottom: '1px solid #e9ecef',
+            ...style
+        }}>
+            {children}
+        </div>
+    );
+};
+
+const EstadoBadge = ({ estado }) => {
+    const estilos = {
+        activo: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        inactivo: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        suspendido: { backgroundColor: '#113d69', color: '#ffffff' }
+    };
+
+    const estilo = estilos[estado] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '2rem',
+            fontSize: '0.8rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {estado?.charAt(0).toUpperCase() + estado?.slice(1).toLowerCase() || 'Desconocido'}
+        </span>
+    );
+};
+
+const OnlineIndicator = () => {
+    return (
+        <span style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: '#62d8d9',
+            display: 'inline-block'
+        }} />
+    );
+};
+
 function Home() {
-  const { token, usuario } = useAuth();
-  const { onlineUsers } = useSocket();
+    const { token, usuario } = useAuth();
+    const { onlineUsers } = useSocket();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [errorDetails, setErrorDetails] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [stats, setStats] = useState({
-    totalUsuarios: 0,
-    totalConductores: 0,
-    totalViajeros: 0,
-    totalVehiculos: 0
-  });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [errorDetails, setErrorDetails] = useState(null);
+    const [retryCount, setRetryCount] = useState(0);
+    const [stats, setStats] = useState({
+        totalUsuarios: 0,
+        totalConductores: 0,
+        totalViajeros: 0,
+        totalVehiculos: 0
+    });
 
-  // Nuevos estados financieros para Admin
-  const [statsFinancieras, setStatsFinancieras] = useState({
-    ingresosPlataforma: { total: 0, historial: [] }
-  });
-  const [periodoAdmin, setPeriodoAdmin] = useState('mensual');
-
-  const [chartData, setChartData] = useState([]);
-  const [donutData, setDonutData] = useState([
-    { name: 'Activos', value: 0, color: '#56bca7' },
-    { name: 'Inactivos', value: 0, color: '#ff6b6b' },
-    { name: 'Suspendidos', value: 0, color: '#f59e0b' }
-  ]);
-  const [topConductores, setTopConductores] = useState([]);
-  const [topViajeros, setTopViajeros] = useState([]);
-  const [cargandoTop, setCargandoTop] = useState(false);
-  const [erroresPorSeccion, setErroresPorSeccion] = useState({
-    usuarios: false,
-    vehiculos: false,
-    graficos: false,
-    rankings: false,
-    finanzas: false
-  });
-
-  const colores = {
-    estrella: '#62d8d9',
-    badgeFondo: '#113d69',
-    badgeTexto: '#ffffff',
-    verdeMenta: '#56bca7',
-    azulFuerte: '#113d69'
-  };
-
-  useEffect(() => {
-    cargarTodosLosDatos();
-  }, [retryCount, periodoAdmin]);
-
-  const cargarTodosLosDatos = async () => {
-    setLoading(true);
-    setError("");
-    setErrorDetails(null);
-
-    try {
-      await Promise.allSettled([
-        traerUsuarios(),
-        traerVehiculos(),
-        traerDatosGraficos(),
-        traerTopRankings(),
-        traerEstadisticasFinancieras()
-      ]);
-    } catch (error) {
-      console.error("Error general en carga de datos:", error);
-      setError("Error al cargar algunos datos. Algunas secciones pueden estar incompletas.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const traerEstadisticasFinancieras = async () => {
-    if (!token) return;
-    try {
-      setErroresPorSeccion(prev => ({ ...prev, finanzas: false }));
-      const headers = { "Authorization": "Bearer " + token };
-
-      const resIngresos = await fetch(`${API_URL}/estadisticas/ingresos-plataforma?periodo=${periodoAdmin}`, { headers });
-
-      const dataFin = {
+    const [statsFinancieras, setStatsFinancieras] = useState({
         ingresosPlataforma: { total: 0, historial: [] }
-      };
+    });
+    const [periodoAdmin, setPeriodoAdmin] = useState('mensual');
 
-      if (resIngresos.ok) {
-        dataFin.ingresosPlataforma = await resIngresos.json();
-      }
+    const [chartData, setChartData] = useState([]);
+    const [donutData, setDonutData] = useState([
+        { name: 'Activos', value: 0, color: '#62d8d9' },
+        { name: 'Inactivos', value: 0, color: '#cccbd2af' },
+        { name: 'Suspendidos', value: 0, color: '#113d69' }
+    ]);
+    const [topConductores, setTopConductores] = useState([]);
+    const [topViajeros, setTopViajeros] = useState([]);
+    const [cargandoTop, setCargandoTop] = useState(false);
+    const [erroresPorSeccion, setErroresPorSeccion] = useState({
+        usuarios: false,
+        vehiculos: false,
+        graficos: false,
+        rankings: false,
+        finanzas: false
+    });
 
-      setStatsFinancieras(dataFin);
-    } catch (error) {
-      console.error("Error trayendo stats financieras:", error);
-      setErroresPorSeccion(prev => ({ ...prev, finanzas: true }));
-    }
-  };
+    const colores = {
+        estrella: '#62d8d9',
+        badgeFondo: '#113d69',
+        badgeTexto: '#ffffff',
+        verdeMenta: '#62d8d9',
+        azulFuerte: '#113d69'
+    };
 
-  const manejarError = (seccion, error, mensajePersonalizado = null) => {
-    console.error(`Error en ${seccion}:`, error);
-    setErroresPorSeccion(prev => ({ ...prev, [seccion]: true }));
+    useEffect(() => {
+        cargarTodosLosDatos();
+    }, [retryCount, periodoAdmin]);
 
-    if (seccion === 'usuarios' || seccion === 'graficos') {
-      setError(mensajePersonalizado || `Error al cargar ${seccion}`);
-    }
-  };
+    const cargarTodosLosDatos = async () => {
+        setLoading(true);
+        setError("");
+        setErrorDetails(null);
 
-  const calcularEstadoUsuarios = (usuarios) => {
-    if (!Array.isArray(usuarios)) return { activos: 0, inactivos: 0, suspendidos: 0, total: 0 };
-    const activos = usuarios.filter(u => u.estado === 'ACTIVO').length;
-    const inactivos = usuarios.filter(u => u.estado === 'INACTIVO').length;
-    const suspendidos = usuarios.filter(u => u.estado === 'SUSPENDIDO').length;
-    return { activos, inactivos, suspendidos, total: usuarios.length };
-  };
-
-  async function traerUsuarios() {
-    try {
-      setErroresPorSeccion(prev => ({ ...prev, usuarios: false }));
-      if (!token) throw new Error("No hay token de autenticación");
-
-      const response = await fetch(`${API_URL}/auth/`, {
-        headers: { "Authorization": "Bearer " + token }
-      });
-
-      if (!response.ok) throw new Error(`Error ${response.status}`);
-      const usuarios = await response.json();
-
-      if (Array.isArray(usuarios)) {
-        const conductores = usuarios.filter(u => u.idRol === 2 || u.rol?.nombre?.toUpperCase() === 'CONDUCTOR').length;
-        const viajeros = usuarios.filter(u => u.idRol === 3 || u.rol?.nombre?.toUpperCase() === 'VIAJERO' || u.rol?.nombre?.toUpperCase() === 'PASAJERO').length;
-        const { activos, inactivos, suspendidos } = calcularEstadoUsuarios(usuarios);
-
-        setStats(prev => ({ ...prev, totalUsuarios: usuarios.length, totalConductores: conductores, totalViajeros: viajeros }));
-        setDonutData([
-          { name: 'Activos', value: activos, color: '#56bca7' },
-          { name: 'Inactivos', value: inactivos, color: '#ff6b6b' },
-          { name: 'Suspendidos', value: suspendidos, color: '#f59e0b' }
-        ]);
-      }
-    } catch (error) {
-      manejarError('usuarios', error, "Error al cargar estadísticas de usuarios");
-    }
-  }
-
-  async function traerVehiculos() {
-    try {
-      setErroresPorSeccion(prev => ({ ...prev, vehiculos: false }));
-      if (!token) return;
-      const response = await fetch(`${API_URL}/vehiculos/`, {
-        headers: { "Authorization": "Bearer " + token }
-      });
-      if (!response.ok) throw new Error(`Error ${response.status}`);
-      const vehiculos = await response.json();
-      if (Array.isArray(vehiculos)) {
-        setStats(prev => ({ ...prev, totalVehiculos: vehiculos.length }));
-      }
-    } catch (error) {
-      manejarError('vehiculos', error);
-    }
-  }
-
-  async function traerViajesPorDia() {
-    try {
-      const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-      const promesasViajes = diasSemana.map(async (nombre, dia) => {
         try {
-          const response = await fetch(`${API_URL}/viajes/dia/${dia}`, {
-            headers: { "Authorization": "Bearer " + token }
-          });
-          if (!response.ok) return { nombre, cantidad: 0 };
-          const ViajesDelDia = await response.json();
-          return { nombre, cantidad: Array.isArray(ViajesDelDia) ? ViajesDelDia.length : 0 };
+            await Promise.allSettled([
+                traerUsuarios(),
+                traerVehiculos(),
+                traerDatosGraficos(),
+                traerTopRankings(),
+                traerEstadisticasFinancieras()
+            ]);
         } catch (error) {
-          return { nombre, cantidad: 0 };
+            console.error("Error general en carga de datos:", error);
+            setError("Error al cargar algunos datos. Algunas secciones pueden estar incompletas.");
+        } finally {
+            setLoading(false);
         }
-      });
-      return await Promise.all(promesasViajes);
-    } catch (error) {
-      return [];
-    }
-  }
+    };
 
-  async function traerDatosGraficos() {
-    try {
-      setErroresPorSeccion(prev => ({ ...prev, graficos: false }));
-      if (!token) return;
-
-      const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-      const promesasUsuarios = diasSemana.map(async (nombre, dia) => {
+    const traerEstadisticasFinancieras = async () => {
+        if (!token) return;
         try {
-          const response = await fetch(`${API_URL}/auth/usuarios/dia/${dia}`, {
-            headers: { "Authorization": "Bearer " + token }
-          });
-          if (!response.ok) return { name: nombre, usuarios: 0 };
-          const usuariosDelDia = await response.json();
-          return { name: nombre, usuarios: Array.isArray(usuariosDelDia) ? usuariosDelDia.length : 0 };
+            setErroresPorSeccion(prev => ({ ...prev, finanzas: false }));
+            const headers = { "Authorization": "Bearer " + token };
+
+            const resIngresos = await fetch(`${API_URL}/estadisticas/ingresos-plataforma?periodo=${periodoAdmin}`, { headers });
+
+            const dataFin = {
+                ingresosPlataforma: { total: 0, historial: [] }
+            };
+
+            if (resIngresos.ok) {
+                dataFin.ingresosPlataforma = await resIngresos.json();
+            }
+
+            setStatsFinancieras(dataFin);
         } catch (error) {
-          return { name: nombre, usuarios: 0 };
+            console.error("Error trayendo stats financieras:", error);
+            setErroresPorSeccion(prev => ({ ...prev, finanzas: true }));
         }
-      });
+    };
 
-      const [UsuariosPorDia, ViajesPorDia] = await Promise.all([
-        Promise.all(promesasUsuarios),
-        traerViajesPorDia()
-      ]);
+    const manejarError = (seccion, error, mensajePersonalizado = null) => {
+        console.error(`Error en ${seccion}:`, error);
+        setErroresPorSeccion(prev => ({ ...prev, [seccion]: true }));
 
-      setChartData(UsuariosPorDia.map(item => ({
-        name: item.name,
-        usuarios: item.usuarios,
-        viajes: ViajesPorDia.find(v => v.nombre === item.name)?.cantidad || 0
-      })));
-    } catch (error) {
-      manejarError('graficos', error);
+        if (seccion === 'usuarios' || seccion === 'graficos') {
+            setError(mensajePersonalizado || `Error al cargar ${seccion}`);
+        }
+    };
+
+    const calcularEstadoUsuarios = (usuarios) => {
+        if (!Array.isArray(usuarios)) return { activos: 0, inactivos: 0, suspendidos: 0, total: 0 };
+        const activos = usuarios.filter(u => u.estado === 'ACTIVO').length;
+        const inactivos = usuarios.filter(u => u.estado === 'INACTIVO').length;
+        const suspendidos = usuarios.filter(u => u.estado === 'SUSPENDIDO').length;
+        return { activos, inactivos, suspendidos, total: usuarios.length };
+    };
+
+    async function traerUsuarios() {
+        try {
+            setErroresPorSeccion(prev => ({ ...prev, usuarios: false }));
+            if (!token) throw new Error("No hay token de autenticación");
+
+            const response = await fetch(`${API_URL}/auth/`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+
+            if (!response.ok) throw new Error(`Error ${response.status}`);
+            const usuarios = await response.json();
+
+            if (Array.isArray(usuarios)) {
+                const conductores = usuarios.filter(u => u.idRol === 2 || u.rol?.nombre?.toUpperCase() === 'CONDUCTOR').length;
+                const viajeros = usuarios.filter(u => u.idRol === 3 || u.rol?.nombre?.toUpperCase() === 'VIAJERO' || u.rol?.nombre?.toUpperCase() === 'PASAJERO').length;
+                const { activos, inactivos, suspendidos } = calcularEstadoUsuarios(usuarios);
+
+                setStats(prev => ({ ...prev, totalUsuarios: usuarios.length, totalConductores: conductores, totalViajeros: viajeros }));
+                setDonutData([
+                    { name: 'Activos', value: activos, color: '#62d8d9' },
+                    { name: 'Inactivos', value: inactivos, color: '#cccbd2af' },
+                    { name: 'Suspendidos', value: suspendidos, color: '#113d69' }
+                ]);
+            }
+        } catch (error) {
+            manejarError('usuarios', error, "Error al cargar estadísticas de usuarios");
+        }
     }
-  }
 
-  async function traerTopRankings() {
-    try {
-      setCargandoTop(true);
-      setErroresPorSeccion(prev => ({ ...prev, rankings: false }));
-      if (!token) return;
-
-      const headers = { "Authorization": "Bearer " + token };
-      const [resConductores, resViajeros] = await Promise.allSettled([
-        fetch(`${API_URL}/calificaciones/top-conductores`, { headers }),
-        fetch(`${API_URL}/calificaciones/top-viajeros`, { headers })
-      ]);
-
-      if (resConductores.status === 'fulfilled' && resConductores.value.ok) {
-        setTopConductores(await resConductores.value.json());
-      }
-      if (resViajeros.status === 'fulfilled' && resViajeros.value.ok) {
-        setTopViajeros(await resViajeros.value.json());
-      }
-    } catch (error) {
-      manejarError('rankings', error);
-    } finally {
-      setCargandoTop(false);
+    async function traerVehiculos() {
+        try {
+            setErroresPorSeccion(prev => ({ ...prev, vehiculos: false }));
+            if (!token) return;
+            const response = await fetch(`${API_URL}/vehiculos/`, {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            if (!response.ok) throw new Error(`Error ${response.status}`);
+            const vehiculos = await response.json();
+            if (Array.isArray(vehiculos)) {
+                setStats(prev => ({ ...prev, totalVehiculos: vehiculos.length }));
+            }
+        } catch (error) {
+            manejarError('vehiculos', error);
+        }
     }
-  }
 
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
-    setError("");
-    setErrorDetails(null);
-  };
-
-  const formatearMoneda = (valor) => {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(valor || 0);
-  };
-
-  const renderStars = (promedio) => {
-    const stars = [];
-    const fullStars = Math.floor(promedio);
-    const hasHalfStar = promedio % 1 >= 0.5;
-    for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) stars.push(<BsStarFill key={i} className="me-1" size={12} style={{ color: colores.estrella }} />);
-      else if (i === fullStars + 1 && hasHalfStar) stars.push(<BsStarHalf key={i} className="me-1" size={12} style={{ color: colores.estrella }} />);
-      else stars.push(<BsStar key={i} className="me-1" size={12} style={{ color: colores.estrella }} />);
+    async function traerViajesPorDia() {
+        try {
+            const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            const promesasViajes = diasSemana.map(async (nombre, dia) => {
+                try {
+                    const response = await fetch(`${API_URL}/viajes/dia/${dia}`, {
+                        headers: { "Authorization": "Bearer " + token }
+                    });
+                    if (!response.ok) return { nombre, cantidad: 0 };
+                    const ViajesDelDia = await response.json();
+                    return { nombre, cantidad: Array.isArray(ViajesDelDia) ? ViajesDelDia.length : 0 };
+                } catch (error) {
+                    return { nombre, cantidad: 0 };
+                }
+            });
+            return await Promise.all(promesasViajes);
+        } catch (error) {
+            return [];
+        }
     }
-    return stars;
-  };
 
-  return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundImage: `url(${fondo})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed',
-      position: 'relative'
-    }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255, 255, 255, 0.9)', zIndex: 0 }} />
+    async function traerDatosGraficos() {
+        try {
+            setErroresPorSeccion(prev => ({ ...prev, graficos: false }));
+            if (!token) return;
 
-      <Container fluid className="py-4 px-3 px-md-5" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Encabezado */}
-        <Card className="mb-4 border-0 shadow-sm rounded-4 overflow-hidden">
-          <Card.Body className="p-4 d-flex flex-column flex-md-row align-items-center bg-white">
-            <div className="me-md-4 mb-3 mb-md-0">
-              <Image src={imagenDashboard} fluid style={{ width: '120px', borderRadius: '15px' }} />
-            </div>
-            <div className="text-center text-md-start flex-grow-1">
-              <h2 className="fw-bold mb-1" style={{ color: colores.azulFuerte }}>¡Bienvenido de nuevo, {usuario?.nombre || 'Administrador'}!</h2>
-              <p className="text-muted mb-0">Gestión global de la plataforma MoviFlex</p>
-            </div>
-            <div className="mt-3 mt-md-0 d-flex gap-2">
-              <Badge bg={periodoAdmin === 'diario' ? 'primary' : 'light'} text={periodoAdmin === 'diario' ? 'white' : 'dark'} className="p-2 px-3 rounded-pill cursor-pointer border" onClick={() => setPeriodoAdmin('diario')} style={{ cursor: 'pointer', backgroundColor: periodoAdmin === 'diario' ? colores.verdeMenta : '' }}>Día</Badge>
-              <Badge bg={periodoAdmin === 'mensual' ? 'primary' : 'light'} text={periodoAdmin === 'mensual' ? 'white' : 'dark'} className="p-2 px-3 rounded-pill cursor-pointer border" onClick={() => setPeriodoAdmin('mensual')} style={{ cursor: 'pointer', backgroundColor: periodoAdmin === 'mensual' ? colores.verdeMenta : '' }}>Mes</Badge>
-              <Badge bg={periodoAdmin === 'anual' ? 'primary' : 'light'} text={periodoAdmin === 'anual' ? 'white' : 'dark'} className="p-2 px-3 rounded-pill cursor-pointer border" onClick={() => setPeriodoAdmin('anual')} style={{ cursor: 'pointer', backgroundColor: periodoAdmin === 'anual' ? colores.verdeMenta : '' }}>Año</Badge>
-            </div>
-          </Card.Body>
-        </Card>
+            const diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+            const promesasUsuarios = diasSemana.map(async (nombre, dia) => {
+                try {
+                    const response = await fetch(`${API_URL}/auth/usuarios/dia/${dia}`, {
+                        headers: { "Authorization": "Bearer " + token }
+                    });
+                    if (!response.ok) return { name: nombre, usuarios: 0 };
+                    const usuariosDelDia = await response.json();
+                    return { name: nombre, usuarios: Array.isArray(usuariosDelDia) ? usuariosDelDia.length : 0 };
+                } catch (error) {
+                    return { name: nombre, usuarios: 0 };
+                }
+            });
 
-        {loading ? (
-          <div className="text-center py-5"><Spinner animation="border" style={{ color: colores.verdeMenta }} /></div>
-        ) : (
-          <>
-            {/* Tarjetas Principales */}
-            <Row className="g-4 mb-4">
-              <Col md={4}>
-                <Card className="border-0 shadow-sm rounded-4 h-100 bg-white">
-                  <Card.Body className="p-4 d-flex align-items-center">
-                    <div className="p-3 rounded-circle me-3" style={{ backgroundColor: '#e0f4f2', color: colores.verdeMenta }}><BsPeopleFill size={25} /></div>
-                    <div><h6 className="text-muted mb-0 small">Total Usuarios</h6><h3 className="fw-bold mb-0">{stats.totalUsuarios}</h3></div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={4}>
-                <Card className="border-0 shadow-sm rounded-4 h-100 bg-white">
-                  <Card.Body className="p-4 d-flex align-items-center">
-                    <div className="p-3 rounded-circle me-3" style={{ backgroundColor: '#ebf3f9', color: '#113d69' }}><BsTruck size={25} /></div>
-                    <div><h6 className="text-muted mb-0 small">Conductores</h6><h3 className="fw-bold mb-0">{stats.totalConductores}</h3></div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col md={4}>
-                <Card className="border-0 shadow-sm rounded-4 h-100 bg-white">
-                  <Card.Body className="p-4 d-flex align-items-center">
-                    <div className="p-3 rounded-circle me-3" style={{ backgroundColor: '#fff7e6', color: '#f59e0b' }}><BsCashStack size={25} /></div>
-                    <div><h6 className="text-muted mb-0 small">Ingresos Totales</h6><h4 className="fw-bold mb-0">{formatearMoneda(statsFinancieras.ingresosPlataforma.total)}</h4></div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+            const [UsuariosPorDia, ViajesPorDia] = await Promise.all([
+                Promise.all(promesasUsuarios),
+                traerViajesPorDia()
+            ]);
 
-            {/* Gráficos de Finanzas - NUEVO */}
-            <Row className="g-4 mb-4">
-              <Col lg={12}>
-                <Card className="border-0 shadow-sm rounded-4 bg-white h-100">
-                  <Card.Body className="p-4">
-                    <div className="d-flex align-items-center mb-4">
-                      <BsCashStack size={20} className="me-2 text-success" />
-                      <h5 className="fw-bold mb-0" style={{ color: colores.azulFuerte }}>Flujo de Ingresos de Plataforma</h5>
-                    </div>
-                    <div style={{ height: '300px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={statsFinancieras.ingresosPlataforma.historial}>
-                          <defs>
-                            <linearGradient id="colorAdminIngresos" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={colores.verdeMenta} stopOpacity={0.3} />
-                              <stop offset="95%" stopColor={colores.verdeMenta} stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
-                          <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} />
-                          <Area type="monotone" dataKey="value" stroke={colores.verdeMenta} strokeWidth={3} fillOpacity={1} fill="url(#colorAdminIngresos)" name="Ingresos ($)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+            setChartData(UsuariosPorDia.map(item => ({
+                name: item.name,
+                usuarios: item.usuarios,
+                viajes: ViajesPorDia.find(v => v.nombre === item.name)?.cantidad || 0
+            })));
+        } catch (error) {
+            manejarError('graficos', error);
+        }
+    }
 
-            {/* Secciones previas reorganizadas */}
-            <Row className="g-4 mb-4">
-              <Col lg={8}>
-                <Card className="border-0 shadow-sm rounded-4 bg-white">
-                  <Card.Body className="p-4">
-                    <h5 className="fw-bold mb-4" style={{ color: colores.azulFuerte }}>Actividad de Registro y Viajes</h5>
-                    <div style={{ height: '300px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
-                          <Tooltip cursor={{ fill: '#f8f9fa' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
-                          <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                          <Bar dataKey="usuarios" fill="#56bca7" name="Reg. Usuarios" radius={[4, 4, 0, 0]} barSize={25} />
-                          <Bar dataKey="viajes" fill="#113d69" name="Viajes Realizados" radius={[4, 4, 0, 0]} barSize={25} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col lg={4}>
-                <Card className="border-0 shadow-sm rounded-4 bg-white h-100">
-                  <Card.Body className="p-4">
-                    <h5 className="fw-bold mb-4" style={{ color: colores.azulFuerte }}>Estados de Usuario</h5>
-                    <div style={{ height: '220px', position: 'relative' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie data={donutData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-                            {donutData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                        <h3 className="fw-bold mb-0">{stats.totalUsuarios}</h3>
-                        <small className="text-muted">Total</small>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      {donutData.map((item, id) => (
-                        <div key={id} className="d-flex justify-content-between align-items-center mb-2 px-3 py-2 rounded-3" style={{ backgroundColor: '#f8f9fa' }}>
-                          <div className="d-flex align-items-center">
-                            <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: item.color, marginRight: '10px' }} />
-                            <span className="small fw-semibold">{item.name}</span>
-                          </div>
-                          <span className="small fw-bold">{item.value}</span>
+    async function traerTopRankings() {
+        try {
+            setCargandoTop(true);
+            setErroresPorSeccion(prev => ({ ...prev, rankings: false }));
+            if (!token) return;
+
+            const headers = { "Authorization": "Bearer " + token };
+            const [resConductores, resViajeros] = await Promise.allSettled([
+                fetch(`${API_URL}/calificaciones/top-conductores`, { headers }),
+                fetch(`${API_URL}/calificaciones/top-viajeros`, { headers })
+            ]);
+
+            if (resConductores.status === 'fulfilled' && resConductores.value.ok) {
+                const data = await resConductores.value.json();
+                setTopConductores(Array.isArray(data) ? data : []);
+            }
+            if (resViajeros.status === 'fulfilled' && resViajeros.value.ok) {
+                const data = await resViajeros.value.json();
+                setTopViajeros(Array.isArray(data) ? data : []);
+            }
+        } catch (error) {
+            manejarError('rankings', error);
+        } finally {
+            setCargandoTop(false);
+        }
+    }
+
+    const handleRetry = () => {
+        setRetryCount(prev => prev + 1);
+        setError("");
+        setErrorDetails(null);
+    };
+
+    const formatearMoneda = (valor) => {
+        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(valor || 0);
+    };
+
+    const renderStars = (promedio) => {
+        const stars = [];
+        const fullStars = Math.floor(promedio);
+        const hasHalfStar = promedio % 1 >= 0.5;
+        for (let i = 1; i <= 5; i++) {
+            if (i <= fullStars) stars.push(<BsStarFill key={i} style={{ marginRight: '0.25rem', color: colores.estrella, fontSize: '12px' }} />);
+            else if (i === fullStars + 1 && hasHalfStar) stars.push(<BsStarHalf key={i} style={{ marginRight: '0.25rem', color: colores.estrella, fontSize: '12px' }} />);
+            else stars.push(<BsStar key={i} style={{ marginRight: '0.25rem', color: colores.estrella, fontSize: '12px' }} />);
+        }
+        return <div style={{ display: 'flex' }}>{stars}</div>;
+    };
+
+    return (
+        <div style={{
+            minHeight: '100vh',
+            backgroundImage: `url(${fondo})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
+            position: 'relative'
+        }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255, 255, 255, 0.9)', zIndex: 0 }} />
+
+            <div style={{ position: 'relative', zIndex: 1, padding: '1.5rem' }}>
+                {/* Encabezado */}
+                <div style={{
+                    backgroundColor: '#ffffff',
+                    borderRadius: '1rem',
+                    border: 'none',
+                    boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                    marginBottom: '1.5rem',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        padding: '1.5rem',
+                        display: 'flex',
+                        flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{ marginRight: window.innerWidth < 768 ? 0 : '1rem', marginBottom: window.innerWidth < 768 ? '1rem' : 0 }}>
+                            <img src={imagenDashboard} alt="Dashboard" style={{ width: '120px', borderRadius: '0.75rem' }} />
                         </div>
-                      ))}
+                        <div style={{ flex: 1, textAlign: window.innerWidth < 768 ? 'center' : 'left' }}>
+                            <h2 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: colores.azulFuerte }}>¡Bienvenido de nuevo, {usuario?.nombre || 'Administrador'}!</h2>
+                            <p style={{ color: '#6c757d', margin: 0 }}>Gestión global de la plataforma MoviFlex</p>
+                        </div>
+                        <div style={{ marginTop: window.innerWidth < 768 ? '1rem' : 0, display: 'flex', gap: '0.5rem' }}>
+                            <CustomBadge
+                                color="#113d69"
+                                bgColor="transparent"
+                                activeColor={colores.verdeMenta}
+                                isActive={periodoAdmin === 'diario'}
+                                onClick={() => setPeriodoAdmin('diario')}
+                            >
+                                Día
+                            </CustomBadge>
+                            <CustomBadge
+                                color="#113d69"
+                                bgColor="transparent"
+                                activeColor={colores.verdeMenta}
+                                isActive={periodoAdmin === 'mensual'}
+                                onClick={() => setPeriodoAdmin('mensual')}
+                            >
+                                Mes
+                            </CustomBadge>
+                            <CustomBadge
+                                color="#113d69"
+                                bgColor="transparent"
+                                activeColor={colores.verdeMenta}
+                                isActive={periodoAdmin === 'anual'}
+                                onClick={() => setPeriodoAdmin('anual')}
+                            >
+                                Año
+                            </CustomBadge>
+                        </div>
                     </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+                </div>
 
-            {/* Rankings a tres columnas */}
-            <Row className="g-4">
-              <Col lg={4}>
-                <Card className="border-0 shadow-sm rounded-4 bg-white h-100">
-                  <Card.Body className="p-4">
-                    <h6 className="fw-bold mb-4 d-flex align-items-center"><FaMedal className="me-2 text-warning" /> Top Conductores</h6>
-                    <ListGroup variant="flush">
-                      {topConductores.slice(0, 5).map((c, i) => (
-                        <ListGroup.Item key={i} className="px-0 border-0 bg-transparent py-3 d-flex align-items-center justify-content-between">
-                          <div className="d-flex align-items-center">
-                            <div className="me-3 fw-bold text-muted" style={{ width: '20px' }}>{i + 1}</div>
-                            <div>
-                              <div className="fw-bold small">{c.nombre}</div>
-                              <div className="d-flex mt-1">{renderStars(c.promedioEstrellas || 0)}</div>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                        <Spinner animation="border" style={{ color: colores.verdeMenta }} />
+                    </div>
+                ) : (
+                    <>
+                        {/* Tarjetas Principales */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                            <StatsCard
+                                icon={<BsPeopleFill size={20} />}
+                                title="Total Usuarios"
+                                value={stats.totalUsuarios}
+                                iconBgColor="#e0f4f2"
+                                iconColor={colores.verdeMenta}
+                            />
+                            <StatsCard
+                                icon={<BsTruck size={20} />}
+                                title="Conductores"
+                                value={stats.totalConductores}
+                                iconBgColor="#ebf3f9"
+                                iconColor="#113d69"
+                            />
+                            <StatsCard
+                                icon={<BsCashStack size={20} />}
+                                title="Ingresos Totales"
+                                value={formatearMoneda(statsFinancieras.ingresosPlataforma.total)}
+                                iconBgColor="#fff7e6"
+                                iconColor="#62d8d9"
+                            />
+                        </div>
+
+                        {/* Gráficos de Finanzas */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: '1rem',
+                                border: 'none',
+                                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                                height: '100%',
+                                padding: '1.5rem'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <BsCashStack size={20} style={{ marginRight: '0.5rem', color: '#62d8d9' }} />
+                                    <h5 style={{ fontWeight: 'bold', margin: 0, color: colores.azulFuerte }}>Flujo de Ingresos de Plataforma</h5>
+                                </div>
+                                <div style={{ height: '300px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={statsFinancieras.ingresosPlataforma.historial}>
+                                            <defs>
+                                                <linearGradient id="colorAdminIngresos" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={colores.verdeMenta} stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor={colores.verdeMenta} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} />
+                                            <Area type="monotone" dataKey="value" stroke={colores.verdeMenta} strokeWidth={3} fillOpacity={1} fill="url(#colorAdminIngresos)" name="Ingresos ($)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                          </div>
-                          <Badge bg="light" text="dark" className="border rounded-pill">{c.promedioEstrellas?.toFixed(1) || '0.0'}</Badge>
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col lg={4}>
-                <Card className="border-0 shadow-sm rounded-4 bg-white h-100">
-                  <Card.Body className="p-4">
-                    <h6 className="fw-bold mb-4 d-flex align-items-center"><FaMedal className="me-2 text-secondary" /> Top Pasajeros</h6>
-                    <ListGroup variant="flush">
-                      {topViajeros.slice(0, 5).map((v, i) => (
-                        <ListGroup.Item key={i} className="px-0 border-0 bg-transparent py-3 d-flex align-items-center justify-content-between">
-                          <div className="d-flex align-items-center">
-                            <div className="me-3 fw-bold text-muted" style={{ width: '20px' }}>{i + 1}</div>
-                            <div>
-                              <div className="fw-bold small">{v.nombre}</div>
-                              <div className="d-flex mt-1">{renderStars(v.promedioEstrellas || 0)}</div>
+                        </div>
+
+                        {/* Actividad y Estados */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: '1rem',
+                                border: 'none',
+                                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                                padding: '1.5rem'
+                            }}>
+                                <h5 style={{ fontWeight: 'bold', marginBottom: '1rem', color: colores.azulFuerte }}>Actividad de Registro y Viajes</h5>
+                                <div style={{ height: '300px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={chartData}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#999', fontSize: 11 }} />
+                                            <Tooltip cursor={{ fill: '#f8f9fa' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                                            <Bar dataKey="usuarios" fill="#62d8d9" name="Reg. Usuarios" radius={[4, 4, 0, 0]} barSize={25} />
+                                            <Bar dataKey="viajes" fill="#113d69" name="Viajes Realizados" radius={[4, 4, 0, 0]} barSize={25} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                          </div>
-                          <Badge bg="light" text="dark" className="border rounded-pill">{v.promedioEstrellas?.toFixed(1) || '0.0'}</Badge>
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  </Card.Body>
-                </Card>
-              </Col>
-              <Col lg={4}>
-                <Card className="border-0 shadow-sm rounded-4 bg-white h-100">
-                  <Card.Body className="p-4">
-                    <h6 className="fw-bold mb-4 d-flex align-items-center"><BsCircleFill className="me-2 text-success" size={10} /> En Línea Ahora</h6>
-                    <ListGroup variant="flush">
-                      {onlineUsers?.slice(0, 5).map((u, i) => (
-                        <ListGroup.Item key={i} className="px-0 border-0 bg-transparent py-2 d-flex align-items-center">
-                          <div className="p-2 rounded-circle bg-light me-2"><BsPersonCircle className="text-muted" /></div>
-                          <div className="flex-grow-1"><div className="fw-bold small">{u.nombre}</div><small className="text-muted text-uppercase" style={{ fontSize: '10px' }}>{u.role}</small></div>
-                          <Badge bg="success" pill style={{ width: '8px', height: '8px', padding: 0 }} />
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          </>
-        )}
-      </Container>
-    </div>
-  );
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: '1rem',
+                                border: 'none',
+                                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                                height: '100%',
+                                padding: '1.5rem'
+                            }}>
+                                <h5 style={{ fontWeight: 'bold', marginBottom: '1rem', color: colores.azulFuerte }}>Estados de Usuario</h5>
+                                <div style={{ height: '220px', position: 'relative' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={donutData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                                                {donutData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                                            </Pie>
+                                            <Tooltip />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                                        <h3 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>{stats.totalUsuarios}</h3>
+                                        <small style={{ color: '#6c757d' }}>Total</small>
+                                    </div>
+                                </div>
+                                <div style={{ marginTop: '1rem' }}>
+                                    {donutData.map((item, id) => (
+                                        <div key={id} style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: '0.5rem',
+                                            padding: '0.5rem 1rem',
+                                            backgroundColor: '#f8f9fa',
+                                            borderRadius: '0.5rem'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: item.color, marginRight: '10px' }} />
+                                                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: '#113d69' }}>{item.name}</span>
+                                            </div>
+                                            <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#113d69' }}>{item.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Rankings a tres columnas */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: '1rem',
+                                border: 'none',
+                                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                                height: '100%',
+                                padding: '1.5rem'
+                            }}>
+                                <h6 style={{ fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', color: '#113d69' }}>
+                                    <FaMedal style={{ marginRight: '0.5rem', color: '#62d8d9' }} /> Top Conductores
+                                </h6>
+                                <CustomListGroup>
+                                    {cargandoTop ? (
+                                        <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner size="sm" style={{ color: colores.verdeMenta }} /></div>
+                                    ) : topConductores.length === 0 ? (
+                                        <p style={{ color: '#6c757d', textAlign: 'center', padding: '2rem' }}>Sin datos</p>
+                                    ) : (
+                                        topConductores.slice(0, 5).map((c, i) => (
+                                            <CustomListItem key={i} style={{ padding: '0.75rem 0' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <div style={{ marginRight: '0.75rem', fontWeight: 'bold', color: '#6c757d', width: '20px' }}>{i + 1}</div>
+                                                        <div>
+                                                            <div style={{ fontWeight: 'bold', fontSize: '0.875rem', color: '#113d69' }}>{c.nombre}</div>
+                                                            <div style={{ marginTop: '0.25rem' }}>{renderStars(c.promedioEstrellas || 0)}</div>
+                                                        </div>
+                                                    </div>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.5rem',
+                                                        backgroundColor: '#f8f9fa',
+                                                        borderRadius: '2rem',
+                                                        fontSize: '0.8rem',
+                                                        border: '1px solid #dee2e6',
+                                                        color: '#113d69'
+                                                    }}>
+                                                        {c.promedioEstrellas?.toFixed(1) || '0.0'}
+                                                    </span>
+                                                </div>
+                                            </CustomListItem>
+                                        ))
+                                    )}
+                                </CustomListGroup>
+                            </div>
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: '1rem',
+                                border: 'none',
+                                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                                height: '100%',
+                                padding: '1.5rem'
+                            }}>
+                                <h6 style={{ fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', color: '#113d69' }}>
+                                    <FaMedal style={{ marginRight: '0.5rem', color: '#62d8d9' }} /> Top Pasajeros
+                                </h6>
+                                <CustomListGroup>
+                                    {cargandoTop ? (
+                                        <div style={{ textAlign: 'center', padding: '2rem' }}><Spinner size="sm" style={{ color: colores.verdeMenta }} /></div>
+                                    ) : topViajeros.length === 0 ? (
+                                        <p style={{ color: '#6c757d', textAlign: 'center', padding: '2rem' }}>Sin datos</p>
+                                    ) : (
+                                        topViajeros.slice(0, 5).map((v, i) => (
+                                            <CustomListItem key={i} style={{ padding: '0.75rem 0' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <div style={{ marginRight: '0.75rem', fontWeight: 'bold', color: '#6c757d', width: '20px' }}>{i + 1}</div>
+                                                        <div>
+                                                            <div style={{ fontWeight: 'bold', fontSize: '0.875rem', color: '#113d69' }}>{v.nombre}</div>
+                                                            <div style={{ marginTop: '0.25rem' }}>{renderStars(v.promedioEstrellas || 0)}</div>
+                                                        </div>
+                                                    </div>
+                                                    <span style={{
+                                                        padding: '0.25rem 0.5rem',
+                                                        backgroundColor: '#f8f9fa',
+                                                        borderRadius: '2rem',
+                                                        fontSize: '0.8rem',
+                                                        border: '1px solid #dee2e6',
+                                                        color: '#113d69'
+                                                    }}>
+                                                        {v.promedioEstrellas?.toFixed(1) || '0.0'}
+                                                    </span>
+                                                </div>
+                                            </CustomListItem>
+                                        ))
+                                    )}
+                                </CustomListGroup>
+                            </div>
+                            <div style={{
+                                backgroundColor: '#ffffff',
+                                borderRadius: '1rem',
+                                border: 'none',
+                                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                                height: '100%',
+                                padding: '1.5rem'
+                            }}>
+                                <h6 style={{ fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', color: '#113d69' }}>
+                                    <BsCircleFill size={10} style={{ marginRight: '0.5rem', color: '#62d8d9' }} /> En Línea Ahora
+                                </h6>
+                                <CustomListGroup>
+                                    {onlineUsers?.length === 0 ? (
+                                        <p style={{ color: '#6c757d', textAlign: 'center', padding: '2rem' }}>Sin usuarios en línea</p>
+                                    ) : (
+                                        onlineUsers?.slice(0, 5).map((u, i) => (
+                                            <CustomListItem key={i} style={{ padding: '0.5rem 0' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                    <div style={{
+                                                        padding: '0.5rem',
+                                                        backgroundColor: '#f8f9fa',
+                                                        borderRadius: '50%',
+                                                        marginRight: '0.5rem'
+                                                    }}>
+                                                        <BsPersonCircle style={{ color: '#6c757d' }} />
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontWeight: 'bold', fontSize: '0.875rem', color: '#113d69' }}>{u.nombre}</div>
+                                                        <small style={{ color: '#6c757d', fontSize: '10px', textTransform: 'uppercase' }}>{u.role}</small>
+                                                    </div>
+                                                    <OnlineIndicator />
+                                                </div>
+                                            </CustomListItem>
+                                        ))
+                                    )}
+                                </CustomListGroup>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
 }
 
 export default Home;
