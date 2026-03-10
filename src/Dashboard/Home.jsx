@@ -466,7 +466,7 @@ function Home() {
                                 icon={<BsCashStack size={20} />}
                                 title="Ingresos Totales"
                                 value={formatearMoneda(statsFinancieras.ingresosPlataforma.total)}
-                                iconBgColor="#fff7e6"
+                                iconBgColor="#ebf3f9"
                                 iconColor="#62d8d9"
                             />
                         </div>
