@@ -218,27 +218,28 @@ function DriverProfile() {
     const obtenerCalificaciones = async () => {
       if (!token || !usuario?.idUsuarios) return;
       try {
-        const respuesta = await fetch(`${API_URL}/calificaciones/${usuario.idUsuarios}/PROMEDIO`, {
+        const respuesta = await fetch(`${API_URL}/calificaciones/${usuario.idUsuarios}/promedio`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
+        
         if (respuesta.ok) {
           const data = await respuesta.json();
           console.log("📊 Calificaciones recibidas:", data);
 
-          if (typeof data === 'number') {
-            setDatosCalificacion({ promedio: data, total: 0 });
-          } else if (data && data.promedio !== undefined) {
-            setDatosCalificacion({
-              promedio: data.promedio,
-              total: data.total || 0
+      
+          if (data && data.promedio) {
+            setDatosCalificacion({ 
+              promedio: data.promedio.promedio || 0, 
+              total: data.promedio.total || 0
             });
           } else {
             setDatosCalificacion({ promedio: 0, total: 0 });
           }
         } else {
+          console.log("Error en respuesta:", respuesta.status);
           setDatosCalificacion({ promedio: 0, total: 0 });
         }
       } catch (error) {
