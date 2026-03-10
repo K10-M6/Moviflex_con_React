@@ -1,13 +1,169 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
-import { Container, Row, Col, Card, Button, Form, Badge, ListGroup } from "react-bootstrap";
-import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt, FaCalendarAlt, FaUser } from "react-icons/fa";
+import { Container, Row, Col, Form, Spinner } from "react-bootstrap";
+import { FaCar, FaIdCard, FaStar, FaSave, FaQrcode, FaUserCircle, FaFileAlt } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
 import { API_URL } from "../../config";
 import fondo from "../Imagenes/AutoresContacto.png";
+
+// Componentes personalizados
+const CustomBadge = ({ estado, children }) => {
+    const estilos = {
+        APROBADO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        VÁLIDO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        VALIDO: { backgroundColor: '#62d8d9', color: '#ffffff' },
+        PENDIENTE: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        REVISION: { backgroundColor: '#cccbd2af', color: '#113d69' },
+        RECHAZADO: { backgroundColor: '#113d69', color: '#ffffff' },
+        VENCIDO: { backgroundColor: '#113d69', color: '#ffffff' }
+    };
+
+    const estilo = estilos[estado?.toUpperCase()] || { backgroundColor: '#cccbd2af', color: '#113d69' };
+
+    return (
+        <span style={{
+            ...estilo,
+            padding: '0.25rem 0.75rem',
+            borderRadius: '2rem',
+            fontSize: '0.75rem',
+            fontWeight: '500',
+            display: 'inline-block'
+        }}>
+            {children}
+        </span>
+    );
+};
+
+const CustomButton = ({ variant, onClick, children, disabled, style, className }) => {
+    const getButtonStyle = () => {
+        const baseStyle = {
+            padding: '0.5rem 1rem',
+            borderRadius: '2rem',
+            border: '1px solid',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            opacity: disabled ? 0.6 : 1,
+            transition: 'all 0.2s',
+            fontWeight: '600',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%'
+        };
+
+        switch (variant) {
+            case 'primary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            case 'outline-primary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            case 'outline-success':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            case 'success':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            case 'outline-secondary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: 'transparent',
+                    color: '#113d69',
+                    borderColor: '#113d69'
+                };
+            case 'secondary':
+                return {
+                    ...baseStyle,
+                    backgroundColor: '#113d69',
+                    color: '#ffffff',
+                    borderColor: '#113d69'
+                };
+            default:
+                return baseStyle;
+        }
+    };
+
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            style={{ ...getButtonStyle(), ...style }}
+            className={className}
+        >
+            {children}
+        </button>
+    );
+};
+
+const StatsCard = ({ icon, title, value, iconBgColor, iconColor }) => {
+    return (
+        <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '1rem',
+            border: 'none',
+            boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+            height: '100%',
+            padding: '1.5rem'
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                    padding: '0.75rem',
+                    borderRadius: '50%',
+                    backgroundColor: iconBgColor,
+                    color: iconColor,
+                    marginRight: '1rem'
+                }}>
+                    {icon}
+                </div>
+                <div>
+                    <h6 style={{ color: '#6c757d', marginBottom: '0.25rem', fontSize: '0.875rem' }}>{title}</h6>
+                    <h3 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>{value}</h3>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CustomListGroup = ({ children }) => {
+    return (
+        <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {children}
+        </div>
+    );
+};
+
+const CustomListItem = ({ children, style }) => {
+    return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '0.25rem 0',
+            borderBottom: 'none',
+            ...style
+        }}>
+            {children}
+        </div>
+    );
+};
 
 function DriverProfile() {
   const { usuario, token, setUsuario } = useAuth();
@@ -253,6 +409,19 @@ function DriverProfile() {
     return '0.0';
   };
 
+  // Función para renderizar estrellas
+  const renderStars = (promedio) => {
+    const stars = [];
+    const fullStars = Math.floor(promedio);
+    const hasHalfStar = promedio % 1 >= 0.5;
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) stars.push(<FaStar key={i} style={{ color: '#62d8d9', fontSize: '14px', marginRight: '2px' }} />);
+      else if (i === fullStars + 1 && hasHalfStar) stars.push(<FaStar key={i} style={{ color: '#62d8d9', fontSize: '14px', marginRight: '2px', opacity: 0.5 }} />);
+      else stars.push(<FaStar key={i} style={{ color: '#e9ecef', fontSize: '14px', marginRight: '2px' }} />);
+    }
+    return <div style={{ display: 'flex' }}>{stars}</div>;
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -276,159 +445,225 @@ function DriverProfile() {
         <Container className="py-5">
           <Row className="justify-content-center">
             <Col lg={10}>
-              <Card className="shadow border-0 rounded-4 overflow-hidden">
-                <Card.Header className="bg-white border-0 p-4">
-                  <h2 className="fw-bold mb-0" style={{ color: '#113d69' }}>Mi Perfil de Conductor</h2>
-                </Card.Header>
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '1rem',
+                border: 'none',
+                boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  padding: '1.5rem',
+                  borderBottom: '1px solid #e9ecef',
+                  backgroundColor: '#ffffff'
+                }}>
+                  <h2 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>Mi Perfil de Conductor</h2>
+                </div>
 
-                <Row className="g-0">
-                  <Col md={4} className="bg-light text-center p-4 border-end">
-                    <div className="mb-3">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr' }}>
+                  {/* Columna izquierda */}
+                  <div style={{
+                    backgroundColor: '#f8f9fa',
+                    padding: '1.5rem',
+                    textAlign: 'center',
+                    borderRight: '1px solid #e9ecef'
+                  }}>
+                    <div style={{ marginBottom: '1rem' }}>
                       {usuario?.fotoPerfil ? (
-                        <img src={usuario.fotoPerfil} alt="Perfil" className="rounded-circle shadow" style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
+                        <img 
+                          src={usuario.fotoPerfil} 
+                          alt="Perfil" 
+                          style={{ 
+                            width: '150px', 
+                            height: '150px', 
+                            borderRadius: '50%', 
+                            objectFit: 'cover',
+                            boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
+                            border: `3px solid #62d8d9`
+                          }} 
+                        />
                       ) : (
-                        <FaUserCircle size={150} color="#113d69" className="shadow-sm rounded-circle bg-white p-2" />
+                        <FaUserCircle size={150} color="#62d8d9" style={{ boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)', borderRadius: '50%', backgroundColor: 'white', padding: '0.25rem' }} />
                       )}
                     </div>
 
-                    <h3 className="fw-bold mb-1">{nombre || usuario?.nombre}</h3>
-                    <Badge bg="warning" text="dark" className="px-3 rounded-pill mb-3">
-                      <FaStar className="me-1" /> {formatearPromedio(datosCalificacion.promedio)} ({datosCalificacion.total || 0} reseñas)
-                    </Badge>
-
-                    <Button onClick={() => navigate("/documentacion")} variant="outline-success" className="w-100 mb-3 rounded-pill">
-                      <FaFileAlt className="me-2" /> Subir Documentación
-                    </Button>
-
-                    <Button onClick={() => { setQrValue(`${token}|${usuario?.nombre}`); setShowQRModal(true); }} variant="outline-primary" className="w-100 mb-3 rounded-pill" style={{ borderColor: '#a385ff', color: '#a385ff' }}>
-                      <FaQrcode className="me-2" /> Generar QR
-                    </Button>
-
-                    <hr />
-                    <div className="text-start px-3">
-                      <p className="small text-muted mb-1">VIAJES COMPLETADOS</p>
-                      <p className="fw-bold">{totalViajes} servicios</p>
+                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: '#113d69' }}>{nombre || usuario?.nombre}</h3>
+                    
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem',
+                      backgroundColor: '#62d8d9',
+                      color: '#ffffff',
+                      padding: '0.25rem 1rem',
+                      borderRadius: '2rem',
+                      marginBottom: '1rem'
+                    }}>
+                      <FaStar /> {formatearPromedio(datosCalificacion.promedio)} ({datosCalificacion.total || 0} reseñas)
                     </div>
-                  </Col>
 
-                  <Col md={8} className="p-4 bg-white">
-                    <h4 className="fw-bold mb-4">Información de Cuenta</h4>
-                    <Form>
-                      <Row>
-                        <Col md={6}>
-                          <Form.Group className="mb-3">
-                            <Form.Label className="small fw-bold">NOMBRE COMPLETO</Form.Label>
-                            <Form.Control
-                              type="text"
-                              value={nombre}
-                              onChange={(e) => setNombre(e.target.value)}
-                              placeholder="Tu nombre completo"
-                            />
-                          </Form.Group>
-                        </Col>
-                        <Col md={6}>
-                          <Form.Group className="mb-3">
-                            <Form.Label className="small fw-bold">TELÉFONO</Form.Label>
-                            <Form.Control
-                              type="text"
-                              value={telefono}
-                              onChange={(e) => setTelefono(e.target.value)}
-                              placeholder="Tu número de teléfono"
-                            />
-                          </Form.Group>
-                        </Col>
-                      </Row>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                      <CustomButton variant="outline-success" onClick={() => navigate("/documentacion")}>
+                        <FaFileAlt style={{ marginRight: '0.5rem' }} /> Subir Documentación
+                      </CustomButton>
 
-                      <h4 className="fw-bold mt-4 mb-3">Credenciales y Vehículo</h4>
-                      <Row className="g-3 mb-4">
-                        <Col sm={6}>
-                          <Card className="p-3 border-0 bg-light rounded-3 h-100">
-                            <div className="d-flex align-items-center mb-2">
-                              <FaIdCard className="text-primary me-2" />
-                              <span className="fw-bold small">LICENCIA DE CONDUCIR</span>
-                            </div>
-
-                            {cargandoDocumentos ? (
-                              <p className="mb-0 small text-muted">Cargando...</p>
-                            ) : licencia ? (
-                              <ListGroup variant="flush" className="mt-2">
-                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
-                                  <span className="text-muted small">Número:</span>
-                                  <span className="fw-bold small">{licencia.numeroDocumento || 'No disponible'}</span>
-                                </ListGroup.Item>
-                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
-                                  <span className="text-muted small">Expedición:</span>
-                                  <span className="fw-bold small">{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
-                                </ListGroup.Item>
-                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
-                                  <span className="text-muted small">Subida:</span>
-                                  <span className="fw-bold small">{formatearFechaSubida(licencia.fechaSubida)}</span>
-                                </ListGroup.Item>
-                                <ListGroup.Item className="d-flex justify-content-between align-items-center px-0 bg-transparent border-0 py-1">
-                                  <span className="text-muted small">Estado:</span>
-                                  <Badge bg={getBadgeColor(licencia.estado)} className="rounded-pill">
-                                    {licencia.estado || 'N/A'}
-                                  </Badge>
-                                </ListGroup.Item>
-                                {licencia.observaciones && (
-                                  <ListGroup.Item className="px-0 bg-transparent border-0 py-1">
-                                    <small className="text-muted d-block">Observaciones:</small>
-                                    <small className="text-dark">{licencia.observaciones}</small>
-                                  </ListGroup.Item>
-                                )}
-                              </ListGroup>
-                            ) : (
-                              <p className="mb-0 small text-muted mt-2">
-                                No hay licencia registrada
-                              </p>
-                            )}
-                          </Card>
-                        </Col>
-
-                        <Col sm={6}>
-                          <Card className="p-3 border-0 bg-light rounded-3 h-100">
-                            <div className="d-flex align-items-center mb-2">
-                              <FaCar className="text-primary me-2" />
-                              <span className="fw-bold small">VEHÍCULO</span>
-                            </div>
-                            {cargandoVehiculo ? (
-                              <p className="mb-0 small text-muted">Cargando...</p>
-                            ) : vehiculo ? (
-                              <>
-                                <p className="mb-0 small">Placa: <span className="fw-bold">{vehiculo.placa || 'No registrada'}</span></p>
-                                <p className="mb-0 small">
-                                  Modelo: <span className="fw-bold">
-                                    {vehiculo.marca || ''} {vehiculo.modelo || ''}
-                                  </span>
-                                </p>
-                                <p className="mb-0 small">
-                                  Capacidad: <span className="fw-bold">{vehiculo.capacidad || 'N/A'} pasajeros</span>
-                                </p>
-                                <p className="mb-0 small">
-                                  Estado: <Badge bg={vehiculo.estado === 'ACTIVO' ? 'success' : 'secondary'} className="rounded-pill">
-                                    {vehiculo.estado || 'N/A'}
-                                  </Badge>
-                                </p>
-                              </>
-                            ) : (
-                              <p className="mb-0 small text-muted">No hay vehículo registrado</p>
-                            )}
-                          </Card>
-                        </Col>
-                      </Row>
-
-                      <Button
-                        className="w-100 border-0 fw-bold py-2"
-                        style={{ backgroundColor: '#56bca7', color: 'white' }}
-                        onClick={guardarCambios}
-                        disabled={loading}
+                      <CustomButton 
+                        variant="outline-primary" 
+                        onClick={() => { setQrValue(`${token}|${usuario?.nombre}`); setShowQRModal(true); }}
                       >
-                        <FaSave className="me-2" /> {loading ? 'Guardando...' : 'GUARDAR CAMBIOS'}
-                      </Button>
-                    </Form>
-                  </Col>
-                </Row>
-              </Card>
+                        <FaQrcode style={{ marginRight: '0.5rem' }} /> Generar QR
+                      </CustomButton>
+                    </div>
+
+                    <hr style={{ margin: '1rem 0' }} />
+                    
+                    <div style={{ textAlign: 'left', padding: '0 1rem' }}>
+                      <p style={{ fontSize: '0.75rem', color: '#6c757d', marginBottom: '0.25rem' }}>VIAJES COMPLETADOS</p>
+                      <p style={{ fontWeight: 'bold', color: '#113d69', margin: 0 }}>{totalViajes} servicios</p>
+                    </div>
+                  </div>
+
+                  {/* Columna derecha */}
+                  <div style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
+                    <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: '#113d69' }}>Información de Cuenta</h4>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>NOMBRE COMPLETO</label>
+                        <input
+                          type="text"
+                          value={nombre}
+                          onChange={(e) => setNombre(e.target.value)}
+                          placeholder="Tu nombre completo"
+                          style={{
+                            width: '100%',
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '0.375rem',
+                            border: '1px solid #ced4da'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>TELÉFONO</label>
+                        <input
+                          type="text"
+                          value={telefono}
+                          onChange={(e) => setTelefono(e.target.value)}
+                          placeholder="Tu número de teléfono"
+                          style={{
+                            width: '100%',
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '0.375rem',
+                            border: '1px solid #ced4da'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <h4 style={{ fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '1rem', color: '#113d69' }}>Credenciales y Vehículo</h4>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                      {/* Licencia */}
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        height: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <FaIdCard style={{ marginRight: '0.5rem', color: '#62d8d9' }} />
+                          <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: '#113d69' }}>LICENCIA DE CONDUCIR</span>
+                        </div>
+
+                        {cargandoDocumentos ? (
+                          <p style={{ marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>Cargando...</p>
+                        ) : licencia ? (
+                          <CustomListGroup>
+                            <CustomListItem>
+                              <span style={{ color: '#6c757d', fontSize: '0.75rem' }}>Número:</span>
+                              <span style={{ fontWeight: 'bold', fontSize: '0.75rem', color: '#113d69' }}>{licencia.numeroDocumento || 'No disponible'}</span>
+                            </CustomListItem>
+                            <CustomListItem>
+                              <span style={{ color: '#6c757d', fontSize: '0.75rem' }}>Expedición:</span>
+                              <span style={{ fontWeight: 'bold', fontSize: '0.75rem', color: '#113d69' }}>{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
+                            </CustomListItem>
+                            <CustomListItem>
+                              <span style={{ color: '#6c757d', fontSize: '0.75rem' }}>Subida:</span>
+                              <span style={{ fontWeight: 'bold', fontSize: '0.75rem', color: '#113d69' }}>{formatearFechaSubida(licencia.fechaSubida)}</span>
+                            </CustomListItem>
+                            <CustomListItem>
+                              <span style={{ color: '#6c757d', fontSize: '0.75rem' }}>Estado:</span>
+                              <CustomBadge estado={licencia.estado}>
+                                {licencia.estado || 'N/A'}
+                              </CustomBadge>
+                            </CustomListItem>
+                            {licencia.observaciones && (
+                              <div style={{ marginTop: '0.5rem' }}>
+                                <small style={{ color: '#6c757d', display: 'block' }}>Observaciones:</small>
+                                <small style={{ color: '#113d69' }}>{licencia.observaciones}</small>
+                              </div>
+                            )}
+                          </CustomListGroup>
+                        ) : (
+                          <p style={{ marginBottom: 0, fontSize: '0.875rem', color: '#6c757d', marginTop: '0.5rem' }}>
+                            No hay licencia registrada
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Vehículo */}
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        height: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <FaCar style={{ marginRight: '0.5rem', color: '#62d8d9' }} />
+                          <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: '#113d69' }}>VEHÍCULO</span>
+                        </div>
+                        
+                        {cargandoVehiculo ? (
+                          <p style={{ marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>Cargando...</p>
+                        ) : vehiculo ? (
+                          <>
+                            <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem' }}>
+                              Placa: <span style={{ fontWeight: 'bold', color: '#113d69' }}>{vehiculo.placa || 'No registrada'}</span>
+                            </p>
+                            <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem' }}>
+                              Modelo: <span style={{ fontWeight: 'bold', color: '#113d69' }}>
+                                {vehiculo.marca || ''} {vehiculo.modelo || ''}
+                              </span>
+                            </p>
+                            <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem' }}>
+                              Capacidad: <span style={{ fontWeight: 'bold', color: '#113d69' }}>{vehiculo.capacidad || 'N/A'} pasajeros</span>
+                            </p>
+                            <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <span style={{ color: '#6c757d' }}>Estado:</span>
+                              <CustomBadge estado={vehiculo.estado === 'ACTIVO' ? 'APROBADO' : 'PENDIENTE'}>
+                                {vehiculo.estado || 'N/A'}
+                              </CustomBadge>
+                            </p>
+                          </>
+                        ) : (
+                          <p style={{ marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>No hay vehículo registrado</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <CustomButton
+                      variant="success"
+                      onClick={guardarCambios}
+                      disabled={loading}
+                      style={{ width: '100%' }}
+                    >
+                      <FaSave style={{ marginRight: '0.5rem' }} /> {loading ? 'Guardando...' : 'GUARDAR CAMBIOS'}
+                    </CustomButton>
+                  </div>
+                </div>
+              </div>
             </Col>
           </Row>
         </Container>
