@@ -43,9 +43,13 @@ function VehicleRegistration() {
   const [placa, setPlaca] = useState("");
   const [capacidad, setCapacidad] = useState("");
 
-  const [fotoBase64, setFotoBase64] = useState("");
-  const [fotoPreview, setFotoPreview] = useState("");
-  const [fotoComprimida, setFotoComprimida] = useState("");
+  const [fotoPlaca, setFotoPlaca] = useState("");
+  const [fotoAuto1, setFotoAuto1] = useState("");
+  const [fotoAuto2, setFotoAuto2] = useState("");
+  const [fotoAuto3, setFotoAuto3] = useState("");
+
+  const [fotoPreview, setFotoPreview] = useState(""); // General preview for the one being taken
+  const [activePhotoSlot, setActivePhotoSlot] = useState("placa"); // 'placa', 'auto1', 'auto2', 'auto3'
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -139,7 +143,8 @@ function VehicleRegistration() {
     }
   };
 
-  const iniciarCamara = () => {
+  const iniciarCamara = (slot = "placa") => {
+    setActivePhotoSlot(slot);
     setShowCamera(true);
     setTimeout(() => {
       iniciarCamaraStream();
@@ -190,22 +195,26 @@ function VehicleRegistration() {
 
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const fotoBase64 = canvas.toDataURL('image/jpeg', 0.95);
+      const base64 = canvas.toDataURL('image/jpeg', 0.95);
+      const comprimida = await comprimirImagen(base64, 250);
 
-      setFotoBase64(fotoBase64);
-      setFotoPreview(fotoBase64);
+      if (activePhotoSlot === "placa") {
+        setFotoPlaca(comprimida);
+        setPlacaValidada(false);
+        setErrorBackend("");
+        await verificarImagenAntesDeEnviar(base64);
+        extraerPlacaDeFoto(comprimida);
+      } else if (activePhotoSlot === "auto1") {
+        setFotoAuto1(comprimida);
+      } else if (activePhotoSlot === "auto2") {
+        setFotoAuto2(comprimida);
+      } else if (activePhotoSlot === "auto3") {
+        setFotoAuto3(comprimida);
+      }
 
-      const comprimida = await comprimirImagen(fotoBase64, 250);
-      setFotoComprimida(comprimida);
-
-      setErrorBackend("");
-      setPlacaValidada(false);
-      await verificarImagenAntesDeEnviar(fotoBase64);
-
-      toast.success('¡Foto tomada correctamente!');
+      setFotoPreview(comprimida);
+      toast.success('¡Foto capturada!');
       detenerCamara();
-
-      extraerPlacaDeFoto(comprimida);
     }
   };
 
@@ -219,7 +228,7 @@ function VehicleRegistration() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ fotoVehiculo: base64 })
+        body: JSON.stringify({ fotoPlaca: base64 })
       });
 
       const data = await resp.json();
@@ -286,8 +295,16 @@ function VehicleRegistration() {
       return;
     }
 
-    if (!fotoComprimida) {
-      const errorMsg = "Debes tomar una foto del vehículo donde se vea la placa";
+    if (!fotoPlaca) {
+      const errorMsg = "Debes tomar la foto de la placa para validación";
+      setError(errorMsg);
+      toast.error(errorMsg);
+      setLoading(false);
+      return;
+    }
+
+    if (!fotoAuto1 || !fotoAuto2 || !fotoAuto3) {
+      const errorMsg = "Debes tomar las 3 fotos generales del vehículo";
       setError(errorMsg);
       toast.error(errorMsg);
       setLoading(false);
@@ -302,7 +319,10 @@ function VehicleRegistration() {
         modelo: modelo.trim(),
         placa: placa.toUpperCase().trim(),
         capacidad: parseInt(capacidad),
-        fotoVehiculo: fotoComprimida
+        fotoPlaca: fotoPlaca,
+        fotoAuto1: fotoAuto1,
+        fotoAuto2: fotoAuto2,
+        fotoAuto3: fotoAuto3
       };
 
       const headers = {
@@ -334,9 +354,11 @@ function VehicleRegistration() {
         setModelo("");
         setPlaca("");
         setCapacidad("");
-        setFotoBase64("");
+        setFotoPlaca("");
+        setFotoAuto1("");
+        setFotoAuto2("");
+        setFotoAuto3("");
         setFotoPreview("");
-        setFotoComprimida("");
         setImagenValida(null);
 
         setTimeout(() => {
@@ -508,62 +530,140 @@ function VehicleRegistration() {
                       </Col>
                     </Row>
 
-                    <Form.Group className="mb-4">
+                    <div className="mb-4">
                       <Form.Label className="d-flex align-items-center fw-bold small">
-                        <FaFileImage className="me-2" />
-                        Foto del Vehículo <span className="text-danger">*</span>
-                        {fotoBase64 && <FaCheckCircle className="text-success ms-2" size={18} />}
-                        {fotoBase64 && imagenValida === true && (
-                          <Badge bg="success" className="ms-2 small">Válida</Badge>
-                        )}
-                        {fotoBase64 && imagenValida === false && (
-                          <Badge bg="warning" className="ms-2 small">Revisar</Badge>
-                        )}
+                        <FaCamera className="me-2" />
+                        Fotos Requeridas <span className="text-danger">*</span>
                       </Form.Label>
-                      <Form.Text className="text-muted d-block mb-2 small">
-                        La foto debe mostrar el vehículo completo con la placa visible
-                      </Form.Text>
 
-                      <Button
-                        variant="outline-success"
-                        onClick={iniciarCamara}
-                        className="custom-tomar-foto-btn"
-                        disabled={cameraActive || verificandoImagen || loading}
-                      >
-                        <FaVideo className="me-2" />
-                        {fotoBase64 ? 'Tomar otra foto' : 'Tomar foto del vehículo'}
-                      </Button>
-
-                      {fotoPreview && (
-                        <div className="text-center mt-3">
-                          <div style={{
-                            maxHeight: '200px',
-                            border: `2px solid ${imagenValida === true ? '#4acfbd' : imagenValida === false ? '#ffc107' : '#ddd'}`,
-                            borderRadius: '12px',
-                            overflow: 'hidden',
-                            display: 'inline-block'
-                          }}>
-                            <img
-                              src={fotoPreview}
-                              alt="Vista previa del vehículo"
-                              style={{ maxHeight: '200px', width: 'auto' }}
-                            />
+                      <Row className="g-3">
+                        {/* Slot Placa */}
+                        <Col xs={6} md={3}>
+                          <div className={`photo-slot ${fotoPlaca ? 'has-photo' : ''}`}
+                            onClick={() => iniciarCamara("placa")}
+                            style={{
+                              height: '100px',
+                              border: '2px dashed #ddd',
+                              borderRadius: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              backgroundColor: fotoPlaca ? 'transparent' : '#f8f9fa'
+                            }}>
+                            {fotoPlaca ? (
+                              <img src={fotoPlaca} alt="Placa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <>
+                                <FaIdCard size={20} color="#62d8d9" />
+                                <span style={{ fontSize: '10px', marginTop: '5px' }}>PLACA</span>
+                              </>
+                            )}
+                            {placaValidada && <FaCheckCircle style={{ position: 'absolute', top: '5px', right: '5px', color: '#4acfbd' }} />}
                           </div>
-                        </div>
-                      )}
-                    </Form.Group>
+                        </Col>
+
+                        {/* Slot Auto 1 */}
+                        <Col xs={6} md={3}>
+                          <div className={`photo-slot ${fotoAuto1 ? 'has-photo' : ''}`}
+                            onClick={() => iniciarCamara("auto1")}
+                            style={{
+                              height: '100px',
+                              border: '2px dashed #ddd',
+                              borderRadius: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              overflow: 'hidden',
+                              backgroundColor: fotoAuto1 ? 'transparent' : '#f8f9fa'
+                            }}>
+                            {fotoAuto1 ? (
+                              <img src={fotoAuto1} alt="Auto 1" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <>
+                                <FaCar size={20} color="#62d8d9" />
+                                <span style={{ fontSize: '10px', marginTop: '5px' }}>AUTO 1</span>
+                              </>
+                            )}
+                          </div>
+                        </Col>
+
+                        {/* Slot Auto 2 */}
+                        <Col xs={6} md={3}>
+                          <div className={`photo-slot ${fotoAuto2 ? 'has-photo' : ''}`}
+                            onClick={() => iniciarCamara("auto2")}
+                            style={{
+                              height: '100px',
+                              border: '2px dashed #ddd',
+                              borderRadius: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              overflow: 'hidden',
+                              backgroundColor: fotoAuto2 ? 'transparent' : '#f8f9fa'
+                            }}>
+                            {fotoAuto2 ? (
+                              <img src={fotoAuto2} alt="Auto 2" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <>
+                                <FaCar size={20} color="#62d8d9" />
+                                <span style={{ fontSize: '10px', marginTop: '5px' }}>AUTO 2</span>
+                              </>
+                            )}
+                          </div>
+                        </Col>
+
+                        {/* Slot Auto 3 */}
+                        <Col xs={6} md={3}>
+                          <div className={`photo-slot ${fotoAuto3 ? 'has-photo' : ''}`}
+                            onClick={() => iniciarCamara("auto3")}
+                            style={{
+                              height: '100px',
+                              border: '2px dashed #ddd',
+                              borderRadius: '12px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              overflow: 'hidden',
+                              backgroundColor: fotoAuto3 ? 'transparent' : '#f8f9fa'
+                            }}>
+                            {fotoAuto3 ? (
+                              <img src={fotoAuto3} alt="Auto 3" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <>
+                                <FaCar size={20} color="#62d8d9" />
+                                <span style={{ fontSize: '10px', marginTop: '5px' }}>AUTO 3</span>
+                              </>
+                            )}
+                          </div>
+                        </Col>
+                      </Row>
+
+                      <Form.Text className="text-muted d-block mt-2 small">
+                        Haz clic en cada recuadro para capturar la foto correspondiente
+                      </Form.Text>
+                    </div>
 
                     {verificandoImagen && (
                       <Alert variant="info" className="py-2 small d-flex align-items-center">
                         <div className="spinner-border spinner-border-sm me-2" />
-                        Verificando calidad de imagen...
+                        Verificando calidad de placa...
                       </Alert>
                     )}
 
                     {!verificandoImagen && imagenValida === true && (
                       <Alert variant="success" className="py-2 small d-flex align-items-center">
                         <FaSmile className="me-2" />
-                        {mensajeImagen}
+                        Placa validada por IA correctamente
                       </Alert>
                     )}
 
@@ -580,10 +680,9 @@ function VehicleRegistration() {
                         Recomendaciones
                       </div>
                       <ul className="mb-0 ps-3" style={{ color: '#666' }}>
-                        <li>La placa debe ser claramente visible</li>
-                        <li>Buena iluminación, sin reflejos</li>
-                        <li>El vehículo debe ocupar la mayor parte de la foto</li>
-                        <li>Evita fotos borrosas o movidas</li>
+                        <li>La placa debe ser claramente visible en su foto</li>
+                        <li>Toma fotos generales del frente, lado y parte trasera</li>
+                        <li>Buena iluminación y evita fotos borrosas</li>
                       </ul>
                     </div>
 
