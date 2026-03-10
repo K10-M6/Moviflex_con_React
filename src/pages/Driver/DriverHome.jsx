@@ -912,7 +912,7 @@ const DriverHome = () => {
         }}>
             <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.88)',
+                backgroundColor: 'rgba(255, 255, 255, 0.4)',
                 zIndex: 0
             }} />
 
@@ -1088,7 +1088,7 @@ const DriverHome = () => {
                                         <span style={{ color: '#6c757d' }}>Viajes completados</span>
                                         <span style={{ fontWeight: 'bold', color: '#113d69' }}>{comisionInfo.viajesCompletados}</span>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: comisionInfo.reporteEnviado ? '#62d8d915' : '#f8d7da', borderRadius: '0.375rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: comisionInfo.reporteEnviado ? '#62d8d915' : '#cccbd2af', borderRadius: '0.375rem' }}>
                                         <span>Estado del reporte</span>
                                         <DocumentoBadge estado={comisionInfo.estadoReporte || 'Sin enviar'} />
                                     </div>
