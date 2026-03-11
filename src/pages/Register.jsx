@@ -516,7 +516,7 @@ function Register() {
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body style={{ maxHeight: '60vh', overflowY: 'auto', padding: '1.5rem', backgroundColor: '#f9f9f9' }}>
-                        <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre-wrap', lineHeight: '1.6', color: '#333' }}>
+                        <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif', fontSize: '0.9rem', whiteSpace: 'pre-wrap', lineHeight: '1.6', color: '#333' }}>
                             {termsText}
                         </div>
                     </Modal.Body>
