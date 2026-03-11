@@ -2,19 +2,37 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { Container, Row, Col, Card, Form, Button, Alert, Modal } from "react-bootstrap";
-
-// --- IMPORTACIÓN DE IMÁGENES ---
 import LogoMoviflex from './Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import EscenaHomeBase from './Imagenes/HomeBaseImage.png';
-import FondoPantalla from './Imagenes/AutoresContacto.png'; // Imagen de fondo solicitada
-
-// Importación de iconos
+import FondoPantalla from './Imagenes/AutoresContacto.png';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaQrcode, FaCamera } from "react-icons/fa";
-
-// Componentes del proyecto
 import NavbarCustom from '../components/Navbar';
 import QRScanner from '../components/QRScanner';
 import { API_URL } from '../config';
+
+const customStyles = `
+  .custom-tomar-foto-btn {
+    border-radius: 12px !important;
+    border-color: #62d8d9 !important;
+    color: #62d8d9 !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    padding: 1rem 0 !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .custom-tomar-foto-btn:hover {
+    background-color: #62d8d9 !important;
+    border-color: #62d8d9 !important;
+    color: white !important;
+  }
+  
+  .custom-tomar-foto-btn:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+  }
+`;
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -45,7 +63,6 @@ function Login() {
         else if (rolId === ROLES.VIAJERO) navigate("/user-home");
     }, [token, usuario, navigate]);
 
-    // --- LÓGICA DE CÁMARA (Mantenida) ---
     const iniciarCamara = async () => {
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -120,13 +137,15 @@ function Login() {
 
     return (
         <div style={{
-            backgroundImage: `url(${FondoPantalla})`, // Fondo que tapa todo lo blanco
+            backgroundImage: `url(${FondoPantalla})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column'
         }}>
+            <style>{customStyles}</style>
+            
             <NavbarCustom />
 
             <Container className="d-flex flex-column justify-content-center flex-grow-1 py-4">
@@ -149,10 +168,18 @@ function Login() {
                                 </div>
 
                                 <div className="d-flex gap-2 mb-4">
-                                    <Button onClick={() => setShowQRScanner(true)} variant="outline-primary" className="w-100 fw-bold" style={{ borderRadius: '12px', borderColor: '#4acfbd', color: '#4acfbd' }}>
+                                    <Button 
+                                        onClick={() => setShowQRScanner(true)} 
+                                        variant="outline-primary" 
+                                        className="w-100 fw-bold custom-tomar-foto-btn"
+                                    >
                                         <FaQrcode className="me-1" /> QR
                                     </Button>
-                                    <Button onClick={abrirFacialModal} variant="outline-success" className="w-100 fw-bold" style={{ borderRadius: '12px' }}>
+                                    <Button 
+                                        onClick={abrirFacialModal} 
+                                        variant="outline-success" 
+                                        className="w-100 fw-bold custom-tomar-foto-btn"
+                                    >
                                         <FaCamera className="me-1" /> Facial
                                     </Button>
                                 </div>
@@ -188,16 +215,28 @@ function Login() {
 
                                     <div className="d-flex justify-content-between mb-4 small">
                                         <Form.Check type="checkbox" label="Recordarme" className="text-muted" />
-                                        {/* Se quitó Forgot password? como solicitaste */}
                                     </div>
 
-                                    <Button type="submit" className="w-100 py-3 border-0" style={{ background: '#4acfbd', borderRadius: '12px', fontWeight: 'bold' }} disabled={loading}>
+                                    <Button 
+                                        type="submit" 
+                                        className="w-100 py-3 border-0" 
+                                        style={{ 
+                                            background: loading ? '#6c757d' : '#62d8d9',
+                                            borderRadius: '12px', 
+                                            fontWeight: 'bold', 
+                                            fontSize: '1rem',
+                                            transition: 'all 0.3s ease',
+                                            opacity: loading ? 0.6 : 1,
+                                            cursor: loading ? 'not-allowed' : 'pointer'
+                                        }} 
+                                        disabled={loading}
+                                    >
                                         {loading ? 'Iniciando...' : 'Iniciar Sesión'}
                                     </Button>
                                 </Form>
 
                                 <p className="text-center mt-4 mb-0 small text-muted">
-                                    ¿No tienes una cuenta? <Link to="/register" className="fw-bold text-decoration-none" style={{ color: '#4acfbd' }}>Regístrate</Link>
+                                    ¿No tienes una cuenta? <Link to="/register" className="fw-bold text-decoration-none" style={{ color: '#62d8d9' }}>Regístrate</Link>
                                 </p>
                             </Card.Body>
                         </Card>
@@ -205,16 +244,35 @@ function Login() {
                 </Row>
             </Container>
 
-            {/* Modales mantenidos */}
             <Modal show={showFacialModal} onHide={cerrarFacialModal} centered size="lg">
-                <Modal.Header closeButton className="border-0"><Modal.Title className="fw-bold">Login Facial</Modal.Title></Modal.Header>
+                <Modal.Header closeButton className="border-0">
+                    <Modal.Title className="fw-bold">Login Facial</Modal.Title>
+                </Modal.Header>
                 <Modal.Body className="text-center">
                     <div style={{ position: 'relative', backgroundColor: '#000', height: '400px', borderRadius: '15px', overflow: 'hidden' }}>
                         <video ref={videoRef} autoPlay playsInline style={{ width: '100%' }} />
                         <canvas ref={canvasRef} style={{ display: 'none' }} />
                     </div>
-                    {!fotoPreview ? <Button variant="success" onClick={tomarFoto} className="mt-3 w-100 py-2 fw-bold">Capturar</Button> :
-                        <Button variant="primary" onClick={enviarLoginFacial} className="mt-3 w-100 py-2 fw-bold" disabled={verificando}>{verificando ? 'Verificando...' : 'Confirmar e Iniciar'}</Button>}
+                    {!fotoPreview ? 
+                        <Button 
+                            variant="success" 
+                            onClick={tomarFoto} 
+                            className="mt-3 w-100 py-2 fw-bold" 
+                            style={{ background: '#62d8d9', border: 'none', borderRadius: '12px' }}
+                        >
+                            Capturar
+                        </Button> 
+                        : 
+                        <Button 
+                            variant="primary" 
+                            onClick={enviarLoginFacial} 
+                            className="mt-3 w-100 py-2 fw-bold" 
+                            disabled={verificando} 
+                            style={{ background: '#62d8d9', border: 'none', borderRadius: '12px' }}
+                        >
+                            {verificando ? 'Verificando...' : 'Confirmar e Iniciar'}
+                        </Button>
+                    }
                 </Modal.Body>
             </Modal>
 
