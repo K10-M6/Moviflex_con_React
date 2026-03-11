@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from '../../config';
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
-import { BsSearch, BsXCircle } from "react-icons/bs";
+import { BsSearch, BsXCircle, BsChevronDown } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 const EstadoBadge = ({ estado }) => {
@@ -18,7 +18,7 @@ const EstadoBadge = ({ estado }) => {
         <span style={{
             ...estilo,
             padding: '0.25rem 0.75rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.875rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -39,7 +39,7 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
                 color: '#62d8d9',
                 border: '1px solid #62d8d9',
                 padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
+                borderRadius: '1rem',
                 fontSize: '0.9rem',
                 fontWeight: '500',
                 display: 'inline-block'
@@ -54,7 +54,7 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
             backgroundColor: bgColor,
             color: color,
             padding: '0.5rem 1rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.9rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -64,62 +64,129 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
     );
 };
 
-const AccionButton = ({ estado, onClick, children }) => {
-    if (children === "Suspender") {
-        return (
-            <Button
-                variant="outline-warning"
-                size="sm"
-                onClick={onClick}
-                className="w-100"
-                style={{
-                    transition: 'all 0.2s',
-                    fontWeight: '500',
-                    color: '#113d69',
-                    borderColor: '#113d69',
-                    backgroundColor: estado === 'SUSPENDIDO' ? '#113d69' : 'transparent',
-                }}
-            >
-                Suspender
-            </Button>
-        );
-    }
+const AccionButton = ({ estado, onActivarDesactivar, onSuspender }) => {
+    const [mostrarMenu, setMostrarMenu] = useState(false);
+    const menuRef = useRef(null);
 
-    const getButtonStyle = () => {
-        if (estado === 'ACTIVO') {
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMostrarMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const getButtonStyle = (tipoBoton = 'principal') => {
+        if (tipoBoton === 'principal') {
+            if (estado === 'ACTIVO') {
+                return {
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            } else {
+                return {
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            }
+        } else if (tipoBoton === 'suspender') {
             return {
-                backgroundColor: 'transparent',
-                color: '#62d8d9',
-                borderColor: '#62d8d9'
-            };
-        } else if (estado === 'INACTIVO' || estado === 'SUSPENDIDO') {
-            return {
-                backgroundColor: '#62d8d9',
+                backgroundColor: '#113d69',
                 color: '#ffffff',
-                borderColor: '#62d8d9'
+                borderColor: '#113d69'
             };
         }
-        return {
-            backgroundColor: 'transparent',
-            color: '#62d8d9',
-            borderColor: '#62d8d9'
-        };
     };
 
+    const textoBoton = estado === 'ACTIVO' ? 'Desactivar' : 'Activar';
+
     return (
-        <Button
-            variant={estado === 'ACTIVO' ? "primary" : "outline-primary"}
-            size="sm"
-            onClick={onClick}
-            className="w-100"
-            style={{
-                transition: 'all 0.2s',
-                fontWeight: '500',
-                ...getButtonStyle()
-            }}
-        >
-            {children}
-        </Button>
+        <div className="position-relative" ref={menuRef} style={{ minWidth: '120px' }}>
+            <div className="d-flex">
+                <Button
+                    size="sm"
+                    onClick={onActivarDesactivar}
+                    className="flex-grow-1"
+                    style={{
+                        transition: 'all 0.2s',
+                        fontWeight: '500',
+                        borderRadius: '50px 0 0 50px',
+                        padding: '0.4rem 0.8rem',
+                        border: `2px solid ${estado === 'ACTIVO' ? '#62d8d9' : '#62d8d9'}`,
+                        ...getButtonStyle('principal')
+                    }}
+                >
+                    {textoBoton}
+                </Button>
+                <Button
+                    size="sm"
+                    onClick={() => setMostrarMenu(!mostrarMenu)}
+                    style={{
+                        transition: 'all 0.2s',
+                        fontWeight: '500',
+                        borderRadius: '0 50px 50px 0',
+                        padding: '0.4rem 0.6rem',
+                        border: `2px solid ${estado === 'ACTIVO' ? '#62d8d9' : '#62d8d9'}`,
+                        borderLeft: 'none',
+                        ...getButtonStyle('principal'),
+                        backgroundColor: estado === 'ACTIVO' ? '#62d8d9' : 'transparent',
+                        color: estado === 'ACTIVO' ? '#ffffff' : '#62d8d9'
+                    }}
+                >
+                    <BsChevronDown style={{ 
+                        transform: mostrarMenu ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s'
+                    }} />
+                </Button>
+            </div>
+            
+            {mostrarMenu && (
+                <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '0.5rem',
+                    minWidth: '120px',
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    zIndex: 1000,
+                    overflow: 'hidden'
+                }}>
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            onSuspender();
+                            setMostrarMenu(false);
+                        }}
+                        className="w-100"
+                        style={{
+                            transition: 'all 0.2s',
+                            fontWeight: '500',
+                            padding: '0.5rem 1rem',
+                            border: 'none',
+                            borderRadius: 0,
+                            backgroundColor: 'transparent',
+                            color: '#113d69',
+                            textAlign: 'left'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#f8f9fa';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                        }}
+                    >
+                        Suspender
+                    </Button>
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -152,7 +219,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, viajerosFiltrad
                     color: paginaActual === 1 ? '#6c757d' : '#62d8d9',
                     border: `1px solid ${paginaActual === 1 ? '#dee2e6' : '#62d8d9'}`,
                     margin: '0 2px',
-                    borderRadius: '0.375rem 0 0 0.375rem',
+                    borderRadius: '50px 0 0 50px',
                     cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
                     fontWeight: '500',
                     transition: 'all 0.2s',
@@ -174,7 +241,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, viajerosFiltrad
                         color: '#62d8d9',
                         border: '1px solid #62d8d9',
                         margin: '0 2px',
-                        borderRadius: '0.375rem',
+                        borderRadius: '50px',
                         cursor: 'pointer',
                         fontWeight: '500'
                     }}
@@ -183,7 +250,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, viajerosFiltrad
                 </button>
             );
             if (inicio > 2) {
-                botones.push(<span key="ellipsis1" style={{ margin: '0 5px' }}>...</span>);
+                botones.push(<span key="ellipsis1" style={{ margin: '0 5px', color: '#113d69' }}>...</span>);
             }
         }
 
@@ -198,7 +265,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, viajerosFiltrad
                         color: i === paginaActual ? 'white' : '#62d8d9',
                         border: '1px solid #62d8d9',
                         margin: '0 2px',
-                        borderRadius: '0.375rem',
+                        borderRadius: '50px',
                         cursor: 'pointer',
                         fontWeight: '500'
                     }}
@@ -210,7 +277,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, viajerosFiltrad
 
         if (fin < totalPaginas) {
             if (fin < totalPaginas - 1) {
-                botones.push(<span key="ellipsis2" style={{ margin: '0 5px' }}>...</span>);
+                botones.push(<span key="ellipsis2" style={{ margin: '0 5px', color: '#113d69' }}>...</span>);
             }
             botones.push(
                 <button
@@ -222,7 +289,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, viajerosFiltrad
                         color: '#62d8d9',
                         border: '1px solid #62d8d9',
                         margin: '0 2px',
-                        borderRadius: '0.375rem',
+                        borderRadius: '50px',
                         cursor: 'pointer',
                         fontWeight: '500'
                     }}
@@ -243,14 +310,14 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, viajerosFiltrad
                     color: paginaActual === totalPaginas ? '#6c757d' : '#62d8d9',
                     border: `1px solid ${paginaActual === totalPaginas ? '#dee2e6' : '#62d8d9'}`,
                     margin: '0 2px',
-                    borderRadius: '0 0.375rem 0.375rem 0',
+                    borderRadius: '0 50px 50px 0',
                     cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
                     fontWeight: '500',
                     transition: 'all 0.2s',
                     opacity: paginaActual === totalPaginas ? 0.6 : 1
                 }}
             >
-                {window.innerWidth < 768 ? '‹' : 'Siguiente'}
+                {window.innerWidth < 768 ? '›' : 'Siguiente'}
             </button>
         );
 
@@ -279,7 +346,6 @@ function AdminViajeros() {
     const [busqueda, setBusqueda] = useState("");
 
     const elementosPorPagina = 10;
-
 
     useEffect(() => {
         traerViajeros();
@@ -310,7 +376,7 @@ function AdminViajeros() {
             setLoading(true);
             setError("");
 
-            const response = await fetch(`${API_URL}/auth/`, {
+            const response = await fetch(`${API_URL}/auth/pasajeros`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -331,14 +397,7 @@ function AdminViajeros() {
                 throw new Error("La respuesta del servidor no es válida");
             }
 
-            const viajerosFiltradosEnBackend = data.filter(usuario =>
-                usuario.idRol === 3 ||
-                usuario.rol?.nombre?.toUpperCase() === 'VIAJERO' ||
-                usuario.rol?.nombre?.toUpperCase() === 'PASAJERO' ||
-                usuario.rol?.nombre?.toUpperCase() === 'PASSENGER'
-            );
-
-            setViajeros(viajerosFiltradosEnBackend);
+            setViajeros(data);
             setPaginaActual(1);
 
         } catch (error) {
@@ -358,11 +417,6 @@ function AdminViajeros() {
     const limpiarBusqueda = () => {
         setBusqueda("");
         setPaginaActual(1);
-    };
-
-    const formatearTelefono = (telefono) => {
-        if (!telefono) return "No especificado";
-        return telefono;
     };
 
     const formatearFecha = (fecha) => {
@@ -405,11 +459,6 @@ function AdminViajeros() {
         } catch (err) {
             setError(err.message);
         }
-    };
-
-    const getBotonTexto = (estado) => {
-        if (estado === 'ACTIVO') return "Desactivar";
-        return "Activar";
     };
 
     const puedeSuspender = (estado) => {
@@ -557,13 +606,71 @@ function AdminViajeros() {
                                                             <tr key={viajero.idUsuarios} style={{
                                                                 backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
                                                             }}>
-                                                                <td className="fw-semibold px-4" style={{ color: '#113d69' }}>{viajero.idUsuarios}</td>
+                                                                <td className="fw-semibold px-4">
+                                                                    <span style={{
+                                                                        backgroundColor: '#62d8d9',
+                                                                        color: '#fafafa',
+                                                                        padding: '0.4rem 0.8rem',
+                                                                        borderRadius: '8px',
+                                                                        display: 'inline-block',
+                                                                        fontWeight: '600',
+                                                                        minWidth: '50px',
+                                                                        textAlign: 'center'
+                                                                    }}>
+                                                                        {viajero.idUsuarios}
+                                                                    </span>
+                                                                </td>
                                                                 <td>
-                                                                    <div className="fw-medium" style={{ color: '#113d69' }}>{viajero.nombre}</div>
-                                                                    <small className="text-muted">ID: {viajero.idUsuarios}</small>
+                                                                    <div className="d-flex align-items-center gap-2">
+                                                                        <div style={{
+                                                                            width: '40px',
+                                                                            height: '40px',
+                                                                            borderRadius: '50%',
+                                                                            overflow: 'hidden',
+                                                                            backgroundColor: '#e9ecef',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            border: '2px solid #62d8d9',
+                                                                            flexShrink: 0
+                                                                        }}>
+                                                                            {viajero.fotoPerfil ? (
+                                                                                <img 
+                                                                                    src={viajero.fotoPerfil} 
+                                                                                    alt={viajero.nombre}
+                                                                                    style={{
+                                                                                        width: '100%',
+                                                                                        height: '100%',
+                                                                                        objectFit: 'cover'
+                                                                                    }}
+                                                                                    onError={(e) => {
+                                                                                        e.target.onerror = null;
+                                                                                        e.target.style.display = 'none';
+                                                                                        e.target.parentElement.innerHTML = '<span style="color: #113d69; font-weight: 600;">' + 
+                                                                                            viajero.nombre?.charAt(0).toUpperCase() + 
+                                                                                        '</span>';
+                                                                                    }}
+                                                                                />
+                                                                            ) : (
+                                                                                <span style={{ 
+                                                                                    color: '#113d69', 
+                                                                                    fontWeight: '600',
+                                                                                    fontSize: '1rem'
+                                                                                }}>
+                                                                                    {viajero.nombre?.charAt(0).toUpperCase()}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="fw-medium" style={{ color: '#113d69' }}>{viajero.nombre}</div>
+                                                                            <small className="text-muted">ID: {viajero.idUsuarios}</small>
+                                                                        </div>
+                                                                    </div>
                                                                 </td>
                                                                 <td style={{ color: '#113d69' }}>{viajero.email}</td>
-                                                                <td style={{ color: '#113d69' }}>{formatearTelefono(viajero.telefono)}</td>
+                                                                <td style={{ color: '#113d69' }}>
+                                                                    {viajero.telefono || <span className="text-muted fst-italic">No especificado</span>}
+                                                                </td>
                                                                 <td>
                                                                     <EstadoBadge estado={viajero.estado} />
                                                                 </td>
@@ -571,22 +678,12 @@ function AdminViajeros() {
                                                                     <div style={{ color: '#113d69' }}>{formatearFecha(viajero.creadoEn)}</div>
                                                                 </td>
                                                                 <td>
-                                                                    <div className="d-flex flex-column gap-2" style={{ minWidth: '120px' }}>
+                                                                    <div style={{ minWidth: '140px' }}>
                                                                         <AccionButton
                                                                             estado={viajero.estado}
-                                                                            onClick={() => cambiarEstadoViajero(viajero.idUsuarios, viajero.estado)}
-                                                                        >
-                                                                            {getBotonTexto(viajero.estado)}
-                                                                        </AccionButton>
-
-                                                                        {puedeSuspender(viajero.estado) && (
-                                                                            <AccionButton
-                                                                                estado={viajero.estado}
-                                                                                onClick={() => suspenderViajero(viajero.idUsuarios)}
-                                                                            >
-                                                                                Suspender
-                                                                            </AccionButton>
-                                                                        )}
+                                                                            onActivarDesactivar={() => cambiarEstadoViajero(viajero.idUsuarios, viajero.estado)}
+                                                                            onSuspender={() => suspenderViajero(viajero.idUsuarios)}
+                                                                        />
                                                                     </div>
                                                                 </td>
                                                             </tr>

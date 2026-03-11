@@ -8,8 +8,10 @@ import {
   FaEnvelope,
   FaCheckDouble,
   FaClock,
-  FaEllipsisV
+  FaEllipsisV,
+  FaTrash
 } from "react-icons/fa";
+import { BsExclamationTriangleFill } from "react-icons/bs";
 import { useAuth } from '../pages/context/AuthContext';
 import { API_URL } from '../config';
 import toast from 'react-hot-toast';
@@ -210,6 +212,15 @@ function Notificaciones() {
           .notification-item.unread:hover {
             background-color: #F3F4F6 !important;
           }
+          .delete-button {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+          }
+          .delete-button:hover {
+            opacity: 1;
+            background-color: #FEE2E2 !important;
+            border-radius: 50%;
+          }
         `}
       </style>
 
@@ -245,28 +256,77 @@ function Notificaciones() {
         )}
       </button>
 
+      {/* Modal de confirmación mejorado */}
       <Modal
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
         centered
         size="sm"
+        className="notification-delete-modal"
+        style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        }}
       >
-        <Modal.Header closeButton className="border-0 pb-0">
-          <Modal.Title className="fs-6 fw-bold">Confirmar eliminación</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="pt-2 pb-3">
-          <p className="small text-muted mb-0">
+        <Modal.Body className="text-center p-4">
+          <BsExclamationTriangleFill 
+            size={48} 
+            style={{ color: '#113d69', marginBottom: '1rem' }} 
+          />
+          <h5 style={{ color: '#113d69', marginBottom: '0.5rem', fontWeight: '600' }}>
+            Eliminar Notificación
+          </h5>
+          <p style={{ color: '#6c757d', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
             ¿Estás seguro de que quieres eliminar esta notificación?
           </p>
+          <div className="d-flex justify-content-center gap-2">
+            <Button
+              variant="outline-secondary"
+              onClick={() => setShowDeleteModal(false)}
+              style={{
+                borderRadius: '50px',
+                padding: '0.4rem 1rem',
+                fontSize: '0.85rem',
+                fontWeight: '500',
+                border: '2px solid #6c757d',
+                color: '#6c757d',
+                backgroundColor: 'transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#6c757d';
+                e.target.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = '#6c757d';
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              onClick={eliminarNotificacion}
+              style={{
+                borderRadius: '50px',
+                padding: '0.4rem 1rem',
+                fontSize: '0.85rem',
+                fontWeight: '500',
+                border: '2px solid #113d69',
+                backgroundColor: '#113d69',
+                color: '#ffffff'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = '#62d8d9';
+                e.target.style.borderColor = '#62d8d9';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = '#113d69';
+                e.target.style.borderColor = '#113d69';
+              }}
+            >
+              Eliminar
+            </Button>
+          </div>
         </Modal.Body>
-        <Modal.Footer className="border-0 pt-0">
-          <Button variant="outline-secondary" size="sm" onClick={() => setShowDeleteModal(false)}>
-            Cancelar
-          </Button>
-          <Button variant="danger" size="sm" onClick={eliminarNotificacion}>
-            Eliminar
-          </Button>
-        </Modal.Footer>
       </Modal>
 
       {mostrarDropdown && (
@@ -396,17 +456,14 @@ function Notificaciones() {
                           setNotificacionAEliminar(notif.idNotificacion);
                           setShowDeleteModal(true);
                         }}
-                        className="p-1 position-absolute text-muted"
+                        className="p-1 position-absolute delete-button"
                         style={{
                           top: '16px',
                           right: '12px',
-                          opacity: 0.5,
-                          transition: 'opacity 0.2s'
+                          color: '#6b7280'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = 1}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = 0.5}
                       >
-                        <FaEllipsisV size={14} />
+                        <FaTrash size={14} />
                       </Button>
                     </ListGroup.Item>
                   );

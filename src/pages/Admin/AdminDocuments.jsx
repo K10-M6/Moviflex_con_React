@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Image, Modal, Form, InputGroup } from "react-bootstrap";
-import { BsSearch, BsXCircle } from "react-icons/bs";
+import { BsSearch, BsXCircle, BsChevronDown } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 const EstadoBadge = ({ estado }) => {
@@ -18,7 +18,7 @@ const EstadoBadge = ({ estado }) => {
         <span style={{
             ...estilo,
             padding: '0.25rem 0.75rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.875rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -53,7 +53,7 @@ const TipoDocumentoBadge = ({ tipo }) => {
         <span style={{
             ...estilo,
             padding: '0.2rem 0.5rem',
-            borderRadius: '0.25rem',
+            borderRadius: '0.5rem',
             fontSize: '0.7rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -71,7 +71,7 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
                 color: '#62d8d9',
                 border: '1px solid #62d8d9',
                 padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
+                borderRadius: '1rem',
                 fontSize: '0.9rem',
                 fontWeight: '500',
                 display: 'inline-block'
@@ -86,7 +86,7 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
             backgroundColor: bgColor,
             color: color,
             padding: '0.5rem 1rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.9rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -96,47 +96,38 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
     );
 };
 
-const AccionButton = ({ estado, onClick, children }) => {
-    const getButtonStyle = () => {
-        if (estado === 'APROBADO') {
-            return {
-                backgroundColor: 'transparent',
-                color: '#62d8d9',
-                borderColor: '#62d8d9'
-            };
-        } else {
-            return {
-                backgroundColor: '#62d8d9',
-                color: '#ffffff',
-                borderColor: '#62d8d9'
-            };
-        }
-    };
+const AccionButton = ({ estado, onAprobarRechazar }) => {
+    const textoBoton = estado === 'APROBADO' ? 'Rechazar' : 'Aprobar';
+    const esAprobado = estado === 'APROBADO';
 
     return (
         <Button
             size="sm"
-            onClick={onClick}
+            onClick={onAprobarRechazar}
             className="w-100"
             style={{
                 transition: 'all 0.2s',
                 fontWeight: '500',
-                ...getButtonStyle()
+                borderRadius: '50px',
+                padding: '0.4rem 0.8rem',
+                border: `2px solid ${esAprobado ? '#62d8d9' : '#62d8d9'}`,
+                backgroundColor: esAprobado ? 'transparent' : '#62d8d9',
+                color: esAprobado ? '#62d8d9' : '#ffffff',
             }}
             onMouseEnter={(e) => {
-                if (estado === 'APROBADO') {
+                if (esAprobado) {
                     e.target.style.backgroundColor = '#62d8d9';
                     e.target.style.color = 'white';
                 }
             }}
             onMouseLeave={(e) => {
-                if (estado === 'APROBADO') {
+                if (esAprobado) {
                     e.target.style.backgroundColor = 'transparent';
                     e.target.style.color = '#62d8d9';
                 }
             }}
         >
-            {children}
+            {textoBoton}
         </Button>
     );
 };
@@ -144,17 +135,17 @@ const AccionButton = ({ estado, onClick, children }) => {
 const VerImagenButton = ({ onClick }) => {
     return (
         <Button
-            variant="outline-primary"
             size="sm"
             onClick={onClick}
             style={{
                 transition: 'all 0.2s',
                 fontWeight: '500',
+                borderRadius: '50px',
+                padding: '0.15rem 0.15rem',
+                fontSize: '0.7rem',
+                border: '2px solid #62d8d9',
                 backgroundColor: 'transparent',
                 color: '#62d8d9',
-                borderColor: '#62d8d9',
-                padding: '0.25rem 0.5rem',
-                fontSize: '0.8rem'
             }}
             onMouseEnter={(e) => {
                 e.target.style.backgroundColor = '#62d8d9';
@@ -199,7 +190,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, documentosFiltr
                     color: paginaActual === 1 ? '#6c757d' : '#62d8d9',
                     border: `1px solid ${paginaActual === 1 ? '#dee2e6' : '#62d8d9'}`,
                     margin: '0 2px',
-                    borderRadius: '0.375rem 0 0 0.375rem',
+                    borderRadius: '50px 0 0 50px',
                     cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
                     fontWeight: '500',
                     transition: 'all 0.2s',
@@ -221,7 +212,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, documentosFiltr
                         color: '#62d8d9',
                         border: '1px solid #62d8d9',
                         margin: '0 2px',
-                        borderRadius: '0.375rem',
+                        borderRadius: '50px',
                         cursor: 'pointer',
                         fontWeight: '500'
                     }}
@@ -230,7 +221,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, documentosFiltr
                 </button>
             );
             if (inicio > 2) {
-                botones.push(<span key="ellipsis1" style={{ margin: '0 5px' }}>...</span>);
+                botones.push(<span key="ellipsis1" style={{ margin: '0 5px', color: '#113d69' }}>...</span>);
             }
         }
 
@@ -245,7 +236,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, documentosFiltr
                         color: i === paginaActual ? 'white' : '#62d8d9',
                         border: '1px solid #62d8d9',
                         margin: '0 2px',
-                        borderRadius: '0.375rem',
+                        borderRadius: '50px',
                         cursor: 'pointer',
                         fontWeight: '500'
                     }}
@@ -257,7 +248,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, documentosFiltr
 
         if (fin < totalPaginas) {
             if (fin < totalPaginas - 1) {
-                botones.push(<span key="ellipsis2" style={{ margin: '0 5px' }}>...</span>);
+                botones.push(<span key="ellipsis2" style={{ margin: '0 5px', color: '#113d69' }}>...</span>);
             }
             botones.push(
                 <button
@@ -269,7 +260,7 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, documentosFiltr
                         color: '#62d8d9',
                         border: '1px solid #62d8d9',
                         margin: '0 2px',
-                        borderRadius: '0.375rem',
+                        borderRadius: '50px',
                         cursor: 'pointer',
                         fontWeight: '500'
                     }}
@@ -290,14 +281,14 @@ const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, documentosFiltr
                     color: paginaActual === totalPaginas ? '#6c757d' : '#62d8d9',
                     border: `1px solid ${paginaActual === totalPaginas ? '#dee2e6' : '#62d8d9'}`,
                     margin: '0 2px',
-                    borderRadius: '0 0.375rem 0.375rem 0',
+                    borderRadius: '0 50px 50px 0',
                     cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
                     fontWeight: '500',
                     transition: 'all 0.2s',
                     opacity: paginaActual === totalPaginas ? 0.6 : 1
                 }}
             >
-                {window.innerWidth < 768 ? '‹' : 'Siguiente'}
+                {window.innerWidth < 768 ? '›' : 'Siguiente'}
             </button>
         );
 
@@ -330,7 +321,6 @@ function AdminDocumentos() {
     const [busqueda, setBusqueda] = useState("");
 
     const elementosPorPagina = 10;
-
 
     useEffect(() => {
         traerUsuarios();
@@ -483,25 +473,12 @@ function AdminDocumentos() {
         }
     }
 
-    function getBotonTexto(estado) {
-        switch (estado) {
-            case 'APROBADO':
-                return "Rechazar";
-            case 'RECHAZADO':
-                return "Aprobar";
-            case 'PENDIENTE':
-                return "Aprobar";
-            default:
-                return "Cambiar Estado";
-        }
-    }
-
     function formatearFecha(fecha) {
         if (!fecha) return "-";
         return new Date(fecha).toLocaleDateString('es-ES', {
             year: 'numeric',
-            month: 'long',
-            day: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
             hour: '2-digit',
             minute: '2-digit'
         });
@@ -644,7 +621,7 @@ function AdminDocumentos() {
                                                     <th className="py-3 px-4" style={{ color: '#113d69' }}>ID</th>
                                                     <th className="py-3" style={{ color: '#113d69' }}>Usuario</th>
                                                     <th className="py-3" style={{ color: '#113d69' }}>Tipo Documento</th>
-                                                    <th className="py-3" style={{ color: '#113d69' }}>Documento</th>
+                                                    <th className="py-3" style={{ color: '#113d69' }}>N° Documento / Imagen</th>
                                                     <th className="py-3" style={{ color: '#113d69' }}>Estado</th>
                                                     <th className="py-3" style={{ color: '#113d69' }}>Fecha Subida</th>
                                                     <th className="py-3" style={{ color: '#113d69' }}>Acciones</th>
@@ -662,7 +639,7 @@ function AdminDocumentos() {
                                                         <tr key={documento.idDocumentacion} style={{
                                                             backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
                                                         }}>
-                                                            <td className="fw-semibold px-4" style={{ color: '#113d69' }}>
+                                                            <td className="fw-semibold px-4">
                                                                 <span style={{
                                                                     backgroundColor: '#62d8d9',
                                                                     color: '#ffffff',
@@ -677,33 +654,39 @@ function AdminDocumentos() {
                                                                 </span>
                                                             </td>
                                                             <td>
+                                                                <div className="fw-medium" style={{ color: '#113d69' }}>
+                                                                    {obtenerNombreUsuario(documento.idUsuario)}
+                                                                </div>
+                                                                <small className="text-muted">
+                                                                    ID: {documento.idUsuario}
+                                                                </small>
+                                                            </td>
+                                                            <td>
                                                                 <div className="fw-medium mb-1" style={{ color: '#113d69' }}>
-                                                                    {documento.tipoDocumento || documento.tipo}
+                                                                    {documento.tipoDocumento || documento.tipo || 'No especificado'}
                                                                 </div>
                                                                 <TipoDocumentoBadge tipo={documento.tipoDocumento || documento.tipo} />
                                                             </td>
                                                             <td>
-                                                                <div style={{ color: '#113d69' }}>
+                                                                <div className="mb-2" style={{ color: '#113d69' }}>
                                                                     <span className="fw-medium">N°:</span> {documento.numeroDocumento || documento.numero || "-"}
                                                                 </div>
-                                                                <div className="mt-2">
-                                                                    <VerImagenButton onClick={() => handleVerImagen(documento)} />
-                                                                </div>
+                                                                <VerImagenButton onClick={() => handleVerImagen(documento)} />
                                                             </td>
                                                             <td>
                                                                 <EstadoBadge estado={documento.estado} />
                                                             </td>
-                                                            <td style={{ color: '#113d69' }}>
-                                                                {formatearFecha(documento.fechaSubida || documento.creadoEn)}
+                                                            <td>
+                                                                <div style={{ color: '#113d69', fontSize: '0.9rem' }}>
+                                                                    {formatearFecha(documento.fechaSubida || documento.creadoEn)}
+                                                                </div>
                                                             </td>
                                                             <td>
-                                                                <div className="d-flex flex-column gap-2" style={{ minWidth: '100px' }}>
+                                                                <div style={{ minWidth: '100px' }}>
                                                                     <AccionButton
                                                                         estado={documento.estado}
-                                                                        onClick={() => cambiarEstadoDocumento(documento.idDocumentacion, documento.estado)}
-                                                                    >
-                                                                        {getBotonTexto(documento.estado)}
-                                                                    </AccionButton>
+                                                                        onAprobarRechazar={() => cambiarEstadoDocumento(documento.idDocumentacion, documento.estado)}
+                                                                    />
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -729,7 +712,7 @@ function AdminDocumentos() {
                 </Row>
             </Container>
 
-            {/* Modal para ver imagen - con estilo mejorado */}
+            {/* Modal para ver imagen */}
             <Modal
                 show={showImageModal}
                 onHide={handleCloseModal}
@@ -750,13 +733,12 @@ function AdminDocumentos() {
                     <Modal.Title style={{ color: '#113d69' }}>
                         {selectedDocumento && (
                             <>
-                                <span style={{ color: '#62d8d9' }}>📄</span> {selectedDocumento.tipo || selectedDocumento.tipoDocumento} -
-                                <span className="ms-1" style={{ color: '#113d69' }}>{obtenerNombreUsuario(selectedDocumento.idUsuario)}</span>
+                                <span style={{ color: '#62d8d9' }}>📄</span> Documento de {obtenerNombreUsuario(selectedDocumento.idUsuario)}
                             </>
                         )}
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body className="text-center p-4" style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
+                <Modal.Body className="text-center p-0" style={{ backgroundColor: '#1a1a1a' }}>
                     {selectedImage ? (
                         <Image
                             src={getImageUrl(selectedDocumento)}
@@ -764,8 +746,8 @@ function AdminDocumentos() {
                             fluid
                             style={{
                                 maxHeight: '70vh',
-                                borderRadius: '8px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                width: 'auto',
+                                margin: '0 auto'
                             }}
                             onError={(e) => {
                                 e.target.onerror = null;
@@ -773,7 +755,9 @@ function AdminDocumentos() {
                             }}
                         />
                     ) : (
-                        <p className="text-muted" style={{ color: '#113d69' }}>No hay imagen disponible</p>
+                        <div className="p-5 text-center" style={{ color: '#ffffff' }}>
+                            No hay imagen disponible
+                        </div>
                     )}
                 </Modal.Body>
                 <Modal.Footer style={{ backgroundColor: 'rgba(255, 255, 255, 0.98)' }}>
@@ -785,7 +769,8 @@ function AdminDocumentos() {
                             border: 'none',
                             transition: 'all 0.2s',
                             fontWeight: '500',
-                            padding: '0.5rem 1.5rem'
+                            padding: '0.5rem 1.5rem',
+                            borderRadius: '50px'
                         }}
                     >
                         Cerrar

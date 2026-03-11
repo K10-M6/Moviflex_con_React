@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Modal, Form, Card, Row, Col, Spinner } from 'react-bootstrap';
-import { BsCheckCircleFill, BsXCircleFill, BsEyeFill, BsCalendar3, BsFunnelFill } from 'react-icons/bs';
+import { BsCheckCircleFill, BsXCircleFill, BsEyeFill, BsCalendar3, BsFunnelFill, BsExclamationTriangleFill } from 'react-icons/bs';
 import { useAuth } from '../../pages/context/AuthContext';
 import { API_URL } from '../../config';
 import toast from 'react-hot-toast';
@@ -19,7 +19,7 @@ const CustomBadge = ({ estado, children }) => {
         <span style={{
             ...estilo,
             padding: '0.25rem 0.75rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.875rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -33,8 +33,8 @@ const CustomButton = ({ variant, onClick, children, disabled, style, className, 
     const getButtonStyle = () => {
         const baseStyle = {
             padding: size === 'sm' ? '0.25rem 0.5rem' : '0.5rem 1rem',
-            borderRadius: '0.375rem',
-            border: '1px solid',
+            borderRadius: '50px',
+            border: variant.includes('outline') ? '2px solid' : 'none',
             cursor: disabled ? 'not-allowed' : 'pointer',
             opacity: disabled ? 0.6 : 1,
             transition: 'all 0.2s',
@@ -115,7 +115,7 @@ const StatsCard = ({ color, bgColor, borderColor, count, label }) => {
     return (
         <div style={{
             backgroundColor: '#ffffff',
-            borderRadius: '0.75rem',
+            borderRadius: '1rem',
             border: 'none',
             boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
             textAlign: 'center',
@@ -141,6 +141,7 @@ function AdminReportesPago() {
     const [showModal, setShowModal] = useState(false);
     const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
     const [showRechazarModal, setShowRechazarModal] = useState(false);
+    const [showVerificarModal, setShowVerificarModal] = useState(false); // Nuevo modal para verificar
     const [observaciones, setObservaciones] = useState('');
     const [procesando, setProcesando] = useState(false);
 
@@ -221,10 +222,9 @@ function AdminReportesPago() {
     };
 
     const verificarMensuales = async () => {
-        if (!window.confirm('¿Está seguro de ejecutar la verificación mensual? Los conductores sin pago aprobado serán suspendidos.')) return;
-
         try {
             setProcesando(true);
+            setShowVerificarModal(false);
             const res = await fetch(`${API_URL}/reportes-pago/verificar-mensuales`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -278,6 +278,10 @@ function AdminReportesPago() {
         setObservaciones('');
     };
 
+    const handleCloseVerificarModal = () => {
+        setShowVerificarModal(false);
+    };
+
     const formatearFecha = (fecha) => {
         return new Date(fecha).toLocaleDateString('es-CO', {
             year: 'numeric', month: 'long', day: 'numeric'
@@ -311,7 +315,7 @@ function AdminReportesPago() {
                     </CustomButton>
                     <CustomButton
                         variant="outline-danger"
-                        onClick={verificarMensuales}
+                        onClick={() => setShowVerificarModal(true)}
                         disabled={procesando}
                     >
                         {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
@@ -323,7 +327,7 @@ function AdminReportesPago() {
             {/* Filtros */}
             <div style={{
                 backgroundColor: '#ffffff',
-                borderRadius: '0.75rem',
+                borderRadius: '1rem',
                 border: 'none',
                 boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
                 marginBottom: '1.5rem',
@@ -340,7 +344,7 @@ function AdminReportesPago() {
                             style={{
                                 width: '100%',
                                 padding: '0.375rem 0.75rem',
-                                borderRadius: '0.375rem',
+                                borderRadius: '50px',
                                 border: '1px solid #ced4da'
                             }}
                         >
@@ -361,7 +365,7 @@ function AdminReportesPago() {
                             style={{
                                 width: '100%',
                                 padding: '0.375rem 0.75rem',
-                                borderRadius: '0.375rem',
+                                borderRadius: '50px',
                                 border: '1px solid #ced4da'
                             }}
                         />
@@ -403,7 +407,7 @@ function AdminReportesPago() {
             {/* Tabla */}
             <div style={{
                 backgroundColor: '#ffffff',
-                borderRadius: '0.75rem',
+                borderRadius: '1rem',
                 border: 'none',
                 boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
                 overflow: 'hidden'
@@ -532,7 +536,7 @@ function AdminReportesPago() {
                 }} onClick={handleCloseModal}>
                     <div style={{
                         backgroundColor: 'white',
-                        borderRadius: '0.5rem',
+                        borderRadius: '1rem',
                         maxWidth: '800px',
                         width: '90%',
                         maxHeight: '90vh',
@@ -583,7 +587,7 @@ function AdminReportesPago() {
                                             alt="Comprobante"
                                             style={{
                                                 width: '100%',
-                                                borderRadius: '0.375rem',
+                                                borderRadius: '0.5rem',
                                                 maxHeight: '400px',
                                                 objectFit: 'contain',
                                                 border: '1px solid #62d8d9'
@@ -636,7 +640,7 @@ function AdminReportesPago() {
                 }} onClick={handleCloseRechazarModal}>
                     <div style={{
                         backgroundColor: 'white',
-                        borderRadius: '0.5rem',
+                        borderRadius: '1rem',
                         maxWidth: '500px',
                         width: '90%',
                         padding: '1.5rem'
@@ -656,7 +660,7 @@ function AdminReportesPago() {
                                 style={{
                                     width: '100%',
                                     padding: '0.375rem 0.75rem',
-                                    borderRadius: '0.375rem',
+                                    borderRadius: '0.5rem',
                                     border: '1px solid #ced4da'
                                 }}
                             />
@@ -672,6 +676,56 @@ function AdminReportesPago() {
                             >
                                 {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : null}
                                 Confirmar Rechazo
+                            </CustomButton>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Verificar Pagos Mensuales */}
+            {showVerificarModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1070
+                }} onClick={handleCloseVerificarModal}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        borderRadius: '1rem',
+                        maxWidth: '450px',
+                        width: '90%',
+                        padding: '2rem',
+                        textAlign: 'center'
+                    }} onClick={(e) => e.stopPropagation()}>
+                        <BsExclamationTriangleFill size={48} style={{ color: '#113d69', marginBottom: '1rem' }} />
+                        <h4 style={{ color: '#113d69', marginBottom: '1rem', fontWeight: '600' }}>
+                            Verificar Pagos Mensuales
+                        </h4>
+                        <p style={{ color: '#6c757d', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                            ¿Está seguro de ejecutar la verificación mensual?<br />
+                            Los conductores sin pago aprobado serán suspendidos.
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                            <CustomButton
+                                variant="secondary"
+                                onClick={handleCloseVerificarModal}
+                            >
+                                Cancelar
+                            </CustomButton>
+                            <CustomButton
+                                variant="danger"
+                                onClick={verificarMensuales}
+                                disabled={procesando}
+                            >
+                                {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
+                                Confirmar Verificación
                             </CustomButton>
                         </div>
                     </div>

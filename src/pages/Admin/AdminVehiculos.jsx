@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Modal, Image, Form, InputGroup } from "react-bootstrap";
 import { FaCheckCircle, FaTimesCircle, FaEye, FaCar } from "react-icons/fa";
-import { BsSearch, BsXCircle } from "react-icons/bs";
+import { BsSearch, BsXCircle, BsChevronDown } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 function AdminVehiculos() {
@@ -240,7 +240,7 @@ function AdminVehiculos() {
         }
     }
 
-
+    // COMPONENTES ESTILIZADOS
     const EstadoBadge = ({ estado }) => {
         const estilos = {
             ACTIVO: { backgroundColor: '#62d8d9', color: '#ffffff' },
@@ -253,7 +253,7 @@ function AdminVehiculos() {
             <span style={{
                 ...estilo,
                 padding: '0.25rem 0.75rem',
-                borderRadius: '0.375rem',
+                borderRadius: '1rem',
                 fontSize: '0.875rem',
                 fontWeight: '500',
                 display: 'inline-block'
@@ -281,7 +281,7 @@ function AdminVehiculos() {
                     color: '#62d8d9',
                     border: '1px solid #62d8d9',
                     padding: '0.5rem 1rem',
-                    borderRadius: '0.375rem',
+                    borderRadius: '1rem',
                     fontSize: '0.9rem',
                     fontWeight: '500',
                     display: 'inline-block'
@@ -296,7 +296,7 @@ function AdminVehiculos() {
                 backgroundColor: bgColor,
                 color: color,
                 padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
+                borderRadius: '1rem',
                 fontSize: '0.9rem',
                 fontWeight: '500',
                 display: 'inline-block'
@@ -335,7 +335,7 @@ function AdminVehiculos() {
             <span style={{
                 ...estilo,
                 padding: '0.2rem 0.5rem',
-                borderRadius: '0.25rem',
+                borderRadius: '0.5rem',
                 fontSize: '0.7rem',
                 fontWeight: '500',
                 display: 'inline-block'
@@ -356,7 +356,10 @@ function AdminVehiculos() {
                     style={{
                         transition: 'all 0.2s',
                         fontWeight: '500',
-                        backgroundColor: 'transparent',
+                        borderRadius: '50px',
+                        padding: '0.4rem 0.8rem',
+                        border: `2px solid ${children === "Validar Placa" ? '#62d8d9' : '#113d69'}`,
+                        backgroundColor: disabled ? '#e9ecef' : 'transparent',
                         color: children === "Validar Placa" ? '#62d8d9' : '#113d69',
                         borderColor: children === "Validar Placa" ? '#62d8d9' : '#113d69',
                         opacity: disabled ? 0.6 : 1
@@ -379,22 +382,6 @@ function AdminVehiculos() {
             );
         }
 
-        const getButtonStyle = () => {
-            if (estado === 'ACTIVO') {
-                return {
-                    backgroundColor: 'transparent',
-                    color: '#62d8d9',
-                    borderColor: '#62d8d9'
-                };
-            } else {
-                return {
-                    backgroundColor: '#62d8d9',
-                    color: '#ffffff',
-                    borderColor: '#62d8d9'
-                };
-            }
-        };
-
         return (
             <Button
                 size="sm"
@@ -403,7 +390,11 @@ function AdminVehiculos() {
                 style={{
                     transition: 'all 0.2s',
                     fontWeight: '500',
-                    ...getButtonStyle()
+                    borderRadius: '50px',
+                    padding: '0.4rem 0.8rem',
+                    border: `2px solid ${estado === 'ACTIVO' ? '#62d8d9' : '#62d8d9'}`,
+                    backgroundColor: estado === 'ACTIVO' ? 'transparent' : '#62d8d9',
+                    color: estado === 'ACTIVO' ? '#62d8d9' : '#ffffff',
                 }}
                 onMouseEnter={(e) => {
                     if (estado === 'ACTIVO') {
@@ -461,12 +452,10 @@ function AdminVehiculos() {
 
     function formatearCapacidad(capacidad) {
         if (!capacidad) return <span className="text-muted fst-italic">No especificado</span>;
-
         if (typeof capacidad === 'number' || !isNaN(parseInt(capacidad))) {
             const numCapacidad = parseInt(capacidad);
             return `${numCapacidad} ${numCapacidad === 1 ? 'persona' : 'personas'}`;
         }
-
         return capacidad;
     }
 
@@ -499,23 +488,11 @@ function AdminVehiculos() {
                         color: paginaActual === 1 ? '#6c757d' : '#62d8d9',
                         border: `1px solid ${paginaActual === 1 ? '#dee2e6' : '#62d8d9'}`,
                         margin: '0 2px',
-                        borderRadius: '0.375rem 0 0 0.375rem',
+                        borderRadius: '50px 0 0 50px',
                         cursor: paginaActual === 1 ? 'not-allowed' : 'pointer',
                         fontWeight: '500',
                         transition: 'all 0.2s',
                         opacity: paginaActual === 1 ? 0.6 : 1
-                    }}
-                    onMouseEnter={(e) => {
-                        if (paginaActual !== 1) {
-                            e.target.style.backgroundColor = '#62d8d9';
-                            e.target.style.color = 'white';
-                        }
-                    }}
-                    onMouseLeave={(e) => {
-                        if (paginaActual !== 1) {
-                            e.target.style.backgroundColor = 'white';
-                            e.target.style.color = '#62d8d9';
-                        }
                     }}
                 >
                     {window.innerWidth < 768 ? '‹' : 'Anterior'}
@@ -533,18 +510,9 @@ function AdminVehiculos() {
                             color: '#62d8d9',
                             border: '1px solid #62d8d9',
                             margin: '0 2px',
-                            borderRadius: '0.375rem',
+                            borderRadius: '50px',
                             cursor: 'pointer',
-                            fontWeight: '500',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#62d8d9';
-                            e.target.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = 'white';
-                            e.target.style.color = '#62d8d9';
+                            fontWeight: '500'
                         }}
                     >
                         1
@@ -581,23 +549,10 @@ function AdminVehiculos() {
                             color: esActivo ? 'white' : '#62d8d9',
                             border: '1px solid #62d8d9',
                             margin: '0 2px',
-                            borderRadius: '0.375rem',
+                            borderRadius: '50px',
                             cursor: esActivo ? 'default' : 'pointer',
                             fontWeight: esActivo ? '600' : '500',
-                            transition: 'all 0.2s',
-                            boxShadow: esActivo ? '0 2px 4px rgba(98, 216, 217, 0.3)' : 'none'
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!esActivo) {
-                                e.target.style.backgroundColor = '#62d8d9';
-                                e.target.style.color = 'white';
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!esActivo) {
-                                e.target.style.backgroundColor = 'white';
-                                e.target.style.color = '#62d8d9';
-                            }
+                            transition: 'all 0.2s'
                         }}
                     >
                         {numero}
@@ -633,18 +588,9 @@ function AdminVehiculos() {
                             color: '#62d8d9',
                             border: '1px solid #62d8d9',
                             margin: '0 2px',
-                            borderRadius: '0.375rem',
+                            borderRadius: '50px',
                             cursor: 'pointer',
-                            fontWeight: '500',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#62d8d9';
-                            e.target.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = 'white';
-                            e.target.style.color = '#62d8d9';
+                            fontWeight: '500'
                         }}
                     >
                         {totalPaginas}
@@ -663,23 +609,11 @@ function AdminVehiculos() {
                         color: paginaActual === totalPaginas ? '#6c757d' : '#62d8d9',
                         border: `1px solid ${paginaActual === totalPaginas ? '#dee2e6' : '#62d8d9'}`,
                         margin: '0 2px',
-                        borderRadius: '0 0.375rem 0.375rem 0',
+                        borderRadius: '0 50px 50px 0',
                         cursor: paginaActual === totalPaginas ? 'not-allowed' : 'pointer',
                         fontWeight: '500',
                         transition: 'all 0.2s',
                         opacity: paginaActual === totalPaginas ? 0.6 : 1
-                    }}
-                    onMouseEnter={(e) => {
-                        if (paginaActual !== totalPaginas) {
-                            e.target.style.backgroundColor = '#62d8d9';
-                            e.target.style.color = 'white';
-                        }
-                    }}
-                    onMouseLeave={(e) => {
-                        if (paginaActual !== totalPaginas) {
-                            e.target.style.backgroundColor = 'white';
-                            e.target.style.color = '#62d8d9';
-                        }
                     }}
                 >
                     {window.innerWidth < 768 ? '›' : 'Siguiente'}
@@ -840,7 +774,20 @@ function AdminVehiculos() {
                                                             <tr key={vehiculo.idVehiculos} style={{
                                                                 backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
                                                             }}>
-                                                                <td className="fw-semibold px-4" style={{ color: '#113d69' }}>{vehiculo.idVehiculos}</td>
+                                                                <td className="fw-semibold px-4">
+                                                                    <span style={{
+                                                                        backgroundColor: '#62d8d9',
+                                                                        color: '#fafafa',
+                                                                        padding: '0.4rem 0.8rem',
+                                                                        borderRadius: '8px',
+                                                                        display: 'inline-block',
+                                                                        fontWeight: '600',
+                                                                        minWidth: '50px',
+                                                                        textAlign: 'center'
+                                                                    }}>
+                                                                        {vehiculo.idVehiculos}
+                                                                    </span>
+                                                                </td>
                                                                 <td>
                                                                     <div className="fw-medium" style={{ color: '#113d69' }}>
                                                                         {obtenerNombreUsuario(vehiculo.idUsuario)}
@@ -958,7 +905,8 @@ function AdminVehiculos() {
                             border: 'none',
                             transition: 'all 0.2s',
                             fontWeight: '500',
-                            padding: '0.5rem 1.5rem'
+                            padding: '0.5rem 1.5rem',
+                            borderRadius: '50px'
                         }}
                     >
                         Cerrar
