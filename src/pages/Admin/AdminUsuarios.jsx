@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef  } from "react";
 import { useAuth } from "../context/AuthContext";
 import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
-import { BsSearch, BsXCircle } from "react-icons/bs";
+import { BsSearch, BsXCircle, BsChevronDown } from "react-icons/bs";
 import fondo from "../Imagenes/AutoresContacto.png";
 
 const EstadoBadge = ({ estado }) => {
@@ -18,7 +18,7 @@ const EstadoBadge = ({ estado }) => {
         <span style={{
             ...estilo,
             padding: '0.25rem 0.75rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.875rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -76,7 +76,7 @@ const RolBadge = ({ rolId, rolNombre }) => {
         <span style={{
             ...estilo,
             padding: '0.25rem 0.75rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.8rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -94,7 +94,7 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
                 color: '#62d8d9',
                 border: '1px solid #62d8d9',
                 padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
+                borderRadius: '1rem',
                 fontSize: '0.9rem',
                 fontWeight: '500',
                 display: 'inline-block'
@@ -119,65 +119,130 @@ const StatsBadge = ({ children, color, bgColor, isWhite = false }) => {
     );
 };
 
-const AccionButton = ({ estado, onClick, children }) => {
-    if (children === "Suspender") {
-        return (
-            <Button
-                variant="outline-warning"
-                size="sm"
-                onClick={onClick}
-                className="w-100"
-                style={{
-                    transition: 'all 0.2s',
-                    fontWeight: '500',
-                    color: '#113d69',
-                    borderColor: '#113d69',
-                    backgroundColor: estado === 'SUSPENDIDO' ? '#113d69' : 'transparent',
-                }}
-            >
-                Suspender
-            </Button>
-        );
-    }
+const AccionButton = ({ estado, onActivarDesactivar, onSuspender }) => {
+    const [mostrarMenu, setMostrarMenu] = useState(false);
+    const menuRef = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setMostrarMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
-    const getButtonStyle = () => {
-        if (estado === 'ACTIVO') {
+    const getButtonStyle = (tipoBoton = 'principal') => {
+        if (tipoBoton === 'principal') {
+            if (estado === 'ACTIVO') {
+                return {
+                    backgroundColor: '#62d8d9',
+                    color: '#ffffff',
+                    borderColor: '#62d8d9'
+                };
+            } else {
+                return {
+                    backgroundColor: 'transparent',
+                    color: '#62d8d9',
+                    borderColor: '#62d8d9'
+                };
+            }
+        } else if (tipoBoton === 'suspender') {
             return {
-                backgroundColor: 'transparent',
-                color: '#62d8d9',
-                borderColor: '#62d8d9'
-            };
-        } else if (estado === 'INACTIVO' || estado === 'SUSPENDIDO') {
-            return {
-                backgroundColor: '#62d8d9',
+                backgroundColor: '#113d69',
                 color: '#ffffff',
-                borderColor: '#62d8d9'
+                borderColor: '#113d69'
             };
         }
-        return {
-            backgroundColor: 'transparent',
-            color: '#62d8d9',
-            borderColor: '#62d8d9'
-        };
     };
 
+    const textoBoton = estado === 'ACTIVO' ? 'Desactivar' : 'Activar';
+
     return (
-        <Button
-            variant={estado === 'ACTIVO' ? "primary" : "outline-primary"}
-            size="sm"
-            onClick={onClick}
-            className="w-100"
-            style={{
-                transition: 'all 0.2s',
-                fontWeight: '500',
-                ...getButtonStyle()
-            }}
-        >
-            {children}
-        </Button>
+        <div className="position-relative" ref={menuRef} style={{ minWidth: '120px' }}>
+            <div className="d-flex">
+                <Button
+                    size="sm"
+                    onClick={onActivarDesactivar}
+                    className="flex-grow-1"
+                    style={{
+                        transition: 'all 0.2s',
+                        fontWeight: '500',
+                        borderRadius: '50px 0 0 50px',
+                        padding: '0.4rem 0.8rem',
+                        border: `2px solid ${estado === 'ACTIVO' ? '#62d8d9' : '#62d8d9'}`,
+                        ...getButtonStyle('principal')
+                    }}
+                >
+                    {textoBoton}
+                </Button>
+                <Button
+                    size="sm"
+                    onClick={() => setMostrarMenu(!mostrarMenu)}
+                    style={{
+                        transition: 'all 0.2s',
+                        fontWeight: '500',
+                        borderRadius: '0 50px 50px 0',
+                        padding: '0.4rem 0.6rem',
+                        border: `2px solid ${estado === 'ACTIVO' ? '#62d8d9' : '#62d8d9'}`,
+                        borderLeft: 'none',
+                        ...getButtonStyle('principal'),
+                        backgroundColor: estado === 'ACTIVO' ? '#62d8d9' : 'transparent',
+                        color: estado === 'ACTIVO' ? '#ffffff' : '#62d8d9'
+                    }}
+                >
+                    <BsChevronDown style={{ 
+                        transform: mostrarMenu ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s'
+                    }} />
+                </Button>
+            </div>
+            
+            {mostrarMenu && (
+                <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '0.5rem',
+                    minWidth: '120px',
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    border: '1px solid rgba(0,0,0,0.05)',
+                    zIndex: 1000,
+                    overflow: 'hidden'
+                }}>
+                    <Button
+                        size="sm"
+                        onClick={() => {
+                            onSuspender();
+                            setMostrarMenu(false);
+                        }}
+                        className="w-100"
+                        style={{
+                            transition: 'all 0.2s',
+                            fontWeight: '500',
+                            padding: '0.5rem 1rem',
+                            border: 'none',
+                            borderRadius: 0,
+                            backgroundColor: 'transparent',
+                            color: '#113d69',
+                            textAlign: 'left'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#f8f9fa';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = 'transparent';
+                        }}
+                    >
+                        Suspender
+                    </Button>
+                </div>
+            )}
+        </div>
     );
 };
-
 const Paginacion = ({ totalPaginas, paginaActual, cambiarPagina, usuariosFiltrados, indicePrimerElemento, indiceUltimoElemento, busqueda, usuariosTotales }) => {
     if (totalPaginas <= 1) return null;
 
@@ -417,7 +482,7 @@ function AdminUsuarios() {
     const cambiarEstadoUsuario = async (id, estadoActual) => {
         try {
             const nuevoEstado = estadoActual === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
-            const response = await fetch(`${API_URL}/auth/usuario/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -435,7 +500,7 @@ function AdminUsuarios() {
 
     const suspenderUsuario = async (id) => {
         try {
-            const response = await fetch(`${API_URL}/auth/usuario/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -603,10 +668,66 @@ function AdminUsuarios() {
                                                             <tr key={usuario.idUsuarios} style={{
                                                                 backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
                                                             }}>
-                                                                <td className="fw-semibold px-4" style={{ color: '#113d69' }}>{usuario.idUsuarios}</td>
+                                                                <td className="fw-semibold px-4">
+                                                                    <span style={{
+                                                                        backgroundColor: '#62d8d9',
+                                                                        color: '#fafafa',
+                                                                        padding: '0.4rem 0.8rem',
+                                                                        borderRadius: '8px',
+                                                                        display: 'inline-block',
+                                                                        fontWeight: '600',
+                                                                        minWidth: '50px',
+                                                                        textAlign: 'center'
+                                                                    }}>
+                                                                        {usuario.idUsuarios}
+                                                                    </span>
+                                                                </td>
                                                                 <td>
-                                                                    <div className="fw-medium" style={{ color: '#113d69' }}>{usuario.nombre}</div>
-                                                                    <small className="text-muted">ID: {usuario.idUsuarios}</small>
+                                                                    <div className="d-flex align-items-center gap-2">
+                                                                        <div style={{
+                                                                            width: '40px',
+                                                                            height: '40px',
+                                                                            borderRadius: '50%',
+                                                                            overflow: 'hidden',
+                                                                            backgroundColor: '#e9ecef',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center',
+                                                                            border: '2px solid #62d8d9',
+                                                                            flexShrink: 0
+                                                                        }}>
+                                                                            {usuario.fotoPerfil ? (
+                                                                                <img 
+                                                                                    src={usuario.fotoPerfil} 
+                                                                                    alt={usuario.nombre}
+                                                                                    style={{
+                                                                                        width: '100%',
+                                                                                        height: '100%',
+                                                                                        objectFit: 'cover'
+                                                                                    }}
+                                                                                    onError={(e) => {
+                                                                                        e.target.onerror = null;
+                                                                                        e.target.style.display = 'none';
+                                                                                        e.target.parentElement.innerHTML = '<span style="color: #113d69; font-weight: 600;">' + 
+                                                                                            usuario.nombre?.charAt(0).toUpperCase() + 
+                                                                                        '</span>';
+                                                                                    }}
+                                                                                />
+                                                                            ) : (
+                                                                                <span style={{ 
+                                                                                    color: '#113d69', 
+                                                                                    fontWeight: '600',
+                                                                                    fontSize: '1rem'
+                                                                                }}>
+                                                                                    {usuario.nombre?.charAt(0).toUpperCase()}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                        <div>
+                                                                            <div className="fw-medium" style={{ color: '#113d69' }}>{usuario.nombre}</div>
+                                                                            <small className="text-muted">ID: {usuario.idUsuarios}</small>
+                                                                        </div>
+                                                                    </div>
                                                                 </td>
                                                                 <td style={{ color: '#113d69' }}>{usuario.email}</td>
                                                                 <td style={{ color: '#113d69' }}>
@@ -622,22 +743,12 @@ function AdminUsuarios() {
                                                                     <div style={{ color: '#113d69' }}>{formatearFecha(usuario.creadoEn)}</div>
                                                                 </td>
                                                                 <td>
-                                                                    <div className="d-flex flex-column gap-2" style={{ minWidth: '120px' }}>
+                                                                    <div style={{ minWidth: '140px' }}>
                                                                         <AccionButton
                                                                             estado={usuario.estado}
-                                                                            onClick={() => cambiarEstadoUsuario(usuario.idUsuarios, usuario.estado)}
-                                                                        >
-                                                                            {getBotonTexto(usuario.estado)}
-                                                                        </AccionButton>
-
-                                                                        {puedeSuspender(usuario.estado) && (
-                                                                            <AccionButton
-                                                                                estado={usuario.estado}
-                                                                                onClick={() => suspenderUsuario(usuario.idUsuarios)}
-                                                                            >
-                                                                                Suspender
-                                                                            </AccionButton>
-                                                                        )}
+                                                                            onActivarDesactivar={() => cambiarEstadoUsuario(usuario.idUsuarios, usuario.estado)}
+                                                                            onSuspender={() => suspenderUsuario(usuario.idUsuarios)}
+                                                                        />
                                                                     </div>
                                                                 </td>
                                                             </tr>

@@ -18,7 +18,7 @@ const EstadoBadge = ({ estado }) => {
         <span style={{
             ...estilo,
             padding: '0.25rem 0.75rem',
-            borderRadius: '0.375rem',
+            borderRadius: '1rem',
             fontSize: '0.875rem',
             fontWeight: '500',
             display: 'inline-block'
@@ -366,7 +366,7 @@ function AdminConductores() {
     const cambiarEstadoConductor = async (id, estadoActual) => {
         try {
             const nuevoEstado = estadoActual === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
-            const response = await fetch(`${API_URL}/auth/usuario/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -384,7 +384,7 @@ function AdminConductores() {
 
     const suspenderConductor = async (id) => {
         try {
-            const response = await fetch(`${API_URL}/auth/usuario/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

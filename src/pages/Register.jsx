@@ -3,8 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Container, Row, Col, Card, Form, Button, Alert, ProgressBar, Image, Modal } from "react-bootstrap";
 import { FaUser, FaEnvelope, FaPhone, FaLock, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaCamera, FaVideo, FaCheckCircle } from "react-icons/fa";
 import toast, { Toaster } from 'react-hot-toast';
-import NavbarCustom from '../components/Navbar';
-import QRScanner from '../components/QRScanner';
+import NavbarCustom from '../components/Navbar'
 import { API_URL } from '../config';
 import LogoMoviflex from './Imagenes/BANNER COMPLETO CON TRANSPARENCIA.png';
 import EscenaHomeBase from './Imagenes/HomeBaseImage.png';

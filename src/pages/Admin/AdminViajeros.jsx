@@ -373,7 +373,7 @@ function AdminViajeros() {
     const cambiarEstadoViajero = async (id, estadoActual) => {
         try {
             const nuevoEstado = estadoActual === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
-            const response = await fetch(`${API_URL}/auth/usuario/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -391,7 +391,7 @@ function AdminViajeros() {
 
     const suspenderViajero = async (id) => {
         try {
-            const response = await fetch(`${API_URL}/auth/usuario/${id}/estado`, {
+            const response = await fetch(`${API_URL}/auth/${id}/estado`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

@@ -662,14 +662,19 @@ function AdminDocumentos() {
                                                         <tr key={documento.idDocumentacion} style={{
                                                             backgroundColor: index % 2 === 0 ? 'rgba(255, 255, 255, 0.9)' : 'rgba(250, 250, 250, 0.9)'
                                                         }}>
-                                                            <td className="fw-semibold px-4" style={{ color: '#113d69' }}>{documento.idDocumentacion}</td>
-                                                            <td>
-                                                                <div className="fw-medium" style={{ color: '#113d69' }}>
-                                                                    {obtenerNombreUsuario(documento.idUsuario)}
-                                                                </div>
-                                                                <small className="text-muted">
-                                                                    ID: {documento.idUsuario}
-                                                                </small>
+                                                            <td className="fw-semibold px-4" style={{ color: '#113d69' }}>
+                                                                <span style={{
+                                                                    backgroundColor: '#62d8d9',
+                                                                    color: '#ffffff',
+                                                                    padding: '0.4rem 0.8rem',
+                                                                    borderRadius: '8px',
+                                                                    display: 'inline-block',
+                                                                    fontWeight: '600',
+                                                                    minWidth: '50px',
+                                                                    textAlign: 'center'
+                                                                }}>
+                                                                    {documento.idDocumentacion}
+                                                                </span>
                                                             </td>
                                                             <td>
                                                                 <div className="fw-medium mb-1" style={{ color: '#113d69' }}>
