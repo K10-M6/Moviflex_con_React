@@ -190,7 +190,7 @@ function Home() {
             setErroresPorSeccion(prev => ({ ...prev, finanzas: false }));
             const headers = { "Authorization": "Bearer " + token };
 
-            const resIngresos = await fetch(`${API_URL}/estadisticas/ingresos-plataforma?periodo=${periodoAdmin}`, { headers });
+            const resIngresos = await fetch(`${API_URL}/estadisticas/ingresos?periodo=${periodoAdmin}`, { headers });
 
             const dataFin = {
                 ingresosPlataforma: { total: 0, historial: [] }

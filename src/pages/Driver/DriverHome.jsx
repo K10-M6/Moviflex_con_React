@@ -637,6 +637,16 @@ const DriverHome = () => {
 
     const viajesFiltrados = filtrarViajes(todosLosViajes);
 
+    // --- COMISIÓN BASADA RECTAMENTE EN GANANCIAS ---
+    const totalGananciasBackend = Number(statsAvanzadas.ganancias.total || 0);
+
+    const displayComisionEnBaseABackend = comisionInfo ? {
+        ...comisionInfo,
+        totalIngresos: totalGananciasBackend,
+        totalComision: totalGananciasBackend * 0.10
+    } : null;
+    // -----------------------------------------------------------
+
     const traerEstadisticasAvanzadas = async () => {
         if (!token) return;
         try {
@@ -947,7 +957,7 @@ const DriverHome = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div style={{ textAlign: 'right', marginRight: '1rem', display: 'none', '@media (minWidth: 768px)': { display: 'block' } }}>
                                 <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', fontWeight: 'bold', color: '#6c757d', display: 'block' }}>Ganancias {periodo}</span>
-                                <h3 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>${Number(statsAvanzadas.ganancias.total).toLocaleString()}</h3>
+                                <h3 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>${totalGananciasBackend.toLocaleString()}</h3>
                             </div>
                             <div style={{ backgroundColor: '#f8f9fa', padding: '0.25rem', borderRadius: '0.375rem', display: 'flex', gap: '0.25rem', border: '1px solid #dee2e6' }}>
                                 <PeriodoBadge periodo="diario" actual={periodo} onClick={() => setPeriodo('diario')}>Día</PeriodoBadge>
@@ -963,7 +973,7 @@ const DriverHome = () => {
                     <StatsCard
                         icon={<FaWallet size={20} />}
                         title="Ganancias"
-                        value={`$${Number(statsAvanzadas.ganancias.total).toLocaleString()}`}
+                        value={`$${totalGananciasBackend.toLocaleString()}`}
                         color="#62d8d9"
                         bgColor="#62d8d915"
                     />
@@ -1074,23 +1084,23 @@ const DriverHome = () => {
 
                             {cargandoComision ? (
                                 <div style={{ textAlign: 'center', padding: '1rem' }}><Spinner size="sm" style={{ color: '#62d8d9' }} /></div>
-                            ) : comisionInfo ? (
+                            ) : displayComisionEnBaseABackend ? (
                                 <>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
                                         <span style={{ color: '#6c757d' }}>Ingresos del mes</span>
-                                        <span style={{ fontWeight: 'bold', color: '#113d69' }}>${comisionInfo.totalIngresos?.toLocaleString()} COP</span>
+                                        <span style={{ fontWeight: 'bold', color: '#113d69' }}>${displayComisionEnBaseABackend.totalIngresos?.toLocaleString()} COP</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#62d8d915', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
                                         <span style={{ fontWeight: '600' }}>Comisión a pagar (10%)</span>
-                                        <span style={{ fontWeight: 'bold', color: '#62d8d9' }}>${comisionInfo.totalComision?.toLocaleString()} COP</span>
+                                        <span style={{ fontWeight: 'bold', color: '#62d8d9' }}>${displayComisionEnBaseABackend.totalComision?.toLocaleString()} COP</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
                                         <span style={{ color: '#6c757d' }}>Viajes completados</span>
-                                        <span style={{ fontWeight: 'bold', color: '#113d69' }}>{comisionInfo.viajesCompletados}</span>
+                                        <span style={{ fontWeight: 'bold', color: '#113d69' }}>{displayComisionEnBaseABackend.viajesCompletados}</span>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: comisionInfo.reporteEnviado ? '#62d8d915' : '#cccbd2af', borderRadius: '0.375rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: displayComisionEnBaseABackend.reporteEnviado ? '#62d8d915' : '#cccbd2af', borderRadius: '0.375rem' }}>
                                         <span>Estado del reporte</span>
-                                        <DocumentoBadge estado={comisionInfo.estadoReporte || 'Sin enviar'} />
+                                        <DocumentoBadge estado={displayComisionEnBaseABackend.estadoReporte || 'Sin enviar'} />
                                     </div>
                                 </>
                             ) : (
@@ -1112,14 +1122,14 @@ const DriverHome = () => {
                                 <h5 style={{ margin: 0, fontWeight: 'bold', color: '#62d8d9' }}>Enviar Comprobante de Pago</h5>
                             </div>
 
-                            {comisionInfo?.reporteEnviado && comisionInfo?.estadoReporte !== 'RECHAZADO' ? (
+                            {displayComisionEnBaseABackend?.reporteEnviado && displayComisionEnBaseABackend?.estadoReporte !== 'RECHAZADO' ? (
                                 <div style={{
                                     padding: '1rem',
-                                    backgroundColor: comisionInfo.estadoReporte === 'APROBADO' ? '#d4edda' : '#cce5ff',
+                                    backgroundColor: displayComisionEnBaseABackend.estadoReporte === 'APROBADO' ? '#d4edda' : '#cce5ff',
                                     borderRadius: '0.375rem',
-                                    color: comisionInfo.estadoReporte === 'APROBADO' ? '#155724' : '#004085'
+                                    color: displayComisionEnBaseABackend.estadoReporte === 'APROBADO' ? '#155724' : '#004085'
                                 }}>
-                                    {comisionInfo.estadoReporte === 'APROBADO'
+                                    {displayComisionEnBaseABackend.estadoReporte === 'APROBADO'
                                         ? '✅ Tu comprobante ha sido aprobado. ¡Gracias!'
                                         : '⏳ Tu comprobante está pendiente de revisión por el administrador.'}
                                 </div>
