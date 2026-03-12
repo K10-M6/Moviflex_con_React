@@ -215,7 +215,11 @@ function Login() {
 
                                     <div className="d-flex justify-content-between mb-4 small">
                                         <Form.Check type="checkbox" label="Recordarme" className="text-muted" />
+                                        <Link to="/forgot-password" title="Recuperar contraseña" style={{ color: '#62d8d9', textDecoration: 'none', fontWeight: '500' }}>
+                                            ¿Olvidaste tu contraseña?
+                                        </Link>
                                     </div>
+
 
                                     <Button 
                                         type="submit" 

@@ -25,6 +25,8 @@ import AdminDocumentos from "./pages/Admin/AdminDocuments";
 import VehicleRegistration from "./pages/Driver/VehicleRegistration";
 import AdminVehicleRequests from "./pages/Admin/AdminVehicleRequests";
 import AdminReportesPago from "./pages/Admin/AdminReportesPago";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
@@ -50,6 +52,8 @@ function App() {
             <Route path="/" element={<HomeBase />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
 
             <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
 
