@@ -256,8 +256,12 @@ const UserHome = () => {
 
                     const completados = viajesData.filter(v => v.estado === 'COMPLETADO' || v.estado === 'FINALIZADO').length;
                     const cancelados = viajesData.filter(v => v.estado === 'CANCELADO').length;
-                    const totalGastado = viajesData.reduce((sum, v) => sum + (v.precioFinal || 0), 0);
+                    const totalGastado = viajesData
+                        .filter(v => v.estado === 'COMPLETADO' || v.estado === 'FINALIZADO')
+                        .reduce((sum, v) => sum + Number(v.precioFinal || 0), 0);
 
+                    // Las estadísticas estáticas ya no son necesarias si todo es dinámico,
+                    // pero las mantenemos por si se usan en otro lado sin filtro temporal.
                     setEstadisticas({
                         totalViajes: viajesData.length,
                         viajesCompletados: completados,
@@ -341,6 +345,97 @@ const UserHome = () => {
 
     const viajesFiltrados = filtrarViajes(todosLosViajes);
 
+    // --- CÁLCULO DE FRECUENCIA EN EL FRONTEND ---
+    const agruparFrecuencia = (viajesLista, periodoActual) => {
+        const gruposF = {};
+
+        viajesLista.forEach(v => {
+            const fecha = new Date(v.fechaHoraSalida || v.creadoEn || new Date());
+            let key;
+            if (periodoActual === 'diario') {
+                key = `${fecha.getHours()}:00`;
+            } else if (periodoActual === 'mensual') {
+                key = `Día ${fecha.getDate()}`;
+            } else if (periodoActual === 'anual') {
+                const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                key = meses[fecha.getMonth()];
+            }
+            gruposF[key] = (gruposF[key] || 0) + 1;
+        });
+
+        return {
+            frecuencia: Object.entries(gruposF).map(([name, value]) => ({ name, value }))
+        };
+    };
+
+    const ahora = new Date();
+    let fechaInicioFiltro;
+    if (periodo === 'diario') {
+        fechaInicioFiltro = new Date(ahora.setHours(0, 0, 0, 0));
+    } else if (periodo === 'mensual') {
+        fechaInicioFiltro = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    } else if (periodo === 'anual') {
+        fechaInicioFiltro = new Date(ahora.getFullYear(), 0, 1);
+    }
+
+    const viajesCompletadosPorPeriodo = todosLosViajes.filter(v => 
+        (v.estado === 'FINALIZADO' || v.estado === 'COMPLETADO' || v.estado === 'CONFIRMADO') && 
+        new Date(v.fechaHoraSalida || v.creadoEn) >= fechaInicioFiltro
+    );
+
+    const agrupadosFrecuencia = agruparFrecuencia(viajesCompletadosPorPeriodo, periodo);
+    
+    // --- ESTADÍSTICAS DEL RESUMEN POR PERIODO ---
+    const viajesTotalesPorPeriodo = todosLosViajes.filter(v => 
+        new Date(v.fechaHoraSalida || v.creadoEn) >= fechaInicioFiltro
+    );
+    const completadosPeriodo = viajesTotalesPorPeriodo.filter(v => v.estado === 'COMPLETADO' || v.estado === 'FINALIZADO' || v.estado === 'CONFIRMADO').length;
+    const canceladosPeriodo = viajesTotalesPorPeriodo.filter(v => v.estado === 'CANCELADO').length;
+    // --------------------------------------------
+
+    // --- CÁLCULO DE GASTOS CONFIRMADOS EN EL FRONTEND ---
+    let gastoTotalCalculado = 0;
+    const gruposG = {};
+
+    // Asumimos que un viaje COMPLETADO o FINALIZADO o CONFIRMADO representa un gasto real
+    viajesCompletadosPorPeriodo.forEach(v => {
+        gastoTotalCalculado += Number(v.precioFinal || 0);
+
+        const fecha = new Date(v.fechaHoraSalida || v.creadoEn || new Date());
+        let key;
+        if (periodo === 'diario') {
+            key = `${fecha.getHours()}:00`;
+        } else if (periodo === 'mensual') {
+            key = `Día ${fecha.getDate()}`;
+        } else if (periodo === 'anual') {
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            key = meses[fecha.getMonth()];
+        }
+        gruposG[key] = (gruposG[key] || 0) + Number(v.precioFinal || 0);
+    });
+
+    const displayGastos = {
+        total: gastoTotalCalculado,
+        historial: Object.entries(gruposG).map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }))
+    };
+
+    const displayFrecuencia = {
+        historial: agrupadosFrecuencia.frecuencia
+    };
+
+    const displayPagosRecientes = pagosRecientes && pagosRecientes.length > 0 
+        ? pagosRecientes 
+        : todosLosViajes
+            .filter(v => v.estado === 'FINALIZADO' || v.estado === 'COMPLETADO')
+            .map(v => ({
+                idPago: `viaje-${v.idViajes}`,
+                tipoPago: 'Pago de Viaje',
+                fechaPago: v.fechaHoraSalida || v.creadoEn,
+                monto: v.precioFinal || 0,
+                estado: 'PAGADO'
+            })).slice(0, 3);
+    // -----------------------------------------------------------
+
     const getEstadoColor = (estado) => {
         switch (estado) {
             case 'COMPLETADO':
@@ -422,7 +517,7 @@ const UserHome = () => {
                                 <div style={{ textAlign: 'right', marginRight: '1rem', display: 'none', '@media (minWidth: 768px)': { display: 'block' } }}>
                                     <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', fontWeight: 'bold', color: '#6c757d', display: 'block' }}>Gastado {periodo}</span>
                                     <h3 style={{ fontWeight: 'bold', margin: 0, color: accentColor }}>
-                                        {formatearMoneda(statsAvanzadas.gastos.total)}
+                                        {formatearMoneda(displayGastos.total)}
                                     </h3>
                                 </div>
                                 <div style={{ backgroundColor: '#f8f9fa', padding: '0.25rem', borderRadius: '0.375rem', display: 'flex', gap: '0.25rem', border: '1px solid #dee2e6' }}>
@@ -448,7 +543,7 @@ const UserHome = () => {
                                 </div>
                                 <div style={{ height: '250px' }}>
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <AreaChart data={statsAvanzadas.gastos.historial}>
+                                        <AreaChart data={displayGastos.historial}>
                                             <defs>
                                                 <linearGradient id="colorGastos" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor={accentColor} stopOpacity={0.8} />
@@ -478,7 +573,7 @@ const UserHome = () => {
                                 </div>
                                 <div style={{ height: '250px' }}>
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={statsAvanzadas.frecuencia.historial}>
+                                        <BarChart data={displayFrecuencia.historial}>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
                                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
                                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 11 }} />
@@ -500,20 +595,24 @@ const UserHome = () => {
                                     <FaUser size={22} style={{ color: accentColor, marginRight: '0.5rem' }} />
                                     <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Resumen de Actividad</h5>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
                                     <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center' }}>
-                                        <h3 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor }}>{estadisticas.totalViajes}</h3>
-                                        <small style={{ color: '#6c757d' }}>Totales</small>
+                                        <h4 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor }}>{formatearMoneda(gastoTotalCalculado)}</h4>
+                                        <small style={{ color: '#6c757d', fontWeight: 'bold' }}>Total Gastado</small>
+                                    </div>
+                                    <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center' }}>
+                                        <h4 style={{ fontWeight: 'bold', marginBottom: 0, color: brandColor }}>{viajesTotalesPorPeriodo.length}</h4>
+                                        <small style={{ color: '#6c757d' }}>Viajes Totales</small>
                                     </div>
                                     <div 
                                         style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center', cursor: 'pointer' }}
                                         onClick={() => setShowViajesModal(true)}
                                     >
-                                        <h3 style={{ fontWeight: 'bold', marginBottom: 0, color: brandColor }}>{estadisticas.viajesCompletados}</h3>
+                                        <h4 style={{ fontWeight: 'bold', marginBottom: 0, color: brandColor }}>{completadosPeriodo}</h4>
                                         <small style={{ color: '#6c757d', fontWeight: 'bold' }}>Completados</small>
                                     </div>
                                     <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center' }}>
-                                        <h3 style={{ fontWeight: 'bold', marginBottom: 0, color: '#6c757d' }}>{estadisticas.viajesCancelados}</h3>
+                                        <h4 style={{ fontWeight: 'bold', marginBottom: 0, color: '#6c757d' }}>{canceladosPeriodo}</h4>
                                         <small style={{ color: '#6c757d' }}>Cancelados</small>
                                     </div>
                                 </div>
@@ -532,13 +631,13 @@ const UserHome = () => {
                                     <div style={{ textAlign: 'center', padding: '2rem' }}>
                                         <Spinner size="sm" style={{ color: accentColor }} />
                                     </div>
-                                ) : pagosRecientes.length === 0 ? (
+                                ) : displayPagosRecientes.length === 0 ? (
                                     <div style={{ textAlign: 'center', padding: '2rem' }}>
                                         <p style={{ color: '#6c757d' }}>No hay pagos recientes</p>
                                     </div>
                                 ) : (
                                     <div style={{ listStyle: 'none', padding: 0, margin: 0, flex: 1 }}>
-                                        {pagosRecientes.slice(0, 3).map((pago) => (
+                                        {displayPagosRecientes.slice(0, 3).map((pago) => (
                                             <div key={pago.idPago} style={{
                                                 display: 'flex',
                                                 justifyContent: 'space-between',

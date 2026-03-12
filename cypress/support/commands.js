@@ -10,16 +10,13 @@
 //
 //
 // -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+Cypress.Commands.add('login', (email, password) => {
+    cy.visit('/login');
+    cy.get('input[placeholder="Correo electrónico"]').type(email);
+    cy.get('input[placeholder="Contraseña"]').type(password);
+    
+    cy.intercept('POST', '**/api/auth/login').as('loginReq');
+    cy.get('button').contains('Iniciar Sesión').click();
+    cy.wait('@loginReq');
+    cy.url().should('include', '/dashboard/home');
+});
