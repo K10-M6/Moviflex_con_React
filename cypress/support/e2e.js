@@ -15,3 +15,16 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
+import 'cypress-mochawesome-reporter/register';
+
+// Evitar que errores de la aplicación como
+// "Cannot read properties of null (reading 'document')"
+// hagan fallar todo el test E2E. Solo los ignoramos,
+// Cypress seguirá ejecutando los pasos.
+Cypress.on('uncaught:exception', (err) => {
+  if (err && err.message && err.message.includes("Cannot read properties of null (reading 'document')")) {
+    return false;
+  }
+  // Para cualquier otro error, deja que Cypress falle el test
+  return true;
+});

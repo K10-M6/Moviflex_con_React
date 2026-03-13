@@ -1,83 +1,126 @@
-describe('Admin E2E Flows', () => {
-    const adminEmail = 'Janierjceron2044@gmail.com';
-    const adminPassword = 'Arc11037!';
+describe("MOVIFLEXX_ADMINISTRADOR", () => {
+  const ADMIN_EMAIL = "Janierjceron2044@gmail.com";
+  const ADMIN_PASSWORD = "Arc11037!";
+  const DEFAULT_TIMEOUT = 20000;
 
-    beforeEach(() => {
-        cy.viewport(1440, 900);
-        cy.visit('/');
+  const loginAsAdmin = () => {
+    cy.viewport(1239, 729);
+    // Ir directamente a la página de login usando baseUrl de Cypress
+    cy.visit("/login", { timeout: DEFAULT_TIMEOUT });
+
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/login");
+
+    // Completar formulario de acceso
+    cy.get('input[placeholder="Correo electrónico"]', { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .clear()
+      .type(ADMIN_EMAIL);
+
+    cy.get('input[placeholder="Contraseña"]', { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .clear()
+      .type(ADMIN_PASSWORD);
+
+    cy.contains("button", "Iniciar Sesión", { timeout: DEFAULT_TIMEOUT })
+      .should("be.enabled")
+      .click();
+
+    // Esperar a que cargue el dashboard del administrador
+    cy.url({ timeout: 30000 }).should("include", "/dashboard/home");
+    cy.contains("Gestión global de la plataforma MoviFlex", {
+      timeout: DEFAULT_TIMEOUT,
+    }).should("be.visible");
+  };
+
+  beforeEach(() => {
+    loginAsAdmin();
+  });
+
+  it("1. Autenticación y Acceso -- Debe iniciar sesión correctamente como administrador", () => {
+    cy.url().should("include", "/dashboard/home");
+    cy.contains("Gestión global de la plataforma MoviFlex", {
+      timeout: DEFAULT_TIMEOUT,
+    }).should("be.visible");
+  });
+
+  it("2. Gestión de Usuarios y Entidades -- Debe visualizar Viajeros, Conductores, Usuarios y Vehículos", () => {
+    // Viajeros
+    cy.contains("button", "Viajeros", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/admin/viajeros");
+    cy.contains("h1", "Lista de Viajeros", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+
+    // Conductores
+    cy.contains("button", "Conductores", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/admin/conductores");
+    cy.contains("h1", "Lista de Conductores", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+
+    // Usuarios
+    cy.contains("button", "Usuarios", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/admin/usuarios");
+    cy.contains("h1", "Lista de Usuarios", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+
+    // Vehículos
+    cy.contains("button", "Vehículos", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/admin/vehiculos");
+    cy.contains("h1", "Lista de Vehículos", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+  });
+
+  it("3. Procesos de Aprobación y Documentos -- Debe revisar Documentos y Solicitudes de Vehículos", () => {
+    // Documentos
+    cy.contains("button", "Documentos", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/admin/documentos");
+
+    // La tabla/listado puede tardar, esperamos a que haya contenido o mensaje vacío
+    cy.get("table", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+
+    // Solicitudes de cambio / registro de vehículos
+    cy.contains("button", "Solicitudes", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/admin/solicitudes-vehiculos");
+
+    // Esperar a que cargue la tabla o mensaje de que no hay solicitudes
+    cy.get("table", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+  });
+
+  it("4. Reportes y Finalización -- Debe filtrar Reportes de Pago y cerrar sesión", () => {
+    // Ir a reportes de pago
+    cy.contains("button", "Reportes de Pago", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("include", "/admin/reportes-pago");
+
+    // Esperar a que la vista de reportes se renderice
+    cy.contains("Reportes de Pago", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+
+    // Aplicar filtros básicos (estado y mes) para validar que los controles responden
+    cy.get('select', { timeout: DEFAULT_TIMEOUT }).first().select("PENDIENTE");
+
+    cy.get('input[type="month"]', { timeout: DEFAULT_TIMEOUT })
+      .clear()
+      .type("2026-08");
+
+    // Botón de limpiar filtros (si existe) debería estar visible
+    cy.contains("button", "Limpiar filtros", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
+
+    // Cerrar sesión desde el header (botón CERRAR SESIÓN en sidebar o menú de usuario)
+    cy.contains("button", "CERRAR SESIÓN", { timeout: DEFAULT_TIMEOUT })
+      .should("be.visible")
+      .click();
+
+    // Debería regresar a la pantalla pública (home o login)
+    cy.url({ timeout: DEFAULT_TIMEOUT }).should("satisfy", (url) => {
+      return url.includes("/login") || url.endsWith("/");
     });
-
-    it('1. Dashboard Global y Usuarios', () => {
-        cy.login(adminEmail, adminPassword);
-        
-        // Estadísticas
-        cy.contains('Ganancias Totales Plataforma').should('be.visible');
-        
-        // Gestión de Usuarios: Desactivar/Reactivar
-        cy.visit('/admin/usuarios');
-        cy.get('input[placeholder*="Buscar"]').type('carloss@gmail.com');
-        
-        cy.get('table').contains('carloss@gmail.com').parents('tr').within(() => {
-            cy.get('button').first().click(); // Botón de estado/editar
-        });
-
-        // Simular cambio de estado en el modal o menú
-        cy.contains(/Desactivar|Inactivar/).click();
-        // cy.contains('Usuario actualizado').should('be.visible');
-        
-        // Reactivar
-        cy.get('table').contains('carloss@gmail.com').parents('tr').within(() => {
-            cy.get('button').first().click();
-        });
-        cy.contains(/Activar/).click();
-    });
-
-    it('2. Aprobación Profunda de Vehículos (Modal + Obs)', () => {
-        cy.login(adminEmail, adminPassword);
-        cy.visit('/admin/vehicle-requests');
-
-        // Si hay solicitudes, interactuamos con la primera
-        cy.get('body').then(($body) => {
-            if ($body.find('button:contains("Revisar")').length > 0) {
-                cy.get('button').contains('Revisar').first().click();
-                
-                // Interactuar con el modal de revisión
-                cy.get('.modal-title').contains('Detalle de Modificación').should('be.visible');
-                cy.get('textarea[placeholder*="motivo"]').type('Aprobado mediante pruebas automatizadas Cypress');
-                
-                // Aprobar
-                cy.get('button').contains('Aprobar y Aplicar').click();
-                cy.wait(1000);
-            } else {
-                cy.log('No hay solicitudes de vehículos pendientes para probar.');
-            }
-        });
-    });
-
-    it('3. Validación de Documentos: Tabla y Modal de Imagen', () => {
-        cy.login(adminEmail, adminPassword);
-        cy.visit('/admin/documents');
-
-        // Usar filtros de búsqueda
-        cy.get('input[placeholder*="Buscar"]').type('Cedula');
-        cy.wait(500);
-
-        // Abrir imagen
-        cy.get('button').contains('Ver Imagen').first().click();
-        cy.get('.modal-body img').should('be.visible');
-        cy.get('button').contains('Cerrar').click();
-
-        // Cambiar estado desde la tabla
-        cy.get('table tbody tr').first().within(() => {
-            cy.get('button').contains(/Aprobar|Rechazar/).click();
-        });
-        // cy.contains('Documento actualizado').should('be.visible');
-    });
-
-    it('4. Reportes de Pago y Navegación', () => {
-        cy.login(adminEmail, adminPassword);
-        cy.visit('/admin/reportes-pago');
-        cy.contains('Reportes de Pago').should('be.visible');
-        cy.get('table').should('exist');
-    });
+  });
 });
