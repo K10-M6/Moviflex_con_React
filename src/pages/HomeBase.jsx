@@ -79,7 +79,7 @@ function HomeBase() {
     { id: 3, nombre: "Janier", rol: "Frontend", img: Janier },
     { id: 4, nombre: "Juan Cerón", rol: "Frontend Diseño", img: JuanCeron },
     { id: 5, nombre: "Juan Ocampo", rol: "Tester", img: JuanOcampo },
-    { id: 6, nombre: "Kevin", rol: "Documentación", img: Kevin },
+    { id: 6, nombre: "Kevin", rol: "Product Owner", img: Kevin },
   ];
 
   const verdeMenta = '#56bca7';

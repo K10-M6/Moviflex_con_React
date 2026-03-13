@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Modal, Form, Card, Row, Col, Spinner } from 'react-bootstrap';
-import { BsCheckCircleFill, BsXCircleFill, BsEyeFill, BsCalendar3, BsFunnelFill, BsExclamationTriangleFill } from 'react-icons/bs';
+import { 
+  BsCheckCircleFill, 
+  BsXCircleFill, 
+  BsEyeFill, 
+  BsCalendar3, 
+  BsFunnelFill, 
+  BsExclamationTriangleFill,
+  BsEnvelopeFill,
+  BsCashStack
+} from 'react-icons/bs';
 import { useAuth } from '../../pages/context/AuthContext';
 import { API_URL } from '../../config';
 import toast from 'react-hot-toast';
@@ -141,7 +150,7 @@ function AdminReportesPago() {
     const [showModal, setShowModal] = useState(false);
     const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
     const [showRechazarModal, setShowRechazarModal] = useState(false);
-    const [showVerificarModal, setShowVerificarModal] = useState(false); // Nuevo modal para verificar
+    const [showVerificarModal, setShowVerificarModal] = useState(false);
     const [observaciones, setObservaciones] = useState('');
     const [procesando, setProcesando] = useState(false);
 
@@ -300,7 +309,8 @@ function AdminReportesPago() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <div>
                     <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: '#113d69' }}>
-                        💰 Reportes de Pago
+                        <BsCashStack style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                        Reportes de Pago
                     </h3>
                     <p style={{ color: '#6c757d', margin: 0 }}>Gestión de comprobantes de pago de conductores</p>
                 </div>
@@ -310,8 +320,9 @@ function AdminReportesPago() {
                         onClick={enviarRecordatorios}
                         disabled={procesando}
                     >
-                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
-                        ⚠️ Enviar Recordatorios
+                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : 
+                         <BsEnvelopeFill style={{ marginRight: '0.5rem' }} />}
+                        Enviar Recordatorios
                     </CustomButton>
                     <CustomButton
                         variant="outline-danger"
