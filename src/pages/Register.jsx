@@ -31,6 +31,14 @@ const customStyles = `
     opacity: 0.6 !important;
     cursor: not-allowed !important;
   }
+
+  .password-valid {
+    color: #28a745 !important;
+  }
+  
+  .password-invalid {
+    color: #dc3545 !important;
+  }
 `;
 
 const termsText = `CONTRATO MARCO DE LICENCIA DE USO DE SOFTWARE, INTERMEDIACIÓN
@@ -199,7 +207,13 @@ function Register() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [passwordError, setPasswordError] = useState("");
+    const [passwordErrors, setPasswordErrors] = useState({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false
+    });
     const [showCamera, setShowCamera] = useState(false);
     const [cameraActive, setCameraActive] = useState(false);
     const [stream, setStream] = useState(null);
@@ -295,6 +309,8 @@ function Register() {
     async function guardar(e) {
         if (e) e.preventDefault();
         if (!terminosAceptados) return toast.error("Acepta los términos");
+        if (!isPasswordValid()) return toast.error("La contraseña no cumple con los requisitos de seguridad");
+        
         setLoading(true);
         try {
             const datosEnviar = { nombre, email, telefono, password, rol, image: fotoBase64 };
@@ -316,22 +332,34 @@ function Register() {
         }
     }
 
+    const validatePassword = (pwd) => {
+        setPasswordErrors({
+            length: pwd.length >= 8,
+            uppercase: /[A-Z]/.test(pwd),
+            lowercase: /[a-z]/.test(pwd),
+            number: /[0-9]/.test(pwd),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(pwd)
+        });
+    };
+
+    const isPasswordValid = () => {
+        return passwordErrors.length && 
+               passwordErrors.uppercase && 
+               passwordErrors.lowercase && 
+               passwordErrors.number && 
+               passwordErrors.special;
+    };
+
     const handleNextStep = () => {
         if (step === 1) return handleRequestOtp();
         if (step === 2) return handleVerifyOtp();
         if (step === 3 && (!nombre || !telefono)) return toast.error("Completa los campos");
         if (step === 4 && !fotoBase64) return toast.error("Toma una foto");
-        if (step === 5 && (passwordError || !password)) return toast.error("Revisa la contraseña");
+        if (step === 5 && (!isPasswordValid() || !password)) return toast.error("La contraseña debe cumplir todos los requisitos");
         setStep(step + 1);
     };
 
     const handlePrevStep = () => setStep(step - 1);
-
-    const validarPassword = (pwd) => {
-        if (pwd.length < 8) return "Mínimo 8 caracteres.";
-        if (!/[A-Z]/.test(pwd)) return "Debe incluir una mayúscula.";
-        return "";
-    };
 
     const inputStyle = {
         borderRadius: '12px',
@@ -443,20 +471,57 @@ function Register() {
 
                                         {step === 5 && (
                                             <div className="animate__animated animate__fadeIn">
-                                                <Form.Group className="mb-4">
+                                                <Form.Group className="mb-3">
                                                     <div className="position-relative">
-                                                        <Form.Control type={showPassword ? "text" : "password"} value={password}
-                                                            onChange={(e) => { setPassword(e.target.value); setPasswordError(validarPassword(e.target.value)); }}
-                                                            placeholder="Contraseña" required style={inputStyle} />
+                                                        <Form.Control 
+                                                            type={showPassword ? "text" : "password"} 
+                                                            value={password}
+                                                            onChange={(e) => { 
+                                                                setPassword(e.target.value); 
+                                                                validatePassword(e.target.value);
+                                                            }}
+                                                            placeholder="Contraseña" 
+                                                            required 
+                                                            style={inputStyle} 
+                                                        />
                                                         <span className="position-absolute end-0 top-50 translate-middle-y me-3" style={{ cursor: 'pointer' }} onClick={() => setShowPassword(!showPassword)}>
                                                             {showPassword ? <FaEyeSlash color="#8899a6" /> : <FaEye color="#8899a6" />}
                                                         </span>
                                                     </div>
-                                                    {passwordError && <small className="text-danger mt-1 d-block" style={{ fontSize: '0.8rem' }}>{passwordError}</small>}
                                                 </Form.Group>
+                                                
+                                                <div className="mb-4 p-3 bg-light rounded-3" style={{ fontSize: '0.85rem' }}>
+                                                    <p className="mb-2 fw-bold">La contraseña debe contener:</p>
+                                                    <ul className="list-unstyled mb-0">
+                                                        <li className={passwordErrors.length ? "password-valid" : "password-invalid"}>
+                                                            {passwordErrors.length ? "✓" : "✗"} Mínimo 8 caracteres
+                                                        </li>
+                                                        <li className={passwordErrors.uppercase ? "password-valid" : "password-invalid"}>
+                                                            {passwordErrors.uppercase ? "✓" : "✗"} Al menos una letra mayúscula
+                                                        </li>
+                                                        <li className={passwordErrors.lowercase ? "password-valid" : "password-invalid"}>
+                                                            {passwordErrors.lowercase ? "✓" : "✗"} Al menos una letra minúscula
+                                                        </li>
+                                                        <li className={passwordErrors.number ? "password-valid" : "password-invalid"}>
+                                                            {passwordErrors.number ? "✓" : "✗"} Al menos un número
+                                                        </li>
+                                                        <li className={passwordErrors.special ? "password-valid" : "password-invalid"}>
+                                                            {passwordErrors.special ? "✓" : "✗"} Al menos un carácter especial (!@#$%^&*(),.?":{}|&lt;&gt;)
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
                                                 <div className="d-flex gap-2">
                                                     <Button type="button" variant="light" onClick={handlePrevStep} className="w-50 py-2" style={{ borderRadius: '12px' }}>Atrás</Button>
-                                                    <Button type="button" onClick={handleNextStep} disabled={!!passwordError || !password} className="w-50 py-2 border-0" style={{ background: '#62d8d9', borderRadius: '12px', fontWeight: 'bold', color: 'white' }}>Siguiente</Button>
+                                                    <Button 
+                                                        type="button" 
+                                                        onClick={handleNextStep} 
+                                                        disabled={!isPasswordValid() || !password} 
+                                                        className="w-50 py-2 border-0" 
+                                                        style={{ background: '#62d8d9', borderRadius: '12px', fontWeight: 'bold', color: 'white' }}
+                                                    >
+                                                        Siguiente
+                                                    </Button>
                                                 </div>
                                             </div>
                                         )}
