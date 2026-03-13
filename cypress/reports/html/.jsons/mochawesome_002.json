@@ -1,0 +1,247 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 7,
+    "passes": 0,
+    "pending": 0,
+    "failures": 7,
+    "start": "2026-03-13T00:05:18.465Z",
+    "end": "2026-03-13T00:08:00.610Z",
+    "duration": 162145,
+    "testsRegistered": 7,
+    "passPercent": 0,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "0953a736-e30b-487b-b4cf-2ed17ea79c0a",
+      "title": "",
+      "fullFile": "cypress\\e2e\\casocontrario-conductor.cy.js",
+      "file": "cypress\\e2e\\casocontrario-conductor.cy.js",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+          "title": "Casos Contrarios — Conductor",
+          "fullFile": "",
+          "file": "",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "1. Login con contraseña incorrecta",
+              "fullTitle": "Casos Contrarios — Conductor 1. Login con contraseña incorrecta",
+              "timedOut": null,
+              "duration": 20301,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\casocontrario-conductor.cy.js\\\\Casos Contrarios — Conductor -- 1. Login con contraseña incorrecta (failed).png\"\n    ]\n  ]\n}",
+              "code": "cy.viewport(1280, 720);\ncy.visit(\"/login\", {\n  timeout: DEFAULT_TIMEOUT\n});\ncy.get('input[placeholder=\"Correo electrónico\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").clear().type(\"yo@gmail.com\");\ncy.get('input[placeholder=\"Contraseña\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").clear().type(\"ContraseñaMala999#\");\ncy.contains(\"button\", \"Iniciar Sesión\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.enabled\").click();\n// Debe mostrar alerta de error y quedarse en /login\ncy.get(\".alert-danger\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");\ncy.url().should(\"include\", \"/login\");",
+              "err": {
+                "message": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.",
+                "estack": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.\n    at timedOutWaitingForPageLoad (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:134177:64)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:135173:16)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:4156:41)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1667:18)\n    at _drainQueueStep (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2377:12)\n    at _drainQueue (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2370:9)\n    at Async._drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2386:5)\n    at Async.drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2256:14)\nFrom Your Spec Code:\n    at Context.eval (webpack://moviflex/./cypress/e2e/casocontrario-conductor.cy.js:6:7)",
+                "diff": null
+              },
+              "uuid": "3958c2c6-9cab-4ec7-80b5-28f520b28964",
+              "parentUUID": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "2. Login con email no registrado",
+              "fullTitle": "Casos Contrarios — Conductor 2. Login con email no registrado",
+              "timedOut": null,
+              "duration": 20282,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\casocontrario-conductor.cy.js\\\\Casos Contrarios — Conductor -- 2. Login con email no registrado (failed).png\"\n    ]\n  ]\n}",
+              "code": "cy.viewport(1280, 720);\ncy.visit(\"/login\", {\n  timeout: DEFAULT_TIMEOUT\n});\ncy.get('input[placeholder=\"Correo electrónico\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").clear().type(\"noexiste99999@gmail.com\");\ncy.get('input[placeholder=\"Contraseña\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").clear().type(\"CualquierPass123#\");\ncy.contains(\"button\", \"Iniciar Sesión\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.enabled\").click();\n// Debe mostrar alerta de error y quedarse en /login\ncy.get(\".alert-danger\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");\ncy.url().should(\"include\", \"/login\");",
+              "err": {
+                "message": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.",
+                "estack": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.\n    at timedOutWaitingForPageLoad (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:134177:64)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:135173:16)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:4156:41)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1667:18)\n    at _drainQueueStep (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2377:12)\n    at _drainQueue (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2370:9)\n    at Async._drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2386:5)\n    at Async.drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2256:14)\nFrom Your Spec Code:\n    at Context.eval (webpack://moviflex/./cypress/e2e/casocontrario-conductor.cy.js:29:7)",
+                "diff": null
+              },
+              "uuid": "d9222e06-3bcb-453b-b8ca-8671b7095ca5",
+              "parentUUID": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "3. Login con campos vacíos no permite enviar",
+              "fullTitle": "Casos Contrarios — Conductor 3. Login con campos vacíos no permite enviar",
+              "timedOut": null,
+              "duration": 39734,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\casocontrario-conductor.cy.js\\\\Casos Contrarios — Conductor -- 3. Login con campos vacíos no permite enviar (failed).png\"\n    ]\n  ]\n}",
+              "code": "cy.viewport(1280, 720);\ncy.visit(\"/login\", {\n  timeout: DEFAULT_TIMEOUT\n});\n// Sin llenar nada, el botón existe pero HTML required previene submit\ncy.contains(\"button\", \"Iniciar Sesión\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").click();\n// El formulario no debe enviar; seguimos en /login\ncy.url().should(\"include\", \"/login\");\n// No debe aparecer alerta de error (porque el form nunca se envió)\ncy.get(\".alert-danger\").should(\"not.exist\");",
+              "err": {
+                "message": "AssertionError: Timed out retrying after 20000ms: Expected to find content: 'Iniciar Sesión' within the selector: 'button' but never did.",
+                "estack": "AssertionError: Timed out retrying after 20000ms: Expected to find content: 'Iniciar Sesión' within the selector: 'button' but never did.\n    at Context.eval (webpack://moviflex/./cypress/e2e/casocontrario-conductor.cy.js:56:7)",
+                "diff": null
+              },
+              "uuid": "faf8b060-e205-4580-8365-b1c820005014",
+              "parentUUID": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "4. Registro — correo ya registrado",
+              "fullTitle": "Casos Contrarios — Conductor 4. Registro — correo ya registrado",
+              "timedOut": null,
+              "duration": 20284,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\casocontrario-conductor.cy.js\\\\Casos Contrarios — Conductor -- 4. Registro — correo ya registrado (failed).png\"\n    ]\n  ]\n}",
+              "code": "cy.viewport(1280, 720);\ncy.visit(\"/register\", {\n  timeout: DEFAULT_TIMEOUT\n});\n// Interceptar OTP request para simular que el correo ya existe\ncy.intercept(\"POST\", \"**/api/auth/request-pre-otp\", {\n  statusCode: 400,\n  body: {\n    error: \"El usuario ya existe con ese correo electrónico.\"\n  }\n}).as(\"otpDuplicado\");\ncy.get('input[placeholder=\"Correo Electrónico\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").type(\"yo@gmail.com\");\ncy.contains(\"button\", \"Enviar Código\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\ncy.wait(\"@otpDuplicado\");\n// Debe mostrar toast de error — verificamos que no avance al paso 2\ncy.contains(\"Paso 1 de 6\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");",
+              "err": {
+                "message": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.",
+                "estack": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.\n    at timedOutWaitingForPageLoad (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:134177:64)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:135173:16)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:4156:41)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1667:18)\n    at _drainQueueStep (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2377:12)\n    at _drainQueue (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2370:9)\n    at Async._drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2386:5)\n    at Async.drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2256:14)\nFrom Your Spec Code:\n    at Context.eval (webpack://moviflex/./cypress/e2e/casocontrario-conductor.cy.js:68:7)",
+                "diff": null
+              },
+              "uuid": "76bbc6f1-98f2-4b7a-b0d5-c7c0686e67f2",
+              "parentUUID": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "5. Registro — OTP incorrecto",
+              "fullTitle": "Casos Contrarios — Conductor 5. Registro — OTP incorrecto",
+              "timedOut": null,
+              "duration": 20243,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\casocontrario-conductor.cy.js\\\\Casos Contrarios — Conductor -- 5. Registro — OTP incorrecto (failed).png\"\n    ]\n  ]\n}",
+              "code": "cy.viewport(1280, 720);\ncy.visit(\"/register\", {\n  timeout: DEFAULT_TIMEOUT\n});\n// Mock: OTP request exitoso\ncy.intercept(\"POST\", \"**/api/auth/request-pre-otp\", {\n  statusCode: 200,\n  body: {\n    mensaje: \"Código enviado (mock)\"\n  }\n}).as(\"otpRequest\");\n// Mock: OTP verificación falla\ncy.intercept(\"POST\", \"**/api/auth/verify-pre-otp\", {\n  statusCode: 400,\n  body: {\n    error: \"Código incorrecto o expirado.\"\n  }\n}).as(\"otpVerifyFail\");\nconst testEmail = `test_negativo_${Date.now()}@example.com`;\ncy.get('input[placeholder=\"Correo Electrónico\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").type(testEmail);\ncy.contains(\"button\", \"Enviar Código\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\ncy.wait(\"@otpRequest\");\n// Paso 2: ingresar OTP incorrecto\ncy.get('input[placeholder=\"000000\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").type(\"999999\");\ncy.contains(\"button\", \"Verificar Email\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\ncy.wait(\"@otpVerifyFail\");\n// Debe quedarse en paso 2 (no avanza al 3)\ncy.contains(\"Paso 2 de 6\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");",
+              "err": {
+                "message": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.",
+                "estack": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.\n    at timedOutWaitingForPageLoad (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:134177:64)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:135173:16)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:4156:41)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1667:18)\n    at _drainQueueStep (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2377:12)\n    at _drainQueue (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2370:9)\n    at Async._drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2386:5)\n    at Async.drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2256:14)\nFrom Your Spec Code:\n    at Context.eval (webpack://moviflex/./cypress/e2e/casocontrario-conductor.cy.js:90:7)",
+                "diff": null
+              },
+              "uuid": "5f8950dc-0260-4af6-8a85-2967406ace12",
+              "parentUUID": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "6. Registro — contraseña débil (validación client-side)",
+              "fullTitle": "Casos Contrarios — Conductor 6. Registro — contraseña débil (validación client-side)",
+              "timedOut": null,
+              "duration": 20255,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\casocontrario-conductor.cy.js\\\\Casos Contrarios — Conductor -- 6. Registro — contraseña débil (validación client-side) (failed).png\"\n    ]\n  ]\n}",
+              "code": "cy.viewport(1280, 720);\ncy.visit(\"/register\", {\n  timeout: DEFAULT_TIMEOUT\n});\n// Mock OTP request y verify para llegar rápido al paso 5\ncy.intercept(\"POST\", \"**/api/auth/request-pre-otp\", {\n  statusCode: 200,\n  body: {\n    mensaje: \"Código enviado (mock)\"\n  }\n}).as(\"otpReq\");\ncy.intercept(\"POST\", \"**/api/auth/verify-pre-otp\", {\n  statusCode: 200,\n  body: {\n    mensaje: \"Verificación exitosa (mock)\"\n  }\n}).as(\"otpVerify\");\nconst testEmail = `test_pwd_${Date.now()}@example.com`;\n// Paso 1: email\ncy.get('input[placeholder=\"Correo Electrónico\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).type(testEmail);\ncy.contains(\"button\", \"Enviar Código\").click();\ncy.wait(\"@otpReq\");\n// Paso 2: OTP\ncy.get('input[placeholder=\"000000\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).type(\"123456\");\ncy.contains(\"button\", \"Verificar Email\").click();\ncy.wait(\"@otpVerify\");\n// Paso 3: datos personales\ncy.get('input[placeholder=\"Nombre Completo\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).type(\"Test Negativo\");\ncy.get('input[placeholder=\"Teléfono\"]').type(\"3001234567\");\ncy.contains(\"button\", \"Siguiente\").click();\n// Paso 4: foto (mock cámara y capturar)\ncy.window().then(win => {\n  const fakeStream = new win.MediaStream();\n  const fakeTrack = {\n    stop: () => {},\n    enabled: true,\n    kind: \"video\"\n  };\n  cy.stub(fakeStream, \"getTracks\").returns([fakeTrack]);\n  if (!win.navigator.mediaDevices) {\n    win.navigator.mediaDevices = {\n      getUserMedia: () => Promise.resolve(fakeStream)\n    };\n  } else {\n    cy.stub(win.navigator.mediaDevices, \"getUserMedia\").resolves(fakeStream);\n  }\n  cy.stub(win.HTMLCanvasElement.prototype, \"toDataURL\").returns(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFgwJ/lmXcSgAAAABJRU5ErkJggg==\");\n});\ncy.contains(\"button\", \"Tomar Foto\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\ncy.contains(\"button\", \"Capturar\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\ncy.contains(\"¡Foto tomada!\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");\ncy.contains(\"button\", \"Siguiente\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\n// Paso 5: contraseña — probar con contraseña muy corta\ncy.get('input[placeholder=\"Contraseña\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\").type(\"abc\");\ncy.contains(\"Mínimo 8 caracteres\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");\n// Limpiar y probar sin mayúscula\ncy.get('input[placeholder=\"Contraseña\"]').clear().type(\"abcdefgh\");\ncy.contains(\"Debe incluir una mayúscula\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");\n// El botón \"Siguiente\" debe estar deshabilitado\ncy.contains(\"button\", \"Siguiente\").should(\"be.disabled\");",
+              "err": {
+                "message": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.",
+                "estack": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.\n    at timedOutWaitingForPageLoad (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:134177:64)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:135173:16)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:4156:41)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1667:18)\n    at _drainQueueStep (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2377:12)\n    at _drainQueue (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2370:9)\n    at Async._drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2386:5)\n    at Async.drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2256:14)\nFrom Your Spec Code:\n    at Context.eval (webpack://moviflex/./cypress/e2e/casocontrario-conductor.cy.js:127:7)",
+                "diff": null
+              },
+              "uuid": "3b02a85b-f8a9-49a2-8ea0-5b8146da0b57",
+              "parentUUID": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+              "isHook": false,
+              "skipped": false
+            },
+            {
+              "title": "7. Registro — no acepta términos y condiciones",
+              "fullTitle": "Casos Contrarios — Conductor 7. Registro — no acepta términos y condiciones",
+              "timedOut": null,
+              "duration": 20272,
+              "state": "failed",
+              "speed": null,
+              "pass": false,
+              "fail": true,
+              "pending": false,
+              "context": "{\n  \"title\": \"cypress-mochawesome-reporter-screenshots\",\n  \"value\": [\n    [\n      \"\\\\casocontrario-conductor.cy.js\\\\Casos Contrarios — Conductor -- 7. Registro — no acepta términos y condiciones (failed).png\"\n    ]\n  ]\n}",
+              "code": "cy.viewport(1280, 720);\ncy.visit(\"/register\", {\n  timeout: DEFAULT_TIMEOUT\n});\n// Mock OTP para llegar al paso 6 rápidamente\ncy.intercept(\"POST\", \"**/api/auth/request-pre-otp\", {\n  statusCode: 200,\n  body: {\n    mensaje: \"Código enviado (mock)\"\n  }\n}).as(\"otpReq\");\ncy.intercept(\"POST\", \"**/api/auth/verify-pre-otp\", {\n  statusCode: 200,\n  body: {\n    mensaje: \"Verificación exitosa (mock)\"\n  }\n}).as(\"otpVerify\");\nconst testEmail = `test_terms_${Date.now()}@example.com`;\n// Paso 1\ncy.get('input[placeholder=\"Correo Electrónico\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).type(testEmail);\ncy.contains(\"button\", \"Enviar Código\").click();\ncy.wait(\"@otpReq\");\n// Paso 2\ncy.get('input[placeholder=\"000000\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).type(\"123456\");\ncy.contains(\"button\", \"Verificar Email\").click();\ncy.wait(\"@otpVerify\");\n// Paso 3\ncy.get('input[placeholder=\"Nombre Completo\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).type(\"Test Términos\");\ncy.get('input[placeholder=\"Teléfono\"]').type(\"3009876543\");\ncy.contains(\"button\", \"Siguiente\").click();\n// Paso 4 (foto)\ncy.window().then(win => {\n  const fakeStream = new win.MediaStream();\n  const fakeTrack = {\n    stop: () => {},\n    enabled: true,\n    kind: \"video\"\n  };\n  cy.stub(fakeStream, \"getTracks\").returns([fakeTrack]);\n  if (!win.navigator.mediaDevices) {\n    win.navigator.mediaDevices = {\n      getUserMedia: () => Promise.resolve(fakeStream)\n    };\n  } else {\n    cy.stub(win.navigator.mediaDevices, \"getUserMedia\").resolves(fakeStream);\n  }\n  cy.stub(win.HTMLCanvasElement.prototype, \"toDataURL\").returns(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFgwJ/lmXcSgAAAABJRU5ErkJggg==\");\n});\ncy.contains(\"button\", \"Tomar Foto\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\ncy.contains(\"button\", \"Capturar\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\ncy.contains(\"¡Foto tomada!\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");\ncy.contains(\"button\", \"Siguiente\", {\n  timeout: DEFAULT_TIMEOUT\n}).click();\n// Paso 5 (contraseña válida)\ncy.get('input[placeholder=\"Contraseña\"]', {\n  timeout: DEFAULT_TIMEOUT\n}).type(\"ValidPass123#\");\ncy.contains(\"button\", \"Siguiente\").click();\n// Paso 6: Sin marcar checkbox de términos\ncy.contains(\"Paso 6 de 6\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.visible\");\n// El botón \"Finalizar\" debe estar deshabilitado sin aceptar términos\ncy.contains(\"button\", \"Finalizar\", {\n  timeout: DEFAULT_TIMEOUT\n}).should(\"be.disabled\");",
+              "err": {
+                "message": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.",
+                "estack": "CypressError: Timed out after waiting `20000ms` for your remote page to load.\n\nYour page did not fire its `load` event within `20000ms`.\n\nYou can try increasing the `pageLoadTimeout` value in `cypress.config.js` to wait longer.\n\nBrowsers will not fire the `load` event until all stylesheets and scripts are done downloading.\n\nWhen this `load` event occurs, Cypress will continue running commands.\n    at timedOutWaitingForPageLoad (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:134177:64)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:135173:16)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at <unknown> (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:4156:41)\n    at tryCatcher (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1777:23)\n    at Promise._settlePromiseFromHandler (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1489:31)\n    at Promise._settlePromise (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1546:18)\n    at Promise._settlePromise0 (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1591:10)\n    at Promise._settlePromises (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:1667:18)\n    at _drainQueueStep (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2377:12)\n    at _drainQueue (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2370:9)\n    at Async._drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2386:5)\n    at Async.drainQueues (https://moviflexconreact-production.up.railway.app/__cypress/runner/cypress_runner.js:2256:14)\nFrom Your Spec Code:\n    at Context.eval (webpack://moviflex/./cypress/e2e/casocontrario-conductor.cy.js:197:7)",
+                "diff": null
+              },
+              "uuid": "432c4c6b-1dba-4b30-9066-8512d3c70deb",
+              "parentUUID": "50a26a85-5dc7-4342-91f1-0f51637c3185",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [],
+          "failures": [
+            "3958c2c6-9cab-4ec7-80b5-28f520b28964",
+            "d9222e06-3bcb-453b-b8ca-8671b7095ca5",
+            "faf8b060-e205-4580-8365-b1c820005014",
+            "76bbc6f1-98f2-4b7a-b0d5-c7c0686e67f2",
+            "5f8950dc-0260-4af6-8a85-2967406ace12",
+            "3b02a85b-f8a9-49a2-8ea0-5b8146da0b57",
+            "432c4c6b-1dba-4b30-9066-8512d3c70deb"
+          ],
+          "pending": [],
+          "skipped": [],
+          "duration": 161371,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 2000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 2000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "7.2.0"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": false,
+        "reportFilename": "mochawesome",
+        "saveHtml": false,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.4"
+    },
+    "marge": {
+      "options": {
+        "overwrite": false,
+        "html": false,
+        "json": true,
+        "reportDir": "cypress\\reports\\html\\.jsons"
+      },
+      "version": "6.3.2"
+    }
+  }
+}

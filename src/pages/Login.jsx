@@ -54,13 +54,23 @@ function Login() {
     const navigate = useNavigate();
     const { login, token, usuario } = useAuth();
 
-    const ROLES = { ADMIN: 1, CONDUCTOR: 2, VIAJERO: 3 };
+    const ROLES = { ADMIN: "ADMIN", CONDUCTOR: "CONDUCTOR", VIAJERO: "PASAJERO" };
 
     useEffect(() => {
-        const rolId = usuario?.idRol || usuario?.rol?.id;
-        if (rolId === ROLES.ADMIN) navigate("/dashboard/home");
-        else if (rolId === ROLES.CONDUCTOR) navigate("/driver-home");
-        else if (rolId === ROLES.VIAJERO) navigate("/user-home");
+        // Obtenemos tanto el ID como el nombre del rol (normalizado)
+        const rolId = Number(usuario?.idRol || usuario?.rol?.idRol || usuario?.rol?.id || NaN);
+        const rolNombre = (typeof usuario?.rol === 'string' 
+            ? usuario.rol 
+            : (usuario?.rol?.nombre || "")
+        ).toUpperCase();
+
+        if (rolNombre === ROLES.ADMIN || rolId === 1) {
+            navigate("/dashboard/home");
+        } else if (rolNombre === ROLES.CONDUCTOR || rolId === 2) {
+            navigate("/driver-home");
+        } else if (rolNombre === ROLES.VIAJERO || rolNombre === 'VIAJERO' || rolId === 3) {
+            navigate("/user-home");
+        }
     }, [token, usuario, navigate]);
 
     const iniciarCamara = async () => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import './App.css'
 import Login from "./pages/Login"
 import HomeBase from "./pages/HomeBase";
@@ -28,6 +28,8 @@ import AdminReportesPago from "./pages/Admin/AdminReportesPago";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
+const ROLES = { ADMIN: "ADMIN", CONDUCTOR: "CONDUCTOR", VIAJERO: "PASAJERO" };
+
 function App() {
   const [openSidebarToggle, setOpenSidebarToggle] = useState(true);
 
@@ -42,11 +44,11 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/dashboard/home" element={
-              <RequiredAuth>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
                 <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
                   <Home />
                 </DashboardLayout>
-              </RequiredAuth>
+              </ProtectedRoute>
             } />
 
             <Route path="/" element={<HomeBase />} />
@@ -55,55 +57,69 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-            <Route path="/documentacion" element={<RequiredAuth><Documents /></RequiredAuth>} />
+            <Route path="/documentacion" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
 
-            <Route path="/user-home" element={<RequiredAuth><UserHome /></RequiredAuth>} />
-            <Route path="/profile" element={<RequiredAuth><Profile /></RequiredAuth>} />
-            <Route path="/driver-home" element={<RequiredAuth><DriverHome /></RequiredAuth>} />
-            <Route path="/driver-profile" element={<RequiredAuth><DriverProfile /></RequiredAuth>} />
-            <Route path="/vehicle-registration" element={<RequiredAuth><VehicleRegistration /></RequiredAuth>} />
-            <Route path="/documents" element={<RequiredAuth><Documents /></RequiredAuth>} />
+            <Route path="/user-home" element={<ProtectedRoute allowedRoles={[ROLES.VIAJERO]}><UserHome /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute allowedRoles={[ROLES.VIAJERO]}><Profile /></ProtectedRoute>} />
+            <Route path="/driver-home" element={<ProtectedRoute allowedRoles={[ROLES.CONDUCTOR]}><DriverHome /></ProtectedRoute>} />
+            <Route path="/driver-profile" element={<ProtectedRoute allowedRoles={[ROLES.CONDUCTOR]}><DriverProfile /></ProtectedRoute>} />
+            <Route path="/vehicle-registration" element={<ProtectedRoute allowedRoles={[ROLES.CONDUCTOR]}><VehicleRegistration /></ProtectedRoute>} />
+            <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
 
             <Route path="/admin/conductores" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <AdminConductores />
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <AdminConductores />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
 
             <Route path="/admin/usuarios" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <AdminUsuarios />
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <AdminUsuarios />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
 
             <Route path="/admin/vehiculos" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <AdminVehiculos />
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <AdminVehiculos />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
 
             <Route path="/admin/viajeros" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <AdminViajeros />
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <AdminViajeros />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
 
             <Route path="/admin/documentos" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <AdminDocumentos />
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <AdminDocumentos />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
 
             <Route path="/admin/solicitudes-vehiculos" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <AdminVehicleRequests />
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <AdminVehicleRequests />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
 
             <Route path="/admin/reportes-pago" element={
-              <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
-                <AdminReportesPago />
-              </DashboardLayout>
+              <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+                <DashboardLayout openSidebarToggle={openSidebarToggle} OpenSidebar={OpenSidebar}>
+                  <AdminReportesPago />
+                </DashboardLayout>
+              </ProtectedRoute>
             } />
 
             <Route path="/perfil" element={<Navigate to="/profile" replace />} />
@@ -117,10 +133,54 @@ function App() {
 
 export default App;
 
-function RequiredAuth({ children }) {
-  const { token } = useAuth();
+function ProtectedRoute({ children, allowedRoles }) {
+  const { token, usuario } = useAuth();
+  const location = useLocation();
+
   if (!token) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Si no hay roles específicos, solo requiere estar logueado
+  if (!allowedRoles) {
+    return children;
+  }
+
+  // Extraer información del rol de forma más robusta
+  // 1. Intentar obtener el ID del rol (buscando en varias rutas posibles)
+  const rolId = Number(usuario?.idRol || usuario?.rol?.idRol || usuario?.rol?.id || (typeof usuario?.rol === 'number' ? usuario.rol : NaN));
+  
+  // 2. Intentar obtener el nombre del rol (normalizado a mayúsculas)
+  const rolNombre = (typeof usuario?.rol === 'string' 
+    ? usuario.rol 
+    : (usuario?.rol?.nombre || "")
+  ).toUpperCase();
+
+  // Verificar si el usuario tiene permiso (por ID o por Nombre)
+  const hasPermission = allowedRoles.some(role => {
+    if (typeof role === 'number') return rolId === role;
+    if (typeof role === 'string') return rolNombre === role.toUpperCase();
+    return false;
+  });
+
+  if (!hasPermission) {
+    console.warn(`[ProtectedRoute] Acceso denegado a ${location.pathname}. Rol detectado: ${rolNombre} (ID: ${rolId})`);
+    
+    // Redirigir según el rol detectado para evitar quedar atrapado en una ruta prohibida
+    if (rolNombre === 'ADMIN' || rolId === 1) {
+      return <Navigate to="/dashboard/home" replace />;
+    }
+    
+    if (rolNombre === 'CONDUCTOR' || rolId === 2) {
+      return <Navigate to="/driver-home" replace />;
+    }
+    
+    if (rolNombre === 'PASAJERO' || rolNombre === 'VIAJERO' || rolId === 3) {
+      return <Navigate to="/user-home" replace />;
+    }
+    
     return <Navigate to="/login" replace />;
   }
+
   return children;
 }
