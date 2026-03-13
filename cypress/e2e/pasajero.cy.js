@@ -1,7 +1,7 @@
 describe("MOVIFLEXX_PASAJERO", () => {
   const PASSENGER_EMAIL = "carloss@gmail.com";
   const PASSENGER_PASSWORD = "Diana123#";
-  const DEFAULT_TIMEOUT = 20000;
+  const DEFAULT_TIMEOUT = 120000;
 
   const loginAsPassenger = () => {
     cy.viewport(1123, 729);

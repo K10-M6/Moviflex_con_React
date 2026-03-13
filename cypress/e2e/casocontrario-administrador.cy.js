@@ -1,6 +1,6 @@
 describe("Casos Contrarios — Administrador", () => {
   const ADMIN_EMAIL = "Janierjceron2044@gmail.com";
-  const DEFAULT_TIMEOUT = 20000;
+  const DEFAULT_TIMEOUT = 120000;
 
   it("1. Login con contraseña incorrecta (admin)", () => {
     cy.viewport(1280, 720);

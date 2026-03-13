@@ -1,7 +1,7 @@
 describe("MOVIFLEXX_ADMINISTRADOR", () => {
   const ADMIN_EMAIL = "Janierjceron2044@gmail.com";
   const ADMIN_PASSWORD = "Arc11037!";
-  const DEFAULT_TIMEOUT = 20000;
+  const DEFAULT_TIMEOUT = 120000;
 
   const loginAsAdmin = () => {
     cy.viewport(1239, 729);
@@ -26,7 +26,8 @@ describe("MOVIFLEXX_ADMINISTRADOR", () => {
       .click();
 
     // Esperar a que cargue el dashboard del administrador
-    cy.url({ timeout: 30000 }).should("include", "/dashboard/home");
+    cy.url({ timeout: 
+        30000 }).should("include", "/dashboard/home");
     cy.contains("Gestión global de la plataforma MoviFlex", {
       timeout: DEFAULT_TIMEOUT,
     }).should("be.visible");

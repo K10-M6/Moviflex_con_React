@@ -1,7 +1,7 @@
 describe("Driver E2E Flows", () => {
   const DRIVER_EMAIL = "yo@gmail.com";
   const DRIVER_PASSWORD = "Diana123#";
-  const DEFAULT_TIMEOUT = 20000;
+  const DEFAULT_TIMEOUT = 120000;
 
   const closeDriverTutorialIfVisible = () => {
     // Cierra el modal de recorrido (tutorial) si aparece

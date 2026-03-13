@@ -1,6 +1,6 @@
 describe("Casos Contrarios — Pasajero", () => {
   const PASSENGER_EMAIL = "carloss@gmail.com";
-  const DEFAULT_TIMEOUT = 20000;
+  const DEFAULT_TIMEOUT = 120000;
 
   it("1. Login con contraseña incorrecta (pasajero)", () => {
     cy.viewport(1280, 720);

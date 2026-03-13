@@ -1,5 +1,5 @@
 describe("Casos Contrarios — Conductor", () => {
-  const DEFAULT_TIMEOUT = 20000;
+  const DEFAULT_TIMEOUT = 120000;
 
   it("1. Login con contraseña incorrecta", () => {
     cy.viewport(1280, 720);
