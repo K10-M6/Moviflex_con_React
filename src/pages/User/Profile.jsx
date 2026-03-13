@@ -385,13 +385,18 @@ function Profile() {
                   </h2>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr' }}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '1fr 2fr',
+                  gap: '0'
+                }}>
                   {/* Columna izquierda - Foto y resumen */}
                   <div style={{
                     backgroundColor: '#f8f9fa',
                     padding: '1.5rem',
                     textAlign: 'center',
-                    borderRight: '1px solid #e9ecef'
+                    borderRight: window.innerWidth < 992 ? 'none' : '1px solid #e9ecef',
+                    borderBottom: window.innerWidth < 992 ? '1px solid #e9ecef' : 'none'
                   }}>
                     <div style={{ marginBottom: '1rem' }}>
                       {usuario?.fotoPerfil ? (
@@ -404,15 +409,16 @@ function Profile() {
                             borderRadius: '50%',
                             objectFit: 'cover',
                             boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
-                            border: `3px solid ${brandColor}`
+                            border: `3px solid ${brandColor}`,
+                            maxWidth: '100%'
                           }}
                         />
                       ) : (
-                        <FaUserCircle size={150} color={brandColor} style={{ boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)', borderRadius: '50%', backgroundColor: 'white', padding: '0.25rem' }} />
+                        <FaUserCircle size={150} color={brandColor} style={{ boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)', borderRadius: '50%', backgroundColor: 'white', padding: '0.25rem', maxWidth: '100%', width: '150px', height: '150px' }} />
                       )}
                     </div>
 
-                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: brandColor }}>
+                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: brandColor, fontSize: window.innerWidth < 576 ? '1.25rem' : '1.5rem' }}>
                       {usuario?.nombre}
                     </h3>
 
@@ -429,7 +435,8 @@ function Profile() {
                         color: '#ffffff',
                         padding: '0.25rem 1rem',
                         borderRadius: '2rem',
-                        marginBottom: '1rem'
+                        marginBottom: '1rem',
+                        flexWrap: 'wrap'
                       }}>
                         <FaStar />
                         {formatearCalificacion(estadisticas.promedioCalificacion)}
@@ -455,7 +462,7 @@ function Profile() {
                         <FaCalendarAlt style={{ marginRight: '0.5rem', color: accentColor }} />
                         Miembro desde
                       </p>
-                      <p style={{ fontWeight: 'bold', marginBottom: '1rem', color: brandColor }}>{formatearFecha(usuario?.creadoEn)}</p>
+                      <p style={{ fontWeight: 'bold', marginBottom: '1rem', color: brandColor, wordBreak: 'break-word' }}>{formatearFecha(usuario?.creadoEn)}</p>
 
                       <p style={{ fontSize: '0.75rem', color: '#6c757d', marginBottom: '0.25rem', textTransform: 'uppercase', fontWeight: 'bold' }}>
                         <FaRoute style={{ marginRight: '0.5rem', color: accentColor }} />
@@ -467,7 +474,7 @@ function Profile() {
                         <FaWallet style={{ marginRight: '0.5rem', color: accentColor }} />
                         Total Gastado
                       </p>
-                      <p style={{ fontWeight: 'bold', fontSize: '1.2rem', color: accentColor }}>
+                      <p style={{ fontWeight: 'bold', fontSize: '1.2rem', color: accentColor, wordBreak: 'break-word' }}>
                         {formatearMoneda(estadisticas.totalGastado)}
                       </p>
                     </div>
@@ -480,7 +487,12 @@ function Profile() {
                     </h4>
 
                     {/* Tarjetas de información */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: window.innerWidth < 576 ? '1fr' : '1fr 1fr',
+                      gap: '1rem',
+                      marginBottom: '1.5rem'
+                    }}>
                       <div style={{
                         backgroundColor: '#f8f9fa',
                         padding: '1rem',
@@ -488,13 +500,13 @@ function Profile() {
                         border: 'none',
                         height: '100%'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                           <FaUser style={{ marginRight: '0.5rem', color: accentColor }} />
                           <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
                             Nombre Completo
                           </span>
                         </div>
-                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor }}>
+                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor, wordBreak: 'break-word' }}>
                           {usuario?.nombre}
                         </p>
                       </div>
@@ -506,13 +518,13 @@ function Profile() {
                         border: 'none',
                         height: '100%'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                           <FaIdCard style={{ marginRight: '0.5rem', color: accentColor }} />
                           <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
                             Teléfono
                           </span>
                         </div>
-                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor }}>
+                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor, wordBreak: 'break-word' }}>
                           {usuario?.telefono || 'No registrado'}
                         </p>
                       </div>
@@ -525,13 +537,13 @@ function Profile() {
                         borderRadius: '0.5rem',
                         border: 'none'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                           <FaWallet style={{ marginRight: '0.5rem', color: accentColor }} />
                           <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
                             Correo Electrónico
                           </span>
                         </div>
-                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor }}>
+                        <p style={{ fontWeight: 'bold', marginBottom: 0, fontSize: '1.1rem', color: brandColor, wordBreak: 'break-word' }}>
                           {usuario?.email}
                         </p>
                       </div>
@@ -542,7 +554,12 @@ function Profile() {
                     </h4>
 
                     {/* Tarjetas de estadísticas */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: window.innerWidth < 576 ? '1fr' : window.innerWidth < 768 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                      gap: '1rem',
+                      marginBottom: '1.5rem'
+                    }}>
                       <div style={{
                         backgroundColor: '#ffffff',
                         padding: '1rem',
@@ -580,7 +597,7 @@ function Profile() {
                         textAlign: 'center',
                         height: '100%'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                           <FaStar style={{ marginRight: '0.5rem', color: accentColor }} />
                           <h5 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor, fontSize: '2rem' }}>
                             {formatearCalificacion(estadisticas.promedioCalificacion)}

@@ -933,9 +933,16 @@ const DriverHome = () => {
                     ...cardStyle,
                     marginBottom: '1.5rem'
                 }}>
-                    <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{
+                        padding: '1.5rem',
+                        display: 'flex',
+                        flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                        justifyContent: 'space-between',
+                        alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+                        gap: window.innerWidth < 768 ? '1rem' : '0'
+                    }}>
                         <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                                 <h2 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>Panel de Conductor</h2>
                                 <button
                                     onClick={repetirTutorial}
@@ -954,12 +961,32 @@ const DriverHome = () => {
                             </div>
                             <p style={{ color: '#6c757d', margin: 0 }}>Bienvenido, gestiona tu actividad diaria</p>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <div style={{ textAlign: 'right', marginRight: '1rem', display: 'none', '@media (minWidth: 768px)': { display: 'block' } }}>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                            alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+                            gap: '1rem',
+                            width: window.innerWidth < 768 ? '100%' : 'auto'
+                        }}>
+                            <div style={{
+                                textAlign: window.innerWidth < 768 ? 'left' : 'right',
+                                marginRight: window.innerWidth < 768 ? '0' : '1rem',
+                                display: 'none',
+                                '@media (minWidth: 768px)': { display: 'block' }
+                            }}>
                                 <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', fontWeight: 'bold', color: '#6c757d', display: 'block' }}>Ganancias {periodo}</span>
                                 <h3 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>${totalGananciasBackend.toLocaleString()}</h3>
                             </div>
-                            <div style={{ backgroundColor: '#f8f9fa', padding: '0.25rem', borderRadius: '0.375rem', display: 'flex', gap: '0.25rem', border: '1px solid #dee2e6' }}>
+                            <div style={{
+                                backgroundColor: '#f8f9fa',
+                                padding: '0.25rem',
+                                borderRadius: '0.375rem',
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '0.25rem',
+                                border: '1px solid #dee2e6',
+                                width: window.innerWidth < 768 ? '100%' : 'auto'
+                            }}>
                                 <PeriodoBadge periodo="diario" actual={periodo} onClick={() => setPeriodo('diario')}>Día</PeriodoBadge>
                                 <PeriodoBadge periodo="mensual" actual={periodo} onClick={() => setPeriodo('mensual')}>Mes</PeriodoBadge>
                                 <PeriodoBadge periodo="anual" actual={periodo} onClick={() => setPeriodo('anual')}>Año</PeriodoBadge>
@@ -969,7 +996,12 @@ const DriverHome = () => {
                 </div>
 
                 {/* Tarjetas de estadísticas */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: window.innerWidth < 768 ? '1fr' : window.innerWidth < 992 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                    gap: '1.5rem',
+                    marginBottom: '1.5rem'
+                }}>
                     <StatsCard
                         icon={<FaWallet size={20} />}
                         title="Ganancias"
@@ -1000,10 +1032,15 @@ const DriverHome = () => {
                     />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(3, 1fr)',
+                    gap: '1.5rem',
+                    marginBottom: '1.5rem'
+                }}>
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 <h5 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>Ganancias</h5>
                                 <StatsBadge bgColor="#f8f9fa" color="#113d69">Tendencia {periodo}</StatsBadge>
                             </div>
@@ -1029,7 +1066,7 @@ const DriverHome = () => {
 
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 <h5 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>Frecuencia</h5>
                                 <StatsBadge bgColor="#f8f9fa" color="#113d69">Viajes {periodo}</StatsBadge>
                             </div>
@@ -1049,7 +1086,7 @@ const DriverHome = () => {
 
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 <h5 style={{ fontWeight: 'bold', margin: 0, color: '#62d8d9' }}>Actividad</h5>
                                 <StatsBadge bgColor="#f8f9fa" color="#113d69">Horas {periodo}</StatsBadge>
                             </div>
@@ -1068,10 +1105,15 @@ const DriverHome = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(2, 1fr)',
+                    gap: '1.5rem',
+                    marginBottom: '1.5rem'
+                }}>
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                 <div style={{
                                     width: '40px', height: '40px', borderRadius: '12px',
                                     backgroundColor: '#62d8d915', display: 'flex',
@@ -1086,19 +1128,19 @@ const DriverHome = () => {
                                 <div style={{ textAlign: 'center', padding: '1rem' }}><Spinner size="sm" style={{ color: '#62d8d9' }} /></div>
                             ) : displayComisionEnBaseABackend ? (
                                 <>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                         <span style={{ color: '#6c757d' }}>Ingresos del mes</span>
                                         <span style={{ fontWeight: 'bold', color: '#113d69' }}>${displayComisionEnBaseABackend.totalIngresos?.toLocaleString()} COP</span>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#62d8d915', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#62d8d915', borderRadius: '0.375rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                         <span style={{ fontWeight: '600' }}>Comisión a pagar (10%)</span>
                                         <span style={{ fontWeight: 'bold', color: '#62d8d9' }}>${displayComisionEnBaseABackend.totalComision?.toLocaleString()} COP</span>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: '#f8f9fa', borderRadius: '0.375rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                                         <span style={{ color: '#6c757d' }}>Viajes completados</span>
                                         <span style={{ fontWeight: 'bold', color: '#113d69' }}>{displayComisionEnBaseABackend.viajesCompletados}</span>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: displayComisionEnBaseABackend.reporteEnviado ? '#62d8d915' : '#cccbd2af', borderRadius: '0.375rem' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.75rem', backgroundColor: displayComisionEnBaseABackend.reporteEnviado ? '#62d8d915' : '#cccbd2af', borderRadius: '0.375rem', flexWrap: 'wrap' }}>
                                         <span>Estado del reporte</span>
                                         <DocumentoBadge estado={displayComisionEnBaseABackend.estadoReporte || 'Sin enviar'} />
                                     </div>
@@ -1111,7 +1153,7 @@ const DriverHome = () => {
 
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
                                 <div style={{
                                     width: '40px', height: '40px', borderRadius: '12px',
                                     backgroundColor: '#113d6915', display: 'flex',
@@ -1154,7 +1196,7 @@ const DriverHome = () => {
                                         <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
                                             <img
                                                 src={fotoComprobante}
-                                                style={{ maxHeight: '200px', borderRadius: '0.375rem', border: '1px solid #62d8d9' }}
+                                                style={{ maxHeight: '200px', borderRadius: '0.375rem', border: '1px solid #62d8d9', maxWidth: '100%' }}
                                                 alt="Comprobante"
                                             />
                                         </div>
@@ -1179,13 +1221,15 @@ const DriverHome = () => {
                                         <div key={reporte.idReporte}
                                             style={{
                                                 display: 'flex',
+                                                flexDirection: window.innerWidth < 576 ? 'column' : 'row',
                                                 justifyContent: 'space-between',
-                                                alignItems: 'center',
+                                                alignItems: window.innerWidth < 576 ? 'flex-start' : 'center',
                                                 padding: '0.5rem',
                                                 backgroundColor: '#f8f9fa',
                                                 borderRadius: '0.25rem',
                                                 marginBottom: '0.25rem',
-                                                fontSize: '0.85rem'
+                                                fontSize: '0.85rem',
+                                                gap: window.innerWidth < 576 ? '0.25rem' : '0'
                                             }}>
                                             <span style={{ color: '#113d69' }}>{new Date(reporte.mesCorrespondiente).toLocaleDateString('es-CO', { year: 'numeric', month: 'short' })}</span>
                                             <span style={{ color: '#62d8d9' }}>${Number(reporte.montoComision).toLocaleString()}</span>
@@ -1198,10 +1242,15 @@ const DriverHome = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '7fr 5fr',
+                    gap: '1.5rem',
+                    marginBottom: '1.5rem'
+                }}>
                     <div style={{ ...cardStyle, height: '100%' }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <div style={{
                                         width: '40px',
@@ -1255,15 +1304,20 @@ const DriverHome = () => {
                                     backgroundColor: '#F9FAFB',
                                     boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
                                 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <div style={{ width: '25%', textAlign: 'center' }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                                        alignItems: window.innerWidth < 768 ? 'center' : 'flex-start',
+                                        gap: '1rem'
+                                    }}>
+                                        <div style={{ width: window.innerWidth < 768 ? '100%' : '25%', textAlign: 'center' }}>
                                             <VehiculoImage
                                                 vehiculo={vehiculoPrincipal}
-                                                size={60}
+                                                size={window.innerWidth < 768 ? 80 : 60}
                                                 onClick={() => handleImageClick(vehiculoPrincipal)}
                                             />
                                         </div>
-                                        <div style={{ width: '75%' }}>
+                                        <div style={{ width: window.innerWidth < 768 ? '100%' : '75%', textAlign: window.innerWidth < 768 ? 'center' : 'left' }}>
                                             <h6 style={{ fontWeight: '600', marginBottom: '0.25rem', color: '#113d69', fontSize: '1.1rem' }}>
                                                 {vehiculoPrincipal.marca} {vehiculoPrincipal.modelo}
                                             </h6>
@@ -1362,19 +1416,19 @@ const DriverHome = () => {
                             ) : licencia ? (
                                 <div style={{ flex: 1 }}>
                                     <div style={{ marginBottom: 'auto' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                             <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Número</span>
                                             <span style={{ fontWeight: '600', color: '#113d69' }}>{licencia.numeroDocumento || 'Sin número'}</span>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                             <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Expedición</span>
                                             <span style={{ fontWeight: '600', color: '#62d8d9' }}>{formatearFechaExpedicion(licencia.fechaExpedicion)}</span>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                             <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Subida</span>
                                             <span style={{ fontWeight: '600', color: '#113d69' }}>{formatearFechaSubida(licencia.fechaSubida)}</span>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                             <span style={{ color: '#6c757d', fontSize: '0.875rem' }}>Estado</span>
                                             <DocumentoBadge estado={licencia.estado} />
                                         </div>
@@ -1415,7 +1469,9 @@ const DriverHome = () => {
                             marginBottom: '1rem',
                             boxShadow: '0 4px 12px rgba(239, 68, 68, 0.1)',
                             display: 'flex',
-                            alignItems: 'center'
+                            flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                            alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+                            gap: '0.5rem'
                         }}>
                             <FaInfoCircle size={24} style={{ marginRight: '0.75rem', color: '#dc3545' }} />
                             <div style={{ flex: 1 }}>
@@ -1425,7 +1481,7 @@ const DriverHome = () => {
                             <AccionButton
                                 variant="danger"
                                 onClick={() => navigate("/documentacion")}
-                                style={{ marginLeft: '1rem' }}
+                                style={{ marginLeft: window.innerWidth < 768 ? '0' : '1rem', width: window.innerWidth < 768 ? '100%' : 'auto' }}
                             >
                                 ACTUALIZAR
                             </AccionButton>
@@ -1434,7 +1490,7 @@ const DriverHome = () => {
 
                     <div style={{ ...cardStyle, borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <div style={{
                                         width: '40px',
@@ -1450,7 +1506,7 @@ const DriverHome = () => {
                                     </div>
                                     <h5 style={{ margin: 0, fontWeight: '600', color: '#113d69' }}>Viajes Recientes</h5>
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                     <StatsBadge bgColor="#62d8d9" color="#ffffff">
                                         {estadisticasViajes.completados} Completados
                                     </StatsBadge>
@@ -1506,18 +1562,23 @@ const DriverHome = () => {
                                                     setShowDetalleViaje(true);
                                                 }}
                                             >
-                                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                    <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                                <div style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 3fr 4fr 2fr 2fr',
+                                                    gap: '0.5rem',
+                                                    alignItems: 'center'
+                                                }}>
+                                                    <div style={{ textAlign: 'center', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                         {vehiculoPrincipal ? (
                                                             <VehiculoImage
                                                                 vehiculo={vehiculoPrincipal}
-                                                                size={32}
+                                                                size={window.innerWidth < 768 ? 40 : 32}
                                                                 onClick={() => handleImageClick(vehiculoPrincipal)}
                                                             />
                                                         ) : (
                                                             <div style={{
-                                                                width: '32px',
-                                                                height: '32px',
+                                                                width: window.innerWidth < 768 ? '40px' : '32px',
+                                                                height: window.innerWidth < 768 ? '40px' : '32px',
                                                                 borderRadius: '10px',
                                                                 backgroundColor: '#62d8d910',
                                                                 display: 'flex',
@@ -1529,13 +1590,13 @@ const DriverHome = () => {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div style={{ width: '25%' }}>
+                                                    <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                         <p style={{ marginBottom: 0, fontWeight: '600', color: '#113d69' }}>Viaje #{viaje.idViajes}</p>
                                                         <small style={{ color: '#6c757d' }}>
                                                             {formatearFecha(viaje.fechaHoraSalida)}
                                                         </small>
                                                     </div>
-                                                    <div style={{ width: '33.33%' }}>
+                                                    <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                                             <FaRoute size={12} color="#62d8d9" style={{ marginRight: '0.25rem' }} />
                                                             <small style={{ color: '#113d69' }}>
@@ -1543,12 +1604,12 @@ const DriverHome = () => {
                                                             </small>
                                                         </div>
                                                     </div>
-                                                    <div style={{ width: '16.67%' }}>
+                                                    <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                         <small style={{ color: '#6c757d' }}>
                                                             {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
                                                         </small>
                                                     </div>
-                                                    <div style={{ width: '16.67%', textAlign: 'right' }}>
+                                                    <div style={{ textAlign: window.innerWidth < 768 ? 'left' : 'right', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                         <EstadoViajeBadge estado={viaje.estado} />
                                                     </div>
                                                 </div>
@@ -1584,13 +1645,14 @@ const DriverHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1050
+                    zIndex: 1050,
+                    padding: '1rem'
                 }} onClick={() => setShowVehiculosModal(false)}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '0.5rem',
                         maxWidth: '800px',
-                        width: '90%',
+                        width: '100%',
                         maxHeight: '80vh',
                         overflow: 'hidden'
                     }} onClick={(e) => e.stopPropagation()}>
@@ -1620,7 +1682,11 @@ const DriverHome = () => {
                                     </AccionButton>
                                 </div>
                             ) : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: window.innerWidth < 576 ? '1fr' : 'repeat(2, 1fr)',
+                                    gap: '1rem'
+                                }}>
                                     {vehiculos.map((vehiculo) => (
                                         <div
                                             key={vehiculo.idVehiculos}
@@ -1632,13 +1698,18 @@ const DriverHome = () => {
                                             onClick={() => seleccionarVehiculoPrincipal(vehiculo)}
                                         >
                                             <div style={{ padding: '1rem' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: window.innerWidth < 576 ? 'column' : 'row',
+                                                    alignItems: 'center',
+                                                    gap: '1rem'
+                                                }}>
                                                     <VehiculoImage
                                                         vehiculo={vehiculo}
-                                                        size={50}
+                                                        size={window.innerWidth < 576 ? 60 : 50}
                                                         onClick={() => handleImageClick(vehiculo)}
                                                     />
-                                                    <div style={{ flex: 1 }}>
+                                                    <div style={{ flex: 1, textAlign: window.innerWidth < 576 ? 'center' : 'left' }}>
                                                         <h6 style={{ fontWeight: '600', marginBottom: '0.25rem', color: '#113d69' }}>
                                                             {vehiculo.marca} {vehiculo.modelo}
                                                             {vehiculo.idVehiculos === vehiculoPrincipal?.idVehiculos && (
@@ -1673,7 +1744,7 @@ const DriverHome = () => {
                                 </div>
                             )}
                         </div>
-                        <div style={{ padding: '1rem', borderTop: 'none', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                        <div style={{ padding: '1rem', borderTop: 'none', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
                             <AccionButton variant="outline-secondary" onClick={() => setShowVehiculosModal(false)}>
                                 Cerrar
                             </AccionButton>
@@ -1702,13 +1773,14 @@ const DriverHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1050
+                    zIndex: 1050,
+                    padding: '1rem'
                 }} onClick={() => setShowPhotoModal(false)}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '0.5rem',
                         maxWidth: '800px',
-                        width: '90%',
+                        width: '100%',
                         maxHeight: '90vh',
                         overflow: 'hidden'
                     }} onClick={(e) => e.stopPropagation()}>
@@ -1767,13 +1839,14 @@ const DriverHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1050
+                    zIndex: 1050,
+                    padding: '1rem'
                 }} onClick={() => setShowHistorialCompleto(false)}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '0.5rem',
                         maxWidth: '1200px',
-                        width: '95%',
+                        width: '100%',
                         maxHeight: '90vh',
                         overflow: 'hidden'
                     }} onClick={(e) => e.stopPropagation()}>
@@ -1786,7 +1859,12 @@ const DriverHome = () => {
                             </h5>
                         </div>
                         <div style={{ padding: '1rem 1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '6fr 4fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '6fr 4fr 2fr',
+                                gap: '1rem',
+                                marginBottom: '1rem'
+                            }}>
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                         <span style={{
@@ -1806,7 +1884,8 @@ const DriverHome = () => {
                                                 padding: '0.375rem 0.75rem',
                                                 border: `1px solid #62d8d9`,
                                                 borderLeft: 'none',
-                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                                borderRadius: '0 0.375rem 0.375rem 0',
+                                                minWidth: '150px'
                                             }}
                                         />
                                     </div>
@@ -1829,7 +1908,8 @@ const DriverHome = () => {
                                                 padding: '0.375rem 0.75rem',
                                                 border: `1px solid #113d69`,
                                                 borderLeft: 'none',
-                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                                borderRadius: '0 0.375rem 0.375rem 0',
+                                                minWidth: '150px'
                                             }}
                                         >
                                             <option value="TODOS">Todos los estados</option>
@@ -1841,7 +1921,7 @@ const DriverHome = () => {
                                         </select>
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
+                                <div style={{ textAlign: window.innerWidth < 768 ? 'left' : 'right' }}>
                                     <StatsBadge bgColor="#62d8d9" color="#ffffff">
                                         {viajesFiltrados.length} viajes
                                     </StatsBadge>
@@ -1894,12 +1974,17 @@ const DriverHome = () => {
                                                 setShowDetalleViaje(true);
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                            <div style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 2fr 3fr 2fr 2fr 2fr',
+                                                gap: '0.5rem',
+                                                alignItems: 'center'
+                                            }}>
+                                                <div style={{ textAlign: 'center', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     {vehiculoPrincipal ? (
                                                         <VehiculoImage
                                                             vehiculo={vehiculoPrincipal}
-                                                            size={40}
+                                                            size={window.innerWidth < 768 ? 40 : 40}
                                                             onClick={() => handleImageClick(vehiculoPrincipal)}
                                                         />
                                                     ) : (
@@ -1917,31 +2002,31 @@ const DriverHome = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div style={{ width: '16.67%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <p style={{ marginBottom: 0, fontWeight: '600', color: '#113d69' }}>Viaje #{viaje.idViajes}</p>
                                                     <small style={{ color: '#6c757d' }}>
                                                         {formatearFecha(viaje.fechaHoraSalida)}
                                                     </small>
                                                 </div>
-                                                <div style={{ width: '25%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                                         <FaRoute size={12} color="#62d8d9" style={{ marginRight: '0.25rem' }} />
                                                         <small style={{ fontWeight: '600', color: '#113d69' }}>Ruta:</small>
                                                         <span style={{ marginLeft: '0.5rem', color: '#6c757d', fontSize: '0.875rem' }}>{viaje.ruta?.nombre || 'No disponible'}</span>
                                                     </div>
                                                 </div>
-                                                <div style={{ width: '16.67%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <small style={{ color: '#6c757d' }}>
                                                         {viaje.cuposTotales - viaje.cuposDisponibles}/{viaje.cuposTotales} pasajeros
                                                     </small>
                                                 </div>
-                                                <div style={{ width: '16.67%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <small style={{ color: '#6c757d', display: 'block' }}>
                                                         <FaClock style={{ marginRight: '0.25rem' }} size={10} />
                                                         {Math.round((viaje.cuposTotales - viaje.cuposDisponibles) * 100 / viaje.cuposTotales)}% ocupado
                                                     </small>
                                                 </div>
-                                                <div style={{ width: '16.67%', textAlign: 'right' }}>
+                                                <div style={{ textAlign: window.innerWidth < 768 ? 'left' : 'right', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <EstadoViajeBadge estado={viaje.estado} />
                                                 </div>
                                             </div>
@@ -1973,13 +2058,14 @@ const DriverHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1050
+                    zIndex: 1050,
+                    padding: '1rem'
                 }} onClick={() => setShowDetalleViaje(false)}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '0.5rem',
                         maxWidth: '800px',
-                        width: '90%',
+                        width: '100%',
                         maxHeight: '90vh',
                         overflow: 'hidden'
                     }} onClick={(e) => e.stopPropagation()}>
@@ -1993,24 +2079,29 @@ const DriverHome = () => {
                             </h5>
                         </div>
                         <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 140px)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr',
+                                gap: '1rem',
+                                marginBottom: '1rem'
+                            }}>
                                 <div style={{ backgroundColor: '#F9FAFB', border: `1px solid #62d8d920`, borderRadius: '1rem' }}>
                                     <div style={{ padding: '1rem' }}>
                                         <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: '#62d8d9' }}>Información General</h6>
                                         <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                                 <span style={{ color: '#6c757d' }}>Fecha y hora:</span>
                                                 <span style={{ fontWeight: '600', color: '#113d69' }}>{formatearFecha(viajeSeleccionado.fechaHoraSalida)}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                                 <span style={{ color: '#6c757d' }}>Estado:</span>
                                                 <EstadoViajeBadge estado={viajeSeleccionado.estado} />
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                                 <span style={{ color: '#6c757d' }}>Capacidad:</span>
                                                 <span style={{ fontWeight: '600', color: '#113d69' }}>{viajeSeleccionado.cuposTotales} pasajeros</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                                 <span style={{ color: '#6c757d' }}>Ocupación:</span>
                                                 <span style={{ fontWeight: '600', color: '#62d8d9' }}>
                                                     {viajeSeleccionado.cuposTotales - viajeSeleccionado.cuposDisponibles} / {viajeSeleccionado.cuposTotales}
@@ -2025,7 +2116,7 @@ const DriverHome = () => {
                                         <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: '#113d69' }}>Ruta del Viaje</h6>
                                         <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                             {viajeSeleccionado.ruta?.nombre && (
-                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap' }}>
                                                     <FaRoute size={14} color="#62d8d9" style={{ marginRight: '0.5rem', marginTop: '0.25rem' }} />
                                                     <div>
                                                         <span style={{ color: '#6c757d' }}>Ruta:</span>
@@ -2034,7 +2125,7 @@ const DriverHome = () => {
                                                 </div>
                                             )}
                                             {viajeSeleccionado.ruta?.descripcion && (
-                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap' }}>
                                                     <FaInfoCircle size={14} color="#62d8d9" style={{ marginRight: '0.5rem', marginTop: '0.25rem' }} />
                                                     <div>
                                                         <span style={{ color: '#6c757d' }}>Descripción:</span>
@@ -2055,7 +2146,7 @@ const DriverHome = () => {
                                             {viajeSeleccionado.ruta.paradas
                                                 .sort((a, b) => a.orden - b.orden)
                                                 .map((parada, index) => (
-                                                    <div key={parada.idParada} style={{ display: 'flex', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                    <div key={parada.idParada} style={{ display: 'flex', alignItems: 'center', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap' }}>
                                                         <div style={{
                                                             width: '24px',
                                                             height: '24px',
@@ -2114,13 +2205,14 @@ const DriverHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1060
+                    zIndex: 1060,
+                    padding: '1rem'
                 }} onClick={saltarTutorial}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '1.5rem',
                         maxWidth: '600px',
-                        width: '90%',
+                        width: '100%',
                         padding: '2rem'
                     }} onClick={(e) => e.stopPropagation()}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
@@ -2166,7 +2258,7 @@ const DriverHome = () => {
                                             <img
                                                 src={vehiculoPrincipal.fotoVehiculo.startsWith('http')
                                                     ? vehiculoPrincipal.fotoVehiculo
-                                                    : `https://backendmovi-production-c657.up.railway.app${vehiculoPrincipal.fotoVehiculo}`}
+                                                    : `https://backendmovi-c657-production.up.railway.app${vehiculoPrincipal.fotoVehiculo}`}
                                                 alt="Vehículo"
                                                 style={{
                                                     width: '60px',
@@ -2210,7 +2302,7 @@ const DriverHome = () => {
                         </div>
 
                         <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
                                 {currentStep > 1 && (
                                     <AccionButton
                                         variant="outline-secondary"
@@ -2255,13 +2347,14 @@ const DriverHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1050
+                    zIndex: 1050,
+                    padding: '1rem'
                 }} onClick={() => !enviandoSolicitud && setShowSolicitudModal(false)}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '0.5rem',
                         maxWidth: '500px',
-                        width: '90%',
+                        width: '100%',
                         padding: '1.5rem'
                     }} onClick={(e) => e.stopPropagation()}>
                         <h5 style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#113d69' }}>
@@ -2346,12 +2439,12 @@ const DriverHome = () => {
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                                 <AccionButton
                                     variant="outline-secondary"
                                     onClick={() => setShowSolicitudModal(false)}
                                     disabled={enviandoSolicitud}
-                                    style={{ flex: 1 }}
+                                    style={{ flex: 1, minWidth: '120px' }}
                                 >
                                     Cancelar
                                 </AccionButton>
@@ -2367,7 +2460,8 @@ const DriverHome = () => {
                                         borderRadius: '0.375rem',
                                         fontWeight: '500',
                                         cursor: enviandoSolicitud ? 'not-allowed' : 'pointer',
-                                        opacity: enviandoSolicitud ? 0.6 : 1
+                                        opacity: enviandoSolicitud ? 0.6 : 1,
+                                        minWidth: '120px'
                                     }}
                                 >
                                     {enviandoSolicitud ? <Spinner animation="border" size="sm" /> : "Enviar Solicitud"}

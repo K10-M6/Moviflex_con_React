@@ -461,13 +461,18 @@ function DriverProfile() {
                   <h2 style={{ fontWeight: 'bold', margin: 0, color: '#113d69' }}>Mi Perfil de Conductor</h2>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr' }}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '1fr 2fr',
+                  gap: '0'
+                }}>
                   {/* Columna izquierda */}
                   <div style={{
                     backgroundColor: '#f8f9fa',
                     padding: '1.5rem',
                     textAlign: 'center',
-                    borderRight: '1px solid #e9ecef'
+                    borderRight: window.innerWidth < 992 ? 'none' : '1px solid #e9ecef',
+                    borderBottom: window.innerWidth < 992 ? '1px solid #e9ecef' : 'none'
                   }}>
                     <div style={{ marginBottom: '1rem' }}>
                       {usuario?.fotoPerfil ? (
@@ -480,15 +485,16 @@ function DriverProfile() {
                             borderRadius: '50%', 
                             objectFit: 'cover',
                             boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)',
-                            border: `3px solid #62d8d9`
+                            border: `3px solid #62d8d9`,
+                            maxWidth: '100%'
                           }} 
                         />
                       ) : (
-                        <FaUserCircle size={150} color="#62d8d9" style={{ boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)', borderRadius: '50%', backgroundColor: 'white', padding: '0.25rem' }} />
+                        <FaUserCircle size={150} color="#62d8d9" style={{ boxShadow: '0 0.125rem 0.25rem rgba(0,0,0,0.075)', borderRadius: '50%', backgroundColor: 'white', padding: '0.25rem', maxWidth: '100%', width: '150px', height: '150px' }} />
                       )}
                     </div>
 
-                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: '#113d69' }}>{nombre || usuario?.nombre}</h3>
+                    <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: '#113d69', fontSize: window.innerWidth < 576 ? '1.25rem' : '1.5rem' }}>{nombre || usuario?.nombre}</h3>
                     
                     <div style={{ 
                       display: 'inline-flex', 
@@ -498,7 +504,8 @@ function DriverProfile() {
                       color: '#ffffff',
                       padding: '0.25rem 1rem',
                       borderRadius: '2rem',
-                      marginBottom: '1rem'
+                      marginBottom: '1rem',
+                      flexWrap: 'wrap'
                     }}>
                       <FaStar /> {formatearPromedio(datosCalificacion.promedio)} ({datosCalificacion.total || 0} reseñas)
                     </div>
@@ -528,7 +535,12 @@ function DriverProfile() {
                   <div style={{ padding: '1.5rem', backgroundColor: '#ffffff' }}>
                     <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: '#113d69' }}>Información de Cuenta</h4>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: window.innerWidth < 576 ? '1fr' : '1fr 1fr',
+                      gap: '1rem',
+                      marginBottom: '1.5rem'
+                    }}>
                       <div>
                         <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>NOMBRE COMPLETO</label>
                         <input
@@ -563,7 +575,12 @@ function DriverProfile() {
 
                     <h4 style={{ fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '1rem', color: '#113d69' }}>Credenciales y Vehículo</h4>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: window.innerWidth < 576 ? '1fr' : '1fr 1fr',
+                      gap: '1rem',
+                      marginBottom: '1.5rem'
+                    }}>
                       {/* Licencia */}
                       <div style={{
                         backgroundColor: '#f8f9fa',
@@ -641,7 +658,7 @@ function DriverProfile() {
                             <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem' }}>
                               Capacidad: <span style={{ fontWeight: 'bold', color: '#113d69' }}>{vehiculo.capacidad || 'N/A'} pasajeros</span>
                             </p>
-                            <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <p style={{ marginBottom: '0.25rem', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                               <span style={{ color: '#6c757d' }}>Estado:</span>
                               <CustomBadge estado={vehiculo.estado === 'ACTIVO' ? 'APROBADO' : 'PENDIENTE'}>
                                 {vehiculo.estado || 'N/A'}

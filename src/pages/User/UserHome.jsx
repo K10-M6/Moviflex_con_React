@@ -506,21 +506,48 @@ const UserHome = () => {
                 <Container className="py-5">
                     {/* Tarjeta de bienvenida */}
                     <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
-                        <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{
+                            padding: '1.5rem',
+                            display: 'flex',
+                            flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                            justifyContent: 'space-between',
+                            alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+                            gap: window.innerWidth < 768 ? '1rem' : '0'
+                        }}>
                             <div>
                                 <h2 style={{ fontWeight: 'bold', margin: 0, color: brandColor }}>
                                     ¡Hola, <span style={{ color: accentColor }}>{usuario?.nombre?.split(' ')[0] || 'Usuario'}</span>!
                                 </h2>
                                 <p style={{ color: '#6c757d', margin: 0 }}>Gestiona tus viajes y pagos en MoviFlex</p>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <div style={{ textAlign: 'right', marginRight: '1rem', display: 'none', '@media (minWidth: 768px)': { display: 'block' } }}>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: window.innerWidth < 768 ? 'column' : 'row',
+                                alignItems: window.innerWidth < 768 ? 'flex-start' : 'center',
+                                gap: '1rem',
+                                width: window.innerWidth < 768 ? '100%' : 'auto'
+                            }}>
+                                <div style={{
+                                    textAlign: window.innerWidth < 768 ? 'left' : 'right',
+                                    marginRight: window.innerWidth < 768 ? '0' : '1rem',
+                                    display: 'none',
+                                    '@media (minWidth: 768px)': { display: 'block' }
+                                }}>
                                     <span style={{ fontSize: '0.875rem', textTransform: 'uppercase', fontWeight: 'bold', color: '#6c757d', display: 'block' }}>Gastado {periodo}</span>
                                     <h3 style={{ fontWeight: 'bold', margin: 0, color: accentColor }}>
                                         {formatearMoneda(displayGastos.total)}
                                     </h3>
                                 </div>
-                                <div style={{ backgroundColor: '#f8f9fa', padding: '0.25rem', borderRadius: '0.375rem', display: 'flex', gap: '0.25rem', border: '1px solid #dee2e6' }}>
+                                <div style={{
+                                    backgroundColor: '#f8f9fa',
+                                    padding: '0.25rem',
+                                    borderRadius: '0.375rem',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '0.25rem',
+                                    border: '1px solid #dee2e6',
+                                    width: window.innerWidth < 768 ? '100%' : 'auto'
+                                }}>
                                     <PeriodoBadge periodo="diario" actual={periodo} onClick={() => setPeriodo('diario')}>Día</PeriodoBadge>
                                     <PeriodoBadge periodo="mensual" actual={periodo} onClick={() => setPeriodo('mensual')}>Mes</PeriodoBadge>
                                     <PeriodoBadge periodo="anual" actual={periodo} onClick={() => setPeriodo('anual')}>Año</PeriodoBadge>
@@ -530,11 +557,16 @@ const UserHome = () => {
                     </div>
 
                     {/* Gráficos */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '7fr 5fr',
+                        gap: '1.5rem',
+                        marginBottom: '1.5rem'
+                    }}>
                         {/* Gráfico de hábitos de gasto */}
                         <div style={{ ...cardStyle, height: '100%' }}>
                             <div style={{ padding: '1.5rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                         <FaChartLine size={20} style={{ color: accentColor, marginRight: '0.5rem' }} />
                                         <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Hábitos de Gasto</h5>
@@ -564,7 +596,7 @@ const UserHome = () => {
                         {/* Frecuencia de Viajes */}
                         <div style={{ ...cardStyle, height: '100%' }}>
                             <div style={{ padding: '1.5rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                         <FaHistory size={20} style={{ color: brandColor, marginRight: '0.5rem' }} />
                                         <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Frecuencia de Viajes</h5>
@@ -587,7 +619,12 @@ const UserHome = () => {
                     </div>
 
                     {/* Mi Actividad Resumen y Pagos Recientes */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: window.innerWidth < 992 ? '1fr' : '7fr 5fr',
+                        gap: '1.5rem',
+                        marginBottom: '1.5rem'
+                    }}>
                         {/* Mi Actividad Resumen */}
                         <div style={{ ...cardStyle, height: '100%' }}>
                             <div style={{ padding: '1.5rem' }}>
@@ -595,7 +632,12 @@ const UserHome = () => {
                                     <FaUser size={22} style={{ color: accentColor, marginRight: '0.5rem' }} />
                                     <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Resumen de Actividad</h5>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: window.innerWidth < 576 ? '1fr' : window.innerWidth < 768 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                                    gap: '1rem',
+                                    marginBottom: '1rem'
+                                }}>
                                     <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '0.5rem', textAlign: 'center' }}>
                                         <h4 style={{ fontWeight: 'bold', marginBottom: 0, color: accentColor }}>{formatearMoneda(gastoTotalCalculado)}</h4>
                                         <small style={{ color: '#6c757d', fontWeight: 'bold' }}>Total Gastado</small>
@@ -640,16 +682,18 @@ const UserHome = () => {
                                         {displayPagosRecientes.slice(0, 3).map((pago) => (
                                             <div key={pago.idPago} style={{
                                                 display: 'flex',
+                                                flexDirection: window.innerWidth < 576 ? 'column' : 'row',
                                                 justifyContent: 'space-between',
-                                                alignItems: 'center',
+                                                alignItems: window.innerWidth < 576 ? 'flex-start' : 'center',
                                                 padding: '0.75rem 0',
-                                                borderBottom: '1px solid #e9ecef'
+                                                borderBottom: '1px solid #e9ecef',
+                                                gap: window.innerWidth < 576 ? '0.5rem' : '0'
                                             }}>
                                                 <div>
                                                     <div style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor }}>{pago.tipoPago || 'Viaje'}</div>
                                                     <small style={{ color: '#6c757d' }}>{new Date(pago.fechaPago).toLocaleDateString()}</small>
                                                 </div>
-                                                <div style={{ textAlign: 'right' }}>
+                                                <div style={{ textAlign: window.innerWidth < 576 ? 'left' : 'right' }}>
                                                     <div style={{ fontWeight: 'bold', color: accentColor }}>{formatearMoneda(pago.monto)}</div>
                                                     <PagoBadge estado={pago.estado} />
                                                 </div>
@@ -665,7 +709,7 @@ const UserHome = () => {
                     {/* Viajes Recientes */}
                     <div style={{ ...cardStyle }}>
                         <div style={{ padding: '1.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center' }}>
                                     <FaHistory size={24} style={{ color: accentColor, marginRight: '0.5rem' }} />
                                     <h5 style={{ margin: 0, fontWeight: 'bold', color: brandColor }}>Viajes Recientes</h5>
@@ -721,11 +765,16 @@ const UserHome = () => {
                                                 setShowDetalleViaje(true);
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                            <div style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: window.innerWidth < 768 ? '1fr 1fr' : '1fr 5fr 3fr 3fr',
+                                                gap: '0.5rem',
+                                                alignItems: 'center'
+                                            }}>
+                                                <div style={{ textAlign: 'center', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <FaRoute size={20} color={accentColor} />
                                                 </div>
-                                                <div style={{ width: '41.67%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <p style={{ marginBottom: 0, fontWeight: 'bold', color: brandColor }}>
                                                         A {viaje.ruta?.nombre || viaje.destino || "Destino"}
                                                     </p>
@@ -733,10 +782,10 @@ const UserHome = () => {
                                                         {formatearFecha(viaje.fechaHoraSalida)}
                                                     </small>
                                                 </div>
-                                                <div style={{ width: '25%', fontWeight: 'bold', color: accentColor }}>
+                                                <div style={{ fontWeight: 'bold', color: accentColor, gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     {formatearMoneda(viaje.precioFinal)}
                                                 </div>
-                                                <div style={{ width: '25%', textAlign: 'right' }}>
+                                                <div style={{ textAlign: window.innerWidth < 768 ? 'left' : 'right', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <EstadoViajeBadge estado={viaje.estado} />
                                                 </div>
                                             </div>
@@ -761,13 +810,14 @@ const UserHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1050
+                    zIndex: 1050,
+                    padding: '1rem'
                 }} onClick={() => setShowViajesModal(false)}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '0.5rem',
                         maxWidth: '1200px',
-                        width: '95%',
+                        width: '100%',
                         maxHeight: '90vh',
                         overflow: 'hidden'
                     }} onClick={(e) => e.stopPropagation()}>
@@ -780,7 +830,12 @@ const UserHome = () => {
                             </h5>
                         </div>
                         <div style={{ padding: '1rem 1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '6fr 4fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '6fr 4fr 2fr',
+                                gap: '1rem',
+                                marginBottom: '1rem'
+                            }}>
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                         <span style={{
@@ -800,7 +855,8 @@ const UserHome = () => {
                                                 padding: '0.375rem 0.75rem',
                                                 border: `1px solid ${accentColor}`,
                                                 borderLeft: 'none',
-                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                                borderRadius: '0 0.375rem 0.375rem 0',
+                                                minWidth: '150px'
                                             }}
                                         />
                                     </div>
@@ -823,7 +879,8 @@ const UserHome = () => {
                                                 padding: '0.375rem 0.75rem',
                                                 border: `1px solid ${brandColor}`,
                                                 borderLeft: 'none',
-                                                borderRadius: '0 0.375rem 0.375rem 0'
+                                                borderRadius: '0 0.375rem 0.375rem 0',
+                                                minWidth: '150px'
                                             }}
                                         >
                                             <option value="TODOS">Todos los estados</option>
@@ -835,7 +892,7 @@ const UserHome = () => {
                                         </select>
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
+                                <div style={{ textAlign: window.innerWidth < 768 ? 'left' : 'right' }}>
                                     <StatsBadge bgColor={accentColor} color="#ffffff">
                                         {viajesFiltrados.length} viajes
                                     </StatsBadge>
@@ -889,33 +946,38 @@ const UserHome = () => {
                                                 setShowViajesModal(false);
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                <div style={{ width: '8.33%', textAlign: 'center' }}>
+                                            <div style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: window.innerWidth < 768 ? '1fr 1fr 1fr 1fr' : '1fr 2fr 3fr 2fr 2fr 2fr',
+                                                gap: '0.5rem',
+                                                alignItems: 'center'
+                                            }}>
+                                                <div style={{ textAlign: 'center', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <FaRoute size={20} color={accentColor} />
                                                 </div>
-                                                <div style={{ width: '16.67%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <p style={{ marginBottom: 0, fontWeight: '600', color: brandColor }}>Viaje #{viaje.idViajes}</p>
                                                     <small style={{ color: '#6c757d' }}>
                                                         {formatearFecha(viaje.fechaHoraSalida)}
                                                     </small>
                                                 </div>
-                                                <div style={{ width: '25%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center' }}>
                                                         <FaRoute size={12} color={accentColor} style={{ marginRight: '0.25rem' }} />
                                                         <small style={{ fontWeight: '600', color: brandColor }}>Ruta:</small>
                                                         <span style={{ marginLeft: '0.5rem', color: '#6c757d', fontSize: '0.875rem' }}>{viaje.ruta?.nombre || 'No disponible'}</span>
                                                     </div>
                                                 </div>
-                                                <div style={{ width: '16.67%', fontWeight: 'bold', color: accentColor }}>
+                                                <div style={{ fontWeight: 'bold', color: accentColor, gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     {formatearMoneda(viaje.precioFinal)}
                                                 </div>
-                                                <div style={{ width: '16.67%' }}>
+                                                <div style={{ gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <small style={{ color: '#6c757d', display: 'flex', alignItems: 'center' }}>
                                                         <FaClock style={{ marginRight: '0.25rem' }} size={10} />
                                                         {viaje.cuposTotales ? `${viaje.cuposTotales - (viaje.cuposDisponibles || 0)}/${viaje.cuposTotales} pasajeros` : 'N/A'}
                                                     </small>
                                                 </div>
-                                                <div style={{ width: '16.67%', textAlign: 'right' }}>
+                                                <div style={{ textAlign: window.innerWidth < 768 ? 'left' : 'right', gridColumn: window.innerWidth < 768 ? 'span 1' : 'auto' }}>
                                                     <EstadoViajeBadge estado={viaje.estado} />
                                                 </div>
                                             </div>
@@ -948,13 +1010,14 @@ const UserHome = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1060
+                    zIndex: 1060,
+                    padding: '1rem'
                 }} onClick={() => setShowDetalleViaje(false)}>
                     <div style={{
                         backgroundColor: 'white',
                         borderRadius: '0.5rem',
                         maxWidth: '800px',
-                        width: '90%',
+                        width: '100%',
                         maxHeight: '90vh',
                         overflow: 'hidden'
                     }} onClick={(e) => e.stopPropagation()}>
@@ -968,20 +1031,25 @@ const UserHome = () => {
                             </h5>
                         </div>
                         <div style={{ padding: '1.5rem', overflowY: 'auto', maxHeight: 'calc(90vh - 140px)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr',
+                                gap: '1rem',
+                                marginBottom: '1rem'
+                            }}>
                                 <div style={{ backgroundColor: '#F9FAFB', border: `1px solid ${accentColor}20`, borderRadius: '1rem' }}>
                                     <div style={{ padding: '1rem' }}>
                                         <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: accentColor }}>Información General</h6>
                                         <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                                 <span style={{ color: '#6c757d' }}>Fecha y hora:</span>
                                                 <span style={{ fontWeight: '600', color: brandColor }}>{formatearFecha(viajeSeleccionado.fechaHoraSalida)}</span>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                                 <span style={{ color: '#6c757d' }}>Estado:</span>
                                                 <EstadoViajeBadge estado={viajeSeleccionado.estado} />
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap', gap: '0.25rem' }}>
                                                 <span style={{ color: '#6c757d' }}>Precio:</span>
                                                 <span style={{ fontWeight: '600', color: accentColor }}>{formatearMoneda(viajeSeleccionado.precioFinal)}</span>
                                             </div>
@@ -993,7 +1061,7 @@ const UserHome = () => {
                                         <h6 style={{ fontWeight: 'bold', marginBottom: '0.75rem', color: brandColor }}>Ruta del Viaje</h6>
                                         <div style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                                             {viajeSeleccionado.ruta?.nombre && (
-                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none' }}>
+                                                <div style={{ display: 'flex', padding: '0.5rem 0', borderBottom: 'none', flexWrap: 'wrap' }}>
                                                     <FaRoute size={14} color={accentColor} style={{ marginRight: '0.5rem', marginTop: '0.25rem' }} />
                                                     <div>
                                                         <span style={{ color: '#6c757d' }}>Ruta:</span>
