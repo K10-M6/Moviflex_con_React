@@ -119,37 +119,37 @@ describe("Driver E2E Flows", () => {
 
   it("2. Dashboard Conductor -- Ganancias, filtros, viajes y notificaciones", () => {
     loginAsDriver();
-
+    
     // Secciones principales de DriverHome
     cy.contains("h6", "Ganancias", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
-
+    
     // Filtros de periodo (Día / Mes / Año)
     cy.contains("span", "Día").click();
     cy.contains("span", "Mes").click();
     cy.contains("span", "Año").click();
-
+    
     // Viajes Recientes
     cy.contains("Viajes Recientes", { timeout: DEFAULT_TIMEOUT }).should(
       "be.visible"
     );
-
+    
     // Abrir historial completo si el botón existe (solo aparece con >3 viajes)
     cy.get("body").then(($body) => {
       if ($body.text().includes("Ver historial completo")) {
         cy.contains(/Ver historial completo/i).click();
-
+    
         cy.contains("Historial Completo de Viajes", { timeout: DEFAULT_TIMEOUT }).should("be.visible");
-
+    
         // Aplicar filtro de estado en modal
         cy.get("select", { timeout: DEFAULT_TIMEOUT })
           .first()
           .select("FINALIZADO", { force: true });
-
+    
         // Cerrar modal de historial
         cy.contains("button", "Cerrar", { timeout: DEFAULT_TIMEOUT }).click();
       }
     });
-
+    
     // Notificaciones (campana en header/navbar)
     cy.get("body").then(($body) => {
       if ($body.text().includes("Notificaciones")) {
