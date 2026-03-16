@@ -1,16 +1,74 @@
-# React + Vites
+# Moviflex Frontend - Guía de Inicio Rápido
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🎨 Descripción
+Este es el cliente web de **Moviflex**, desarrollado con **React** y **Vite**. La aplicación permite a los usuarios buscar viajes, registrar vehículos, validar placas mediante IA y gestionar su perfil de forma interactiva.
 
-Currently, two official plugins are available:
+## 🛠️ Tecnologías Principales
+- **Framework:** React 18
+- **Herramienta de Construcción:** Vite
+- **Estilos:** Bootstrap y React-Bootstrap
+- **Iconos:** Lucide-React y React-Icons
+- **Mapas:** Leaflet y React-Leaflet
+- **Comunicación API:** Axios
+- **Tiempo Real:** Socket.io-client
+- **Pruebas E2E:** Cypress
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📋 Requisitos Previos
+- Node.js (v18 o superior)
+- El backend de Moviflex en ejecución para la funcionalidad completa.
 
-## React Compiler
+## 🔧 Instalación y Configuración
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Navegar a la carpeta del proyecto:**
+   ```bash
+   cd Moviflex_con_React
+   ```
 
-## Expanding the ESLint configuration
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. **Configuración de variables de entorno:**
+   Crea un archivo `.env` (si es necesario para apuntar al backend):
+   ```env
+   VITE_API_URL=http://localhost:3000
+   ```
+
+## 🚀 Cómo Correr el Proyecto
+
+- **Modo Desarrollo:**
+  ```bash
+  npm run dev
+  ```
+  La aplicación estará disponible usualmente en `http://localhost:5173`.
+
+- **Construir para Producción:**
+  ```bash
+  npm run build
+  ```
+
+- **Previsualizar construcción:**
+  ```bash
+  npm run start
+  ```
+
+## 🧪 Pruebas E2E con Cypress
+Para ejecutar las pruebas de interfaz:
+
+- **Abrir la interfaz de Cypress:**
+  ```bash
+  npm run cypress:open
+  ```
+
+- **Ejecutar pruebas en la terminal:**
+  ```bash
+  npm run cypress:run
+  ```
+
+## 📂 Estructura Principal
+- `src/components/`: Componentes reutilizables.
+- `src/pages/`: Vistas principales de la aplicación.
+- `src/services/`: Configuración de Axios para llamadas al backend.
+- `cypress/`: Pruebas de integración y fin a fin.
+- `public/`: Archivos estáticos.
