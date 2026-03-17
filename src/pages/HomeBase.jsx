@@ -76,7 +76,7 @@ function HomeBase() {
   const autores = [
     { id: 1, nombre: "Arlys Villareal", rol: "Backend", img: Arlys },
     { id: 2, nombre: "Carlos Rodriguez", rol: "Desarrollador Móvil", img: Carlos },
-    { id: 3, nombre: "Janier Cerón", rol: "Frontend", img: Janier },
+    { id: 3, nombre: "Janier Cerón", rol: "Frontend Engineer", img: Janier },
     { id: 4, nombre: "Juan Cerón", rol: "Frontend Diseño", img: JuanCeron },
     { id: 5, nombre: "Juan Ocampo", rol: "Tester", img: JuanOcampo },
     { id: 6, nombre: "Kevin Jaramillo", rol: "Product Owner", img: Kevin },
