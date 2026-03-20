@@ -224,67 +224,6 @@ function QRScanner({ show, onHide }) {
 
             <Modal.Body className="p-5">
                 <div className="d-flex justify-content-center mb-4">
-                    <Button
-                        variant={scanMethod === 'camera' ? 'primary' : 'outline-primary'}
-                        onClick={() => {
-                            setScanMethod('camera');
-                            stopScanning();
-                        }}
-                        className="me-2"
-                        style={{ 
-                            borderRadius: '50px',
-                            padding: '10px 25px',
-                            fontWeight: '500',
-                            backgroundColor: scanMethod === 'camera' ? colores.primary : 'transparent',
-                            borderColor: colores.primary,
-                            color: scanMethod === 'camera' ? 'white' : colores.primary,
-                            transition: 'all 0.3s ease'
-                        }}
-                        disabled={loading}
-                        onMouseEnter={(e) => {
-                            if (scanMethod !== 'camera') {
-                                e.target.style.backgroundColor = colores.primary + '10';
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (scanMethod !== 'camera') {
-                                e.target.style.backgroundColor = 'transparent';
-                            }
-                        }}
-                    >
-                        <FaCamera className="me-2" />
-                        Usar Cámara
-                    </Button>
-                    <Button
-                        variant={scanMethod === 'upload' ? 'primary' : 'outline-primary'}
-                        onClick={() => {
-                            setScanMethod('upload');
-                            stopScanning();
-                        }}
-                        style={{ 
-                            borderRadius: '50px',
-                            padding: '10px 25px',
-                            fontWeight: '500',
-                            backgroundColor: scanMethod === 'upload' ? colores.primary : 'transparent',
-                            borderColor: colores.primary,
-                            color: scanMethod === 'upload' ? 'white' : colores.primary,
-                            transition: 'all 0.3s ease'
-                        }}
-                        disabled={loading}
-                        onMouseEnter={(e) => {
-                            if (scanMethod !== 'upload') {
-                                e.target.style.backgroundColor = colores.primary + '10';
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            if (scanMethod !== 'upload') {
-                                e.target.style.backgroundColor = 'transparent';
-                            }
-                        }}
-                    >
-                        <FaUpload className="me-2" />
-                        Subir Imagen
-                    </Button>
                 </div>
 
                 {loading && (
