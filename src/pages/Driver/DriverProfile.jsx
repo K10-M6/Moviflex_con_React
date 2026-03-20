@@ -171,6 +171,8 @@ function DriverProfile() {
 
   const [nombre, setNombre] = useState(usuario?.nombre || '');
   const [telefono, setTelefono] = useState(usuario?.telefono || '');
+  const [nombreEmergencia, setNombreEmergencia] = useState(usuario?.nombreEmergencia || '');
+  const [numeroEmergencia, setNumeroEmergencia] = useState(usuario?.numeroEmergencia || '');
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -347,11 +349,11 @@ function DriverProfile() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ nombre, telefono })
+        body: JSON.stringify({ nombre, telefono, nombreEmergencia, numeroEmergencia })
       });
 
       if (response.ok) {
-        setUsuario({ ...usuario, nombre, telefono });
+        setUsuario({ ...usuario, nombre, telefono, nombreEmergencia, numeroEmergencia });
         toast.success('Datos actualizados correctamente');
       } else {
         toast.error('Error al actualizar los datos');
@@ -563,6 +565,44 @@ function DriverProfile() {
                           value={telefono}
                           onChange={(e) => setTelefono(e.target.value)}
                           placeholder="Tu número de teléfono"
+                          style={{
+                            width: '100%',
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '0.375rem',
+                            border: '1px solid #ced4da'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: window.innerWidth < 576 ? '1fr' : '1fr 1fr',
+                      gap: '1rem',
+                      marginBottom: '1.5rem'
+                    }}>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>NOMBRE EMERGENCIA</label>
+                        <input
+                          type="text"
+                          value={nombreEmergencia}
+                          onChange={(e) => setNombreEmergencia(e.target.value)}
+                          placeholder="Nombre del contacto"
+                          style={{
+                            width: '100%',
+                            padding: '0.375rem 0.75rem',
+                            borderRadius: '0.375rem',
+                            border: '1px solid #ced4da'
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#113d69', display: 'block', marginBottom: '0.25rem' }}>NÚMERO EMERGENCIA</label>
+                        <input
+                          type="text"
+                          value={numeroEmergencia}
+                          onChange={(e) => setNumeroEmergencia(e.target.value)}
+                          placeholder="Número del contacto"
                           style={{
                             width: '100%',
                             padding: '0.375rem 0.75rem',

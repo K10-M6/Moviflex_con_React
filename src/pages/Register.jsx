@@ -202,7 +202,9 @@ function Register() {
     const [password, setPassword] = useState("");
     const [fotoBase64, setFotoBase64] = useState("");
     const [fotoPreview, setFotoPreview] = useState("");
-    const rol = "CONDUCTOR";
+    const [nombreEmergencia, setNombreEmergencia] = useState("");
+    const [numeroEmergencia, setNumeroEmergencia] = useState("");
+    const [rol, setRol] = useState("CONDUCTOR"); // Por defecto CONDUCTOR, pero permitiremos cambio
 
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -313,7 +315,16 @@ function Register() {
         
         setLoading(true);
         try {
-            const datosEnviar = { nombre, email, telefono, password, rol, image: fotoBase64 };
+            const datosEnviar = { 
+                nombre, 
+                email, 
+                telefono, 
+                password, 
+                rol, 
+                image: fotoBase64,
+                nombreEmergencia,
+                numeroEmergencia
+            };
             const respuesta = await fetch(`${API_URL}/auth/registro`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datosEnviar)
@@ -353,7 +364,7 @@ function Register() {
     const handleNextStep = () => {
         if (step === 1) return handleRequestOtp();
         if (step === 2) return handleVerifyOtp();
-        if (step === 3 && (!nombre || !telefono)) return toast.error("Completa los campos");
+        if (step === 3 && (!nombre || !telefono || !nombreEmergencia || !numeroEmergencia)) return toast.error("Completa todos los campos, incluyendo los de emergencia");
         if (step === 4 && !fotoBase64) return toast.error("Toma una foto");
         if (step === 5 && (!isPasswordValid() || !password)) return toast.error("La contraseña debe cumplir todos los requisitos");
         setStep(step + 1);
@@ -436,10 +447,31 @@ function Register() {
                                         {step === 3 && (
                                             <div className="animate__animated animate__fadeIn">
                                                 <Form.Group className="mb-3">
+                                                    <Form.Label className="small text-muted mb-1">Tipo de Registro</Form.Label>
+                                                    <Form.Select 
+                                                        value={rol} 
+                                                        onChange={(e) => setRol(e.target.value)} 
+                                                        style={inputStyle}
+                                                    >
+                                                        <option value="CONDUCTOR">Conductor</option>
+                                                        <option value="PASAJERO">Viajero (Pasajero)</option>
+                                                    </Form.Select>
+                                                </Form.Group>
+                                                <Form.Group className="mb-3">
                                                     <Form.Control type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre Completo" required style={inputStyle} />
                                                 </Form.Group>
-                                                <Form.Group className="mb-4">
+                                                <Form.Group className="mb-3">
                                                     <Form.Control type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="Teléfono" required style={inputStyle} />
+                                                </Form.Group>
+
+                                                <hr className="my-4" />
+                                                <h6 className="fw-bold mb-3" style={{ color: '#113d69' }}>Contacto de Emergencia</h6>
+
+                                                <Form.Group className="mb-3">
+                                                    <Form.Control type="text" value={nombreEmergencia} onChange={(e) => setNombreEmergencia(e.target.value)} placeholder="Nombre del Contacto de Emergencia" required style={inputStyle} />
+                                                </Form.Group>
+                                                <Form.Group className="mb-4">
+                                                    <Form.Control type="tel" value={numeroEmergencia} onChange={(e) => setNumeroEmergencia(e.target.value)} placeholder="Número de Emergencia" required style={inputStyle} />
                                                 </Form.Group>
                                                 <Button type="button" onClick={handleNextStep} className="w-100 py-2 border-0" style={{ background: '#62d8d9', borderRadius: '12px', fontWeight: 'bold', color: 'white' }}>
                                                     Siguiente <FaArrowRight className="ms-2" size={14} />
@@ -529,7 +561,9 @@ function Register() {
                                         {step === 6 && (
                                             <div className="animate__animated animate__fadeIn">
                                                 <div className="bg-light p-3 rounded-4 mb-3" style={{ fontSize: '0.85rem' }}>
-                                                    <strong>{nombre}</strong><br />{email}
+                                                    <strong>{nombre}</strong> ({rol})<br />
+                                                    {email}<br />
+                                                    <span className="text-muted small mt-2 d-block">Emergencia: {nombreEmergencia} ({numeroEmergencia})</span>
                                                 </div>
                                                 <Form.Check 
                                                     type="checkbox" 

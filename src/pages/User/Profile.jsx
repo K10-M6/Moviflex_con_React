@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import Navbar from "../../components/Navbar";
 import { API_URL } from "../../config";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
-import { FaUser, FaStar, FaQrcode, FaUserCircle, FaCalendarAlt, FaRoute, FaWallet, FaIdCard, FaHistory } from "react-icons/fa";
+import { FaUser, FaStar, FaQrcode, FaUserCircle, FaCalendarAlt, FaRoute, FaWallet, FaIdCard, FaHistory, FaSave, FaPhone } from "react-icons/fa";
 import QRModal from "../../components/QRModal";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from 'react-hot-toast';
@@ -175,6 +175,11 @@ function Profile() {
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrValue, setQrValue] = useState('');
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
+  const [nombre, setNombre] = useState(usuario?.nombre || '');
+  const [telefono, setTelefono] = useState(usuario?.telefono || '');
+  const [nombreEmergencia, setNombreEmergencia] = useState(usuario?.nombreEmergencia || '');
+  const [numeroEmergencia, setNumeroEmergencia] = useState(usuario?.numeroEmergencia || '');
 
   const [estadisticas, setEstadisticas] = useState({
     totalViajes: 0,
@@ -330,7 +335,32 @@ function Profile() {
     }
     return <div style={{ display: 'flex' }}>{stars}</div>;
   };
+  
+  const guardarCambios = async () => {
+    try {
+      setLoadingUpdate(true);
+      const response = await fetch(`${API_URL}/auth/${usuario.idUsuarios}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ nombre, telefono, nombreEmergencia, numeroEmergencia })
+      });
 
+      if (response.ok) {
+        setUsuario({ ...usuario, nombre, telefono, nombreEmergencia, numeroEmergencia });
+        toast.success('Datos actualizados correctamente');
+      } else {
+        toast.error('Error al actualizar los datos');
+      }
+    } catch (error) {
+      toast.error('Error al guardar los cambios');
+    } finally {
+      setLoadingUpdate(false);
+    }
+  };
+ 
   const generarQr = () => {
     if (!token) return toast.error("No hay Token disponible.");
     setQrValue(`${token}|${usuario?.nombre || ''}`);
@@ -530,6 +560,75 @@ function Profile() {
                       </div>
                     </div>
 
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: window.innerWidth < 576 ? '1fr' : '1fr 1fr',
+                      gap: '1rem',
+                      marginBottom: '1.5rem'
+                    }}>
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        height: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                          <FaUser style={{ marginRight: '0.5rem', color: accentColor }} />
+                          <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
+                            Nombre Emergencia
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={nombreEmergencia}
+                          onChange={(e) => setNombreEmergencia(e.target.value)}
+                          placeholder="Nombre del contacto"
+                          className="form-control"
+                          style={{
+                            backgroundColor: 'transparent',
+                            border: '1px solid #ced4da',
+                            borderRadius: '0.375rem',
+                            padding: '0.375rem 0.75rem',
+                            fontWeight: 'bold',
+                            color: brandColor,
+                            width: '100%'
+                          }}
+                        />
+                      </div>
+
+                      <div style={{
+                        backgroundColor: '#f8f9fa',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        border: 'none',
+                        height: '100%'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                          <FaPhone style={{ marginRight: '0.5rem', color: accentColor }} />
+                          <span style={{ fontWeight: 'bold', fontSize: '0.875rem', color: brandColor, textTransform: 'uppercase' }}>
+                            Número Emergencia
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={numeroEmergencia}
+                          onChange={(e) => setNumeroEmergencia(e.target.value)}
+                          placeholder="Número del contacto"
+                          className="form-control"
+                          style={{
+                            backgroundColor: 'transparent',
+                            border: '1px solid #ced4da',
+                            borderRadius: '0.375rem',
+                            padding: '0.375rem 0.75rem',
+                            fontWeight: 'bold',
+                            color: brandColor,
+                            width: '100%'
+                          }}
+                        />
+                      </div>
+                    </div>
+
                     <div style={{ marginBottom: '1.5rem' }}>
                       <div style={{
                         backgroundColor: '#f8f9fa',
@@ -547,6 +646,18 @@ function Profile() {
                           {usuario?.email}
                         </p>
                       </div>
+                    </div>
+
+                    <div className="d-flex gap-2 mb-4">
+                        <CustomButton
+                            variant="success"
+                            onClick={guardarCambios}
+                            disabled={loadingUpdate}
+                            style={{ flex: 1 }}
+                        >
+                            <FaSave style={{ marginRight: '0.5rem' }} /> 
+                            {loadingUpdate ? 'Guardando...' : 'Guardar Cambios Profile'}
+                        </CustomButton>
                     </div>
 
                     <h4 style={{ fontWeight: 'bold', marginBottom: '1rem', color: brandColor }}>
