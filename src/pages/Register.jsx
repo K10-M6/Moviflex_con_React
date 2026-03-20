@@ -204,7 +204,7 @@ function Register() {
     const [fotoPreview, setFotoPreview] = useState("");
     const [nombreEmergencia, setNombreEmergencia] = useState("");
     const [numeroEmergencia, setNumeroEmergencia] = useState("");
-    const [rol, setRol] = useState("CONDUCTOR"); // Por defecto CONDUCTOR, pero permitiremos cambio
+    const rol = "CONDUCTOR";
 
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -447,17 +447,6 @@ function Register() {
                                         {step === 3 && (
                                             <div className="animate__animated animate__fadeIn">
                                                 <Form.Group className="mb-3">
-                                                    <Form.Label className="small text-muted mb-1">Tipo de Registro</Form.Label>
-                                                    <Form.Select 
-                                                        value={rol} 
-                                                        onChange={(e) => setRol(e.target.value)} 
-                                                        style={inputStyle}
-                                                    >
-                                                        <option value="CONDUCTOR">Conductor</option>
-                                                        <option value="PASAJERO">Viajero (Pasajero)</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                                <Form.Group className="mb-3">
                                                     <Form.Control type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre Completo" required style={inputStyle} />
                                                 </Form.Group>
                                                 <Form.Group className="mb-3">
@@ -561,7 +550,7 @@ function Register() {
                                         {step === 6 && (
                                             <div className="animate__animated animate__fadeIn">
                                                 <div className="bg-light p-3 rounded-4 mb-3" style={{ fontSize: '0.85rem' }}>
-                                                    <strong>{nombre}</strong> ({rol})<br />
+                                                    <strong>{nombre}</strong><br />
                                                     {email}<br />
                                                     <span className="text-muted small mt-2 d-block">Emergencia: {nombreEmergencia} ({numeroEmergencia})</span>
                                                 </div>

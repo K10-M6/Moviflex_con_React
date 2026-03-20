@@ -75,6 +75,12 @@ describe("Driver E2E Flows", () => {
     cy.get('input[placeholder="Teléfono"]', { timeout: DEFAULT_TIMEOUT })
       .type("3107654321");
 
+    cy.get('input[placeholder="Nombre del Contacto de Emergencia"]', { timeout: DEFAULT_TIMEOUT })
+      .type("Emergencia Cypress");
+
+    cy.get('input[placeholder="Número de Emergencia"]', { timeout: DEFAULT_TIMEOUT })
+      .type("3009998877");
+
     cy.contains("button", "Siguiente", { timeout: DEFAULT_TIMEOUT }).click();
 
     // Paso 4: Foto facial (mock de cámara)

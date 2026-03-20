@@ -4,6 +4,11 @@ import Navbar from '../components/Navbar';
 import { API_URL } from '../config';
 import { useState } from 'react';
 import axios from 'axios';
+import SavingsCalculator from '../components/SavingsCalculator';
+import SustainabilitySection from '../components/SustainabilitySection';
+import WaveDivider from '../components/WaveDivider';
+import FaqSection from '../components/FaqSection';
+import AppDownloadBanner from '../components/AppDownloadBanner';
 
 // --- IMPORTACIÓN DE IMÁGENES ---
 import imagencontacto from '../pages/Imagenes/AutoresContacto.png';
@@ -134,7 +139,9 @@ function HomeBase() {
         <Container style={{ position: 'relative', zIndex: 10, marginBottom: '2rem' }}>
           <Row className="justify-content-center text-center">
             <Col lg={10}>
-              <h1 className="display-4 fw-bold mb-3" style={{ color: '#113d69' }}>Conectamos personas. Optimizamos trayectos.</h1>
+              <h1 className="display-4 fw-bold mb-3 animate__animated animate__fadeInDown" style={{ color: '#113d69' }}>
+                Conectamos personas. <span style={{ color: '#56bca7' }}>Optimizamos trayectos.</span>
+              </h1>
             </Col>
           </Row>
         </Container>
@@ -158,6 +165,8 @@ function HomeBase() {
             }}
           />
         </div>
+
+        <WaveDivider color="#ffffff" />
       </div>
 
       <div id="como-funciona-seccion"
@@ -287,72 +296,80 @@ function HomeBase() {
         </Container>
       </div>
 
-      {/* SECCIÓN MAPA */}
-      <Container className="py-5 mt-4">
-        <Row className="justify-content-center">
-          <Col lg={10} className="text-center">
-            <h2 className="fw-bold mb-5" style={{ color: '#113d69', fontSize: '2.4rem' }}>¡Únete a la Revolución del Viaje Compartido!</h2>
-            <div style={{ borderRadius: '30px', padding: '10px', backgroundColor: 'white', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-              <Image src={imagenAbajo} fluid style={{ width: '100%', borderRadius: '25px' }} />
-            </div>
-          </Col>
-        </Row>
-      </Container>
+      <WaveDivider color="#e8f6f3" flip={true} />
+      <div id="sostenibilidad-seccion">
+        <SustainabilitySection />
+      </div>
+      <WaveDivider color="#e8f6f3" />
+
+      {/* NUEVAS SECCIONES: CALCULADORA */}
+      <div id="calculadora-seccion" className="animate__animated animate__fadeIn">
+        <SavingsCalculator />
+      </div>
+
+      <WaveDivider color="#56bca7" flip={true} />
+
 
       {/* SECCIÓN EQUIPO */}
-      <Container className="py-5 mb-5">
-        <Row className="justify-content-center">
-          <Col lg={11}>
-            <div style={{
-              backgroundColor: verdeMenta,
-              borderRadius: '40px',
-              overflow: 'hidden',
-              boxShadow: '0 25px 50px rgba(86, 188, 167, 0.3)',
-              padding: '70px 30px'
-            }}>
-              <div className="text-center mb-5">
-                <h2 className="fw-bold" style={{ color: '#fff', fontSize: '2.5rem' }}>Equipo MoviFlex</h2>
-                <p className="text-white" style={{ fontSize: '1.1rem', opacity: 0.9 }}>Los creadores de tu nueva forma de viajar</p>
+      <div id="equipo-seccion">
+        <Container className="py-5 mb-5">
+          <Row className="justify-content-center">
+            <Col lg={11}>
+              <div style={{
+                backgroundColor: verdeMenta,
+                borderRadius: '40px',
+                overflow: 'hidden',
+                boxShadow: '0 25px 50px rgba(86, 188, 167, 0.3)',
+                padding: '70px 30px'
+              }}>
+                <div className="text-center mb-5">
+                  <h2 className="fw-bold" style={{ color: '#fff', fontSize: '2.5rem' }}>Equipo MoviFlex</h2>
+                  <p className="text-white" style={{ fontSize: '1.1rem', opacity: 0.9 }}>Los creadores de tu nueva forma de viajar</p>
+                </div>
+                <Row className="justify-content-center g-4">
+                  {autores.map((autor) => (
+                    <Col key={autor.id} xs={6} md={4} lg={2} className="text-center">
+                      <div style={{
+                        width: '100px',
+                        height: '100px',
+                        margin: '0 auto',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        backgroundColor: 'white',
+                        border: '3px solid white',
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'transform 0.3s ease'
+                      }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                        <Image
+                          src={autor.img}
+                          alt={autor.nombre}
+                          style={{
+                            width: autor.nombre === "Kevin" ? '110%' : '100%',
+                            height: autor.nombre === "Kevin" ? '110%' : '100%',
+                            objectFit: autor.nombre === "Kevin" ? 'contain' : 'cover',
+                            transform: autor.nombre === "Kevin" ? 'scale(1.1)' : 'none'
+                          }}
+                        />
+                      </div>
+                      <h6 className="fw-bold mb-0 mt-3" style={{ color: '#fff', fontSize: '1rem' }}>{autor.nombre}</h6>
+                      <p style={{ fontSize: '12px', color: '#2d5a52', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '4px' }}>{autor.rol}</p>
+                    </Col>
+                  ))}
+                </Row>
               </div>
-              <Row className="justify-content-center g-4">
-                {autores.map((autor) => (
-                  <Col key={autor.id} xs={6} md={4} lg={2} className="text-center">
-                    <div style={{
-                      width: '100px',
-                      height: '100px',
-                      margin: '0 auto',
-                      borderRadius: '50%',
-                      overflow: 'hidden',
-                      backgroundColor: 'white',
-                      border: '3px solid white',
-                      boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'transform 0.3s ease'
-                    }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-                      <Image
-                        src={autor.img}
-                        alt={autor.nombre}
-                        style={{
-                          width: autor.nombre === "Kevin" ? '110%' : '100%',
-                          height: autor.nombre === "Kevin" ? '110%' : '100%',
-                          objectFit: autor.nombre === "Kevin" ? 'contain' : 'cover',
-                          transform: autor.nombre === "Kevin" ? 'scale(1.1)' : 'none'
-                        }}
-                      />
-                    </div>
-                    <h6 className="fw-bold mb-0 mt-3" style={{ color: '#fff', fontSize: '1rem' }}>{autor.nombre}</h6>
-                    <p style={{ fontSize: '12px', color: '#113d69', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '4px' }}>{autor.rol}</p>
-                  </Col>
-                ))}
-              </Row>
-            </div>
-          </Col>
-        </Row>
-      </Container>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+
+      <WaveDivider color="#56bca7" />
+      <FaqSection />
+      <AppDownloadBanner />
       {/* SECCIÓN CONTACTO (Botón en la página) */}
       <Container id="contacto-seccion" className="py-5">
         <Row className="justify-content-center">

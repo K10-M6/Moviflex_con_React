@@ -74,15 +74,27 @@ export default function NavbarCustom({ transparent }) {
     }
   };
 
+  const scrollToSection = (id) => {
+    if (location.pathname !== '/') {
+      navigate('/', { state: { scrollToSection: id } });
+    } else {
+      const seccion = document.getElementById(id);
+      if (seccion) {
+        seccion.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   // Efecto para manejar el scroll cuando se navega desde otra página
   useEffect(() => {
-    if (location.pathname === '/' && location.state?.scrollToComoFunciona) {
+    const targetSection = location.state?.scrollToSection || (location.state?.scrollToComoFunciona ? 'como-funciona-seccion' : null);
+    if (location.pathname === '/' && targetSection) {
       // Limpiamos el estado para no hacer scroll múltiples veces
       navigate(location.pathname, { replace: true, state: {} });
 
       // Pequeño delay para asegurar que el DOM esté listo
       setTimeout(() => {
-        const seccion = document.getElementById('como-funciona-seccion');
+        const seccion = document.getElementById(targetSection);
         if (seccion) {
           seccion.scrollIntoView({ behavior: 'smooth' });
         }
@@ -155,30 +167,12 @@ export default function NavbarCustom({ transparent }) {
 
           {/* BOTÓN "CONTÁCTANOS" - SOLO VISIBLE EN HOMEBASE */}
           {location.pathname === '/' && (
-            <Button
-              variant="link"
-              onClick={goToContacto}
-              className="d-flex align-items-center text-decoration-none"
-              style={{
-                color: '#56bca7',
-                fontWeight: '600',
-                fontSize: '1rem',
-                padding: '0.5rem 1rem',
-                backgroundColor: 'transparent',
-                border: 'none',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.color = '#3da89a';
-                e.target.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.color = '#56bca7';
-                e.target.style.transform = 'scale(1)';
-              }}
-            >
-              Contáctanos
-            </Button>
+            <div className="d-none d-xl-flex">
+              <Button variant="link" onClick={() => scrollToSection('sostenibilidad-seccion')} className="text-decoration-none nav-link-custom">Impacto</Button>
+              <Button variant="link" onClick={() => scrollToSection('calculadora-seccion')} className="text-decoration-none nav-link-custom">Ahorro</Button>
+              <Button variant="link" onClick={() => scrollToSection('equipo-seccion')} className="text-decoration-none nav-link-custom">Equipo</Button>
+              <Button variant="link" onClick={goToContacto} className="text-decoration-none nav-link-custom">Contacto</Button>
+            </div>
           )}
         </div>
 
@@ -186,6 +180,20 @@ export default function NavbarCustom({ transparent }) {
 
         <Navbar.Collapse id="navbar-basico">
           <Nav className="ms-auto align-items-center">
+            {/* ESTILO PARA LOS LINKS DEL NAVBAR */}
+            <style>{`
+              .nav-link-custom {
+                color: #56bca7 !important;
+                font-weight: 600;
+                font-size: 0.95rem;
+                padding: 0.5rem 1rem;
+                transition: all 0.2s;
+              }
+              .nav-link-custom:hover {
+                color: #2d5a52 !important;
+                transform: translateY(-2px);
+              }
+            `}</style>
             {!token ? (
               <div style={{
                 display: 'flex',

@@ -1,0 +1,69 @@
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card } from 'react-bootstrap';
+import { FaLeaf, FaCarSide, FaCity } from 'react-icons/fa';
+
+const SustainabilitySection = () => {
+    const brandColor = "#56bca7";
+    const lightGreen = "#e8f6f3";
+    
+    const [co2, setCo2] = useState(12540);
+
+    // Efecto de contador en "tiempo real"
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCo2(prev => prev + Math.floor(Math.random() * 3) + 1);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const impacts = [
+        { icon: <FaLeaf size={40} />, title: "450kg", desc: "Reducción de CO2 por persona al año compartiendo ruta.", delay: "0.2s" },
+        { icon: <FaCarSide size={40} />, title: "30%", desc: "Menos combustible consumido en trayectos diarios.", delay: "0.4s" },
+        { icon: <FaCity size={40} />, title: "25%", desc: "Disminución estimada en la congestión vehicular local.", delay: "0.6s" }
+    ];
+
+    return (
+        <section className="py-5" style={{ backgroundColor: lightGreen }}>
+            <Container>
+                <div className="text-center mb-5 animate__animated animate__fadeIn">
+                    <h2 className="fw-bold mb-3" style={{ color: brandColor, fontSize: '2.5rem' }}>Nuestro Impacto Ambiental</h2>
+                    <div className="d-inline-block py-2 px-4 mb-4 rounded-pill shadow-sm bg-white border">
+                        <span className="fw-bold text-muted small me-2 uppercase">🌳 CO2 acumulado evitado hoy:</span>
+                        <span className="fw-bold fs-4" style={{ color: brandColor }}>{co2.toLocaleString()} kg</span>
+                    </div>
+                    <p className="text-muted" style={{ maxWidth: '800px', margin: '0 auto', fontSize: '1.2rem' }}>
+                        Compartir un vehículo no es solo ahorrar; es una declaración de conciencia ciudadana. Mira lo que logramos juntos cada día.
+                    </p>
+                </div>
+
+                <Row className="justify-content-center">
+                    {impacts.map((item, index) => (
+                        <Col lg={4} md={6} key={index} className="mb-4">
+                            <Card className="h-100 border-0 shadow-sm p-4 text-center animate__animated animate__fadeInUp" style={{ 
+                                borderRadius: '35px', 
+                                animationDelay: item.delay,
+                                transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-15px) scale(1.02)';
+                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(86,188,167,0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                e.currentTarget.style.boxShadow = '0 5px 15px rgba(0,0,0,0.05)';
+                            }}>
+                                <div className="mb-4 d-inline-block p-3 rounded-circle" style={{ backgroundColor: 'white', color: brandColor, boxShadow: '0 10px 25px rgba(86,188,167,0.15)' }}>
+                                    {item.icon}
+                                </div>
+                                <h3 className="fw-bold mb-2" style={{ color: brandColor, fontSize: '2rem' }}>{item.title}</h3>
+                                <p className="text-muted mb-0" style={{ fontSize: '1rem', lineHeight: '1.6' }}>{item.desc}</p>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+            </Container>
+        </section>
+    );
+};
+
+export default SustainabilitySection;

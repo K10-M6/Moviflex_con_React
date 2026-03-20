@@ -115,7 +115,9 @@ const CustomButton = ({ variant, onClick, children, disabled, style, className, 
             style={{ ...getButtonStyle(), ...style }}
             className={className}
         >
-            {children}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                {children}
+            </span>
         </button>
     );
 };
@@ -320,17 +322,19 @@ function AdminReportesPago() {
                         onClick={enviarRecordatorios}
                         disabled={procesando}
                     >
-                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : 
-                         <BsEnvelopeFill style={{ marginRight: '0.5rem' }} />}
-                        Enviar Recordatorios
+                        <span>
+                            {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : 
+                             <BsEnvelopeFill style={{ marginRight: '0.25rem' }} />}
+                        </span>
+                        <span>Enviar Recordatorios</span>
                     </CustomButton>
                     <CustomButton
                         variant="outline-danger"
                         onClick={() => setShowVerificarModal(true)}
                         disabled={procesando}
                     >
-                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
-                        Verificar Pagos Mensuales
+                        <span>{procesando && <Spinner size="sm" style={{ marginRight: '0.25rem' }} />}</span>
+                        <span>Verificar Pagos Mensuales</span>
                     </CustomButton>
                 </div>
             </div>
@@ -616,8 +620,8 @@ function AdminReportesPago() {
                                         onClick={() => aprobarReporte(reporteSeleccionado.idReporte)}
                                         disabled={procesando}
                                     >
-                                        {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : <BsCheckCircleFill style={{ marginRight: '0.25rem' }} />}
-                                        Aprobar
+                                        <span>{procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : <BsCheckCircleFill style={{ marginRight: '0.25rem' }} />}</span>
+                                        <span>Aprobar</span>
                                     </CustomButton>
                                     <CustomButton
                                         variant="danger"
@@ -685,8 +689,8 @@ function AdminReportesPago() {
                                 onClick={() => rechazarReporte(reporteSeleccionado?.idReporte)}
                                 disabled={procesando}
                             >
-                                {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : null}
-                                Confirmar Rechazo
+                                <span>{procesando && <Spinner size="sm" style={{ marginRight: '0.25rem' }} />}</span>
+                                <span>Confirmar Rechazo</span>
                             </CustomButton>
                         </div>
                     </div>
@@ -735,8 +739,8 @@ function AdminReportesPago() {
                                 onClick={verificarMensuales}
                                 disabled={procesando}
                             >
-                                {procesando ? <Spinner size="sm" style={{ marginRight: '0.5rem' }} /> : null}
-                                Confirmar Verificación
+                                <span>{procesando && <Spinner size="sm" style={{ marginRight: '0.25rem' }} />}</span>
+                                <span>Confirmar Verificación</span>
                             </CustomButton>
                         </div>
                     </div>

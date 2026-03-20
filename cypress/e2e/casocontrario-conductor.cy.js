@@ -155,6 +155,8 @@ describe("Casos Contrarios — Conductor", () => {
     cy.get('input[placeholder="Nombre Completo"]', { timeout: DEFAULT_TIMEOUT })
       .type("Test Negativo");
     cy.get('input[placeholder="Teléfono"]').type("3001234567");
+    cy.get('input[placeholder="Nombre del Contacto de Emergencia"]').type("Emergencia Negativo");
+    cy.get('input[placeholder="Número de Emergencia"]').type("3112223344");
     cy.contains("button", "Siguiente").click();
 
     // Paso 4: foto (mock cámara y capturar)
@@ -224,6 +226,8 @@ describe("Casos Contrarios — Conductor", () => {
     cy.get('input[placeholder="Nombre Completo"]', { timeout: DEFAULT_TIMEOUT })
       .type("Test Términos");
     cy.get('input[placeholder="Teléfono"]').type("3009876543");
+    cy.get('input[placeholder="Nombre del Contacto de Emergencia"]').type("Emergencia Términos");
+    cy.get('input[placeholder="Número de Emergencia"]').type("3112225566");
     cy.contains("button", "Siguiente").click();
 
     // Paso 4 (foto)
