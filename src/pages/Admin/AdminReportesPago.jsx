@@ -443,6 +443,7 @@ function AdminReportesPago() {
                                     <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Conductor</th>
                                     <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Mes</th>
                                     <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Monto Comisión</th>
+                                    <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Cant. Enviada</th>
                                     <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Fecha Envío</th>
                                     <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#113d69' }}>Estado</th>
                                     <th style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#113d69' }}>Acciones</th>
@@ -491,6 +492,9 @@ function AdminReportesPago() {
                                         </td>
                                         <td style={{ padding: '0.75rem 1rem', color: '#113d69' }}>{formatearMes(reporte.mesCorrespondiente)}</td>
                                         <td style={{ padding: '0.75rem 1rem', fontWeight: 'bold', color: '#62d8d9' }}>${Number(reporte.montoComision).toLocaleString()} COP</td>
+                                        <td style={{ padding: '0.75rem 1rem', fontWeight: 'bold', color: '#113d69' }}>
+                                            {reporte.cantidadEnviada ? `$${Number(reporte.cantidadEnviada).toLocaleString()} COP` : '---'}
+                                        </td>
                                         <td style={{ padding: '0.75rem 1rem', color: '#113d69' }}>{formatearFecha(reporte.fechaEnvio)}</td>
                                         <td style={{ padding: '0.75rem 1rem' }}>
                                             <CustomBadge estado={reporte.estado}>
@@ -585,7 +589,8 @@ function AdminReportesPago() {
                                         <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Conductor:</strong> <span style={{ color: '#113d69' }}>{reporteSeleccionado.usuario?.nombre}</span></p>
                                         <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Email:</strong> <span style={{ color: '#113d69' }}>{reporteSeleccionado.usuario?.email}</span></p>
                                         <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Mes:</strong> <span style={{ color: '#113d69' }}>{formatearMes(reporteSeleccionado.mesCorrespondiente)}</span></p>
-                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Monto:</strong> <span style={{ fontWeight: 'bold', color: '#62d8d9' }}>${Number(reporteSeleccionado.montoComision).toLocaleString()} COP</span></p>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Monto Esperado:</strong> <span style={{ fontWeight: 'bold', color: '#62d8d9' }}>${Number(reporteSeleccionado.montoComision).toLocaleString()} COP</span></p>
+                                        <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Cantidad Enviada:</strong> <span style={{ fontWeight: 'bold', color: '#113d69' }}>{reporteSeleccionado.cantidadEnviada ? `$${Number(reporteSeleccionado.cantidadEnviada).toLocaleString()} COP` : 'No reportada'}</span></p>
                                         <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Estado:</strong> <CustomBadge estado={reporteSeleccionado.estado}>{reporteSeleccionado.estado}</CustomBadge></p>
                                         <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: '#113d69' }}>Fecha de envío:</strong> <span style={{ color: '#113d69' }}>{formatearFecha(reporteSeleccionado.fechaEnvio)}</span></p>
                                         {reporteSeleccionado.fechaRevision && (

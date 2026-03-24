@@ -353,6 +353,7 @@ const DriverHome = () => {
     const [comisionInfo, setComisionInfo] = useState(null);
     const [cargandoComision, setCargandoComision] = useState(false);
     const [fotoComprobante, setFotoComprobante] = useState('');
+    const [montoADepositar, setMontoADepositar] = useState('');
     const [enviandoReporte, setEnviandoReporte] = useState(false);
     const [misReportes, setMisReportes] = useState([]);
 
@@ -371,6 +372,9 @@ const DriverHome = () => {
             if (res.ok) {
                 const data = await res.json();
                 setComisionInfo(data);
+                if (data.totalComision !== undefined) {
+                    setMontoADepositar(data.totalComision.toString());
+                }
             }
         } catch (err) {
             console.error('Error cargando comisión:', err);
@@ -401,7 +405,10 @@ const DriverHome = () => {
         }
         try {
             setEnviandoReporte(true);
-            const payload = { fotoComprobante };
+            const payload = { 
+                fotoComprobante,
+                cantidad: montoADepositar 
+            };
 
             const res = await fetch(`${API_URL}/reportes-pago`, {
                 method: 'POST',
@@ -640,11 +647,7 @@ const DriverHome = () => {
     // --- COMISIÓN BASADA RECTAMENTE EN GANANCIAS ---
     const totalGananciasBackend = Number(statsAvanzadas.ganancias.total || 0);
 
-    const displayComisionEnBaseABackend = comisionInfo ? {
-        ...comisionInfo,
-        totalIngresos: totalGananciasBackend,
-        totalComision: totalGananciasBackend * 0.10
-    } : null;
+    const displayComisionEnBaseABackend = comisionInfo;
     // -----------------------------------------------------------
 
     const traerEstadisticasAvanzadas = async () => {
@@ -1179,18 +1182,37 @@ const DriverHome = () => {
                                 <>
                                     <div style={{ marginBottom: '1rem' }}>
                                         <label style={{ fontSize: '0.875rem', color: '#6c757d', display: 'block', marginBottom: '0.5rem' }}>Foto del comprobante de pago</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.375rem 0.75rem',
-                                                borderRadius: '0.375rem',
-                                                border: '1px solid #ced4da'
-                                            }}
-                                        />
-                                    </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageUpload}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.375rem 0.75rem',
+                                                    borderRadius: '0.375rem',
+                                                    border: '1px solid #ced4da'
+                                                }}
+                                            />
+                                        </div>
+
+                                        <div style={{ marginBottom: '1rem' }}>
+                                            <label style={{ fontSize: '0.875rem', color: '#6c757d', display: 'block', marginBottom: '0.5rem' }}>Cantidad que envías (COP)</label>
+                                            <input
+                                                type="number"
+                                                value={montoADepositar}
+                                                onChange={(e) => setMontoADepositar(e.target.value)}
+                                                placeholder="Ej: 50000"
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.375rem 0.75rem',
+                                                    borderRadius: '0.375rem',
+                                                    border: '1px solid #62d8d9',
+                                                    fontWeight: 'bold',
+                                                    color: '#113d69'
+                                                }}
+                                            />
+                                            <small style={{ color: '#6c757d', fontSize: '0.75rem' }}>Confirma el monto exacto antes de enviar.</small>
+                                        </div>
 
                                     {fotoComprobante && (
                                         <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
