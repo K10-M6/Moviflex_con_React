@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Container, Row, Col, Button, Image, Modal } from 'react-bootstrap';
 import Navbar from '../components/Navbar';
 import { API_URL } from '../config';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import SavingsCalculator from '../components/SavingsCalculator';
 import SustainabilitySection from '../components/SustainabilitySection';
@@ -79,7 +79,7 @@ function HomeBase() {
   };
 
   const autores = [
-    { id: 1, nombre: "Arlys Villareal", rol: "Backend", img: Arlys },
+    { id: 1, nombre: "Arlys Villareal", rol: "Full Stack Developer", img: Arlys },
     { id: 2, nombre: "Carlos Rodriguez", rol: "Desarrollador Móvil", img: Carlos },
     { id: 3, nombre: "Janier Cerón", rol: "Frontend Engineer", img: Janier },
     { id: 4, nombre: "Juan Cerón", rol: "Frontend Diseño", img: JuanCeron },
@@ -105,6 +105,23 @@ function HomeBase() {
     { id: 4, titulo: "Gana Dinero", desc: "Optimiza tus viajes y genera ingresos extras." },
   ];
 
+  // =======================
+  // INTERACTIVIDAD AVANZADA
+  // =======================
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [scrollPos, setScrollPos] = useState(0);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
+    const handleScroll = () => setScrollPos(window.scrollY);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -113,8 +130,45 @@ function HomeBase() {
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      overflowX: 'hidden',
+      position: 'relative'
     }}>
+      {/* Resplandor que sigue al mouse (solo en el hero) */}
+      {scrollPos < 600 && (
+        <div style={{
+          position: 'fixed',
+          top: mousePos.y - 150,
+          left: mousePos.x - 150,
+          width: '300px',
+          height: '300px',
+          background: 'rgba(86, 188, 167, 0.15)',
+          borderRadius: '50%',
+          filter: 'blur(80px)',
+          pointerEvents: 'none',
+          zIndex: 1,
+          transition: 'top 0.1s ease, left 0.1s ease'
+        }}></div>
+      )}
+
+      <style>
+        {`
+          @keyframes floatBubble {
+            0% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-40px) translateX(20px); }
+            100% { transform: translateY(0) translateX(0); }
+          }
+          .team-card:hover .team-info {
+            transform: translateY(-10px);
+            background: rgba(86, 188, 167, 0.9) !important;
+          }
+        `}
+      </style>
+
+      {/* Burbujas de fondo decorativas */}
+      <div style={{ position: 'fixed', top: '10%', left: '5%', width: '150px', height: '150px', background: 'rgba(86, 188, 167, 0.1)', borderRadius: '50%', filter: 'blur(40px)', animation: 'floatBubble 8s infinite ease-in-out', zIndex: 0 }}></div>
+      <div style={{ position: 'fixed', bottom: '15%', right: '8%', width: '200px', height: '200px', background: 'rgba(17, 61, 105, 0.05)', borderRadius: '50%', filter: 'blur(50px)', animation: 'floatBubble 12s infinite ease-in-out reverse', zIndex: 0 }}></div>
+
 
       <div style={{ position: 'absolute', width: '100%', zIndex: 1000 }}>
         <Navbar transparent={true} />
@@ -151,7 +205,9 @@ function HomeBase() {
           zIndex: 15,
           width: '100%',
           textAlign: 'center',
-          marginTop: '-120px'
+          marginTop: '-120px',
+          transform: `translateY(${scrollPos * 0.15}px)`,
+          transition: 'transform 0.1s ease-out'
         }}>
           <Image
             src={ImagenHomebase}
@@ -161,15 +217,19 @@ function HomeBase() {
               maxWidth: '800px',
               width: '85%',
               borderRadius: '20px',
-              filter: 'drop-shadow(0px 10px 20px rgba(0,0,0,0.15))'
+              filter: 'drop-shadow(0px 20px 40px rgba(0,0,0,0.2))',
+              transition: 'all 0.3s ease'
             }}
+            onMouseEnter={(e) => e.currentTarget.style.filter = 'drop-shadow(0px 30px 60px rgba(86, 188, 167, 0.3))'}
+            onMouseLeave={(e) => e.currentTarget.style.filter = 'drop-shadow(0px 20px 40px rgba(0,0,0,0.2))'}
           />
         </div>
+
 
         <WaveDivider color="#ffffff" />
       </div>
 
-      <div id="como-funciona-seccion"
+      <div id="como-funciona-seccion" className="reveal-section"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
           padding: '100px 0',
@@ -198,15 +258,21 @@ function HomeBase() {
                   justifyContent: 'center',
                   textAlign: 'center',
                   color: '#113d69',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  cursor: 'default',
+                  transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  cursor: 'pointer',
                   position: 'relative',
+                  overflow: 'hidden',
+                  border: '1px solid rgba(86, 188, 167, 0.1)'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(86, 188, 167, 0.15)';
+                  e.currentTarget.style.background = 'rgba(86, 188, 167, 0.03)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = 'transparent';
                 }}>
                   <div style={{
                     position: 'absolute',
@@ -251,19 +317,22 @@ function HomeBase() {
                   justifyContent: 'center',
                   textAlign: 'center',
                   color: '#113d69',
-                  borderRadius: '20px',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.06)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  cursor: 'default',
+                   borderRadius: '24px',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
+                  transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                  cursor: 'pointer',
                   position: 'relative',
+                  border: '1px solid transparent'
                 }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-8px)';
-                    e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.1)';
+                    e.currentTarget.style.transform = 'translateY(-15px) rotate(1deg)';
+                    e.currentTarget.style.boxShadow = '0 25px 50px rgba(0,0,0,0.12)';
+                    e.currentTarget.style.borderColor = 'rgba(86, 188, 167, 0.3)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.06)';
+                    e.currentTarget.style.transform = 'translateY(0) rotate(0)';
+                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(0,0,0,0.04)';
+                    e.currentTarget.style.borderColor = 'transparent';
                   }}>
                   <div style={{
                     position: 'absolute',
@@ -297,67 +366,74 @@ function HomeBase() {
       </div>
 
       <WaveDivider color="#e8f6f3" flip={true} />
-      <div id="sostenibilidad-seccion">
+      <div id="sostenibilidad-seccion" className="reveal-section">
         <SustainabilitySection />
       </div>
       <WaveDivider color="#e8f6f3" />
 
       {/* NUEVAS SECCIONES: CALCULADORA */}
-      <div id="calculadora-seccion" className="animate__animated animate__fadeIn">
+      <div id="calculadora-seccion" className="reveal-section">
         <SavingsCalculator />
       </div>
+
 
       <WaveDivider color="#56bca7" flip={true} />
 
 
       {/* SECCIÓN EQUIPO */}
-      <div id="equipo-seccion">
+      {/* SECCIÓN EQUIPO */}
+      <div id="equipo-seccion" className="reveal-section">
         <Container className="py-5 mb-5">
           <Row className="justify-content-center">
             <Col lg={11}>
               <div style={{
                 backgroundColor: verdeMenta,
-                borderRadius: '40px',
+                borderRadius: '50px',
                 overflow: 'hidden',
-                boxShadow: '0 25px 50px rgba(86, 188, 167, 0.3)',
-                padding: '70px 30px'
+                boxShadow: '0 30px 60px rgba(86, 188, 167, 0.4)',
+                padding: '80px 40px',
+                position: 'relative'
               }}>
-                <div className="text-center mb-5">
-                  <h2 className="fw-bold" style={{ color: '#fff', fontSize: '2.5rem' }}>Equipo MoviFlex</h2>
-                  <p className="text-white" style={{ fontSize: '1.1rem', opacity: 0.9 }}>Los creadores de tu nueva forma de viajar</p>
+                {/* Overlay decorativo */}
+                <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}></div>
+                
+                <div className="text-center mb-5" style={{ position: 'relative', zIndex: 2 }}>
+                  <h2 className="fw-bold" style={{ color: '#fff', fontSize: '3rem', letterSpacing: '-1px' }}>Equipo MoviFlex</h2>
+                  <p className="text-white" style={{ fontSize: '1.2rem', opacity: 0.95 }}>Los cerebros mela detrás de tu nueva forma de viajar</p>
                 </div>
-                <Row className="justify-content-center g-4">
+                <Row className="justify-content-center g-4" style={{ position: 'relative', zIndex: 2 }}>
                   {autores.map((autor) => (
-                    <Col key={autor.id} xs={6} md={4} lg={2} className="text-center">
+                    <Col key={autor.id} xs={6} md={4} lg={2} className="text-center team-card">
                       <div style={{
-                        width: '100px',
-                        height: '100px',
+                        width: '120px',
+                        height: '120px',
                         margin: '0 auto',
-                        borderRadius: '50%',
+                        borderRadius: '30px',
                         overflow: 'hidden',
                         backgroundColor: 'white',
-                        border: '3px solid white',
-                        boxShadow: '0 10px 20px rgba(0,0,0,0.15)',
+                        border: '4px solid white',
+                        boxShadow: '0 15px 30px rgba(0,0,0,0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        transition: 'transform 0.3s ease'
+                        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                       }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
+                        className="autor-img-container">
                         <Image
                           src={autor.img}
                           alt={autor.nombre}
                           style={{
-                            width: autor.nombre === "Kevin" ? '110%' : '100%',
-                            height: autor.nombre === "Kevin" ? '110%' : '100%',
-                            objectFit: autor.nombre === "Kevin" ? 'contain' : 'cover',
-                            transform: autor.nombre === "Kevin" ? 'scale(1.1)' : 'none'
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.5s ease'
                           }}
                         />
                       </div>
-                      <h6 className="fw-bold mb-0 mt-3" style={{ color: '#fff', fontSize: '1rem' }}>{autor.nombre}</h6>
-                      <p style={{ fontSize: '12px', color: '#2d5a52', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '4px' }}>{autor.rol}</p>
+                      <div className="team-info" style={{ transition: 'all 0.3s ease', paddingTop: '15px' }}>
+                        <h6 className="fw-bold mb-0" style={{ color: '#fff', fontSize: '1.1rem' }}>{autor.nombre}</h6>
+                        <p style={{ fontSize: '11px', color: '#113d69', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '6px', background: 'rgba(255,255,255,0.8)', padding: '2px 8px', borderRadius: '10px', display: 'inline-block' }}>{autor.rol}</p>
+                      </div>
                     </Col>
                   ))}
                 </Row>
@@ -368,8 +444,12 @@ function HomeBase() {
       </div>
 
       <WaveDivider color="#56bca7" />
-      <FaqSection />
-      <AppDownloadBanner />
+      <div className="reveal-section">
+        <FaqSection />
+      </div>
+      <div className="reveal-section">
+        <AppDownloadBanner />
+      </div>
       {/* SECCIÓN CONTACTO (Botón en la página) */}
       <Container id="contacto-seccion" className="py-5">
         <Row className="justify-content-center">
@@ -507,7 +587,27 @@ function HomeBase() {
       <footer className="py-5 text-white text-center mt-auto" style={{ background: '#cccbd2af' }}>
         <Container>
           <h2 className="mb-4">Únete a nuestra comunidad</h2>
-          <Button as={Link} to="/register" variant="light" className="px-5 fw-bold">Registrarse Ahora</Button>
+          <Button 
+            as={Link} 
+            to="/register" 
+            variant="light" 
+            className="px-5 fw-bold shadow-sm"
+            style={{ 
+              borderRadius: '30px', 
+              transition: 'all 0.3s ease',
+              transform: 'scale(1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.boxShadow = '0 10px 20px rgba(255,255,255,0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            Registrarse Ahora
+          </Button>
           <p className="mt-5 text-white small">© 2025 MoviFlexx.</p>
         </Container>
       </footer>

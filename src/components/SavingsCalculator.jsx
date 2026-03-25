@@ -11,7 +11,13 @@ const SavingsCalculator = () => {
 
     const brandColor = "#56bca7"; 
     const secondaryColor = "#2d5a52"; 
+    const [isMelo, setIsMelo] = useState(false);
+    const savings = (datos[0]?.valor || 0) - (datos[1]?.valor || 0);
 
+    useEffect(() => {
+        if (savings > 500000) setIsMelo(true);
+        else setIsMelo(false);
+    }, [savings]);
     useEffect(() => {
         // DATOS REALES APROXIMADOS COLOMBIA 2024
         // Costo promedio Taxi/Uber por km: ~$3.500 COP
@@ -36,7 +42,7 @@ const SavingsCalculator = () => {
         }).format(val);
     };
 
-    const savings = (datos[0]?.valor || 0) - (datos[1]?.valor || 0);
+
 
     return (
         <section className="py-5" style={{ backgroundColor: "#ffffff" }}>
@@ -75,13 +81,22 @@ const SavingsCalculator = () => {
                                 />
                             </Form.Group>
 
-                            <Card className="border-0 shadow-lg p-4 mt-5 animate__animated animate__heartBeat animate__infinite animate__slower" style={{ borderRadius: "25px", background: `linear-gradient(135deg, ${brandColor} 0%, #45a08d 100%)`, color: "white" }}>
+                            <Card className={`border-0 shadow-lg p-4 mt-5 ${isMelo ? 'animate__animated animate__pulse animate__infinite' : ''}`} 
+                                  style={{ 
+                                      borderRadius: "25px", 
+                                      background: isMelo 
+                                        ? `linear-gradient(135deg, #113d69 0%, ${brandColor} 100%)` 
+                                        : `linear-gradient(135deg, ${brandColor} 0%, #45a08d 100%)`, 
+                                      color: "white",
+                                      boxShadow: isMelo ? `0 0 30px ${brandColor}` : '0 15px 35px rgba(0,0,0,0.1)',
+                                      transition: 'all 0.5s ease'
+                                  }}>
                                 <div className="d-flex align-items-center">
                                     <div className="rounded-circle p-3 me-3" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
                                         <FaWallet size={28} />
                                     </div>
                                     <div>
-                                        <h6 className="mb-0 opacity-75 fw-bold">Ahorro mensual certificado</h6>
+                                        <h6 className="mb-0 opacity-75 fw-bold">{isMelo ? '¡Ahorro nivel PRO!' : 'Ahorro mensual certificado'}</h6>
                                         <h2 className="fw-bold mb-0">
                                             {formatCurrency(savings)} <small style={{ fontSize: '1rem' }}>COP</small>
                                         </h2>

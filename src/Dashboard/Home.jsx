@@ -6,7 +6,6 @@ import { BsPeopleFill, BsPersonCircle, BsTruck, BsCarFrontFill, BsStarFill, BsSt
 import { useSocket } from "../pages/context/SocketContext";
 import { FaMedal } from "react-icons/fa";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import fondo from "../pages/Imagenes/AutoresContacto.png";
 import imagenDashboard from "../pages/Imagenes/HomeBaseImage.png";
 
 // Componentes personalizados
@@ -375,16 +374,7 @@ function Home() {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundImage: `url(${fondo})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            position: 'relative'
-        }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255, 255, 255, 0.9)', zIndex: 0 }} />
-
+        <div style={{ position: 'relative' }}>
             <div style={{ position: 'relative', zIndex: 1, padding: '1.5rem' }}>
                 {/* Encabezado */}
                 <div style={{

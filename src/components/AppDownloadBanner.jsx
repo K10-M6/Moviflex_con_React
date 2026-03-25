@@ -1,6 +1,7 @@
 import React from 'react';
 import { Container, Row, Col, Button, Image } from 'react-bootstrap';
 import { FaApple, FaGooglePlay } from 'react-icons/fa';
+import qrDescarga from '../pages/Imagenes/qr_descarga.png';
 
 const AppDownloadBanner = () => {
     const brandColor = "#56bca7";
@@ -10,39 +11,73 @@ const AppDownloadBanner = () => {
             <Container>
                 <Row className="align-items-center text-center text-lg-start">
                     <Col lg={7} className="text-white ps-lg-5">
-                        <h2 className="display-5 fw-bold mb-3">Lleva MoviFlex en tu bolsillo</h2>
-                        <p className="lead mb-4 opacity-75">
-                            Pronto disponible para iOS y Android. Únete a la lista de espera y sé el primero en probar la experiencia móvil definitiva.
+                        <h2 className="display-4 fw-bold mb-3 animate__animated animate__fadeInLeft">El viaje que mereces,<br />a un escaneo de distancia.</h2>
+                        <p className="lead mb-4 opacity-75 animate__animated animate__fadeInLeft animate__delay-1s">
+                            Olvídate de las esperas. Únete a la comunidad de transporte más mela de la ciudad. Escanea y rueda con nosotros.
                         </p>
-                        <div className="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3">
-                            <Button variant="light" size="lg" className="d-flex align-items-center py-2 px-4 shadow rounded-pill" style={{ fontWeight: '600' }}>
-                                <FaApple className="me-2" size={24} /> App Store
-                            </Button>
-                            <Button variant="light" size="lg" className="d-flex align-items-center py-2 px-4 shadow rounded-pill" style={{ fontWeight: '600' }}>
-                                <FaGooglePlay className="me-2" size={24} /> Google Play
-                            </Button>
-                        </div>
                     </Col>
                     <Col lg={5} className="mt-5 mt-lg-0 text-center">
                         <div className="animate__animated animate__pulse animate__infinite animate__slower">
+                            <style>
+                                {`
+                                @keyframes floating {
+                                    0% { transform: translateY(0px); }
+                                    50% { transform: translateY(-20px); }
+                                    100% { transform: translateY(0px); }
+                                }
+                                `}
+                            </style>
                             <div style={{
-                                width: '250px',
-                                height: '500px',
+                                width: '280px',
+                                height: '560px',
                                 background: '#333',
                                 borderRadius: '40px',
-                                border: '8px solid #444',
+                                border: '10px solid #222',
                                 margin: '0 auto',
-                                boxShadow: '0 50px 100px rgba(0,0,0,0.3)',
+                                boxShadow: '0 50px 100px rgba(0,0,0,0.4)',
                                 position: 'relative',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                animation: 'floating 6s ease-in-out infinite'
                             }}>
-                                <span style={{ color: '#555', fontSize: '1.2rem', fontWeight: 'bold' }}>MoviFlex App</span>
                                 {/* Mock camera notch */}
-                                <div style={{ position: 'absolute', top: '10px', width: '80px', height: '20px', background: '#222', borderRadius: '10px' }}></div>
-                                {/* Inner glow */}
-                                <div style={{ position: 'absolute', top: '5px', left: '5px', right: '5px', bottom: '5px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '35px' }}></div>
+                                <div style={{ 
+                                    position: 'absolute', 
+                                    top: '0', 
+                                    width: '120px', 
+                                    height: '25px', 
+                                    background: '#222', 
+                                    borderBottomLeftRadius: '15px', 
+                                    borderBottomRightRadius: '15px',
+                                    zIndex: 10
+                                }}></div>
+
+                                {/* QR Inside Phone Screen */}
+                                <div style={{
+                                    width: '92%',
+                                    height: '96%',
+                                    background: 'white',
+                                    borderRadius: '30px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '20px'
+                                }}>
+                                    <h4 className="fw-bold mb-4" style={{ color: brandColor, fontSize: '1.2rem' }}>Descarga App</h4>
+                                    <Image 
+                                        src={qrDescarga} 
+                                        alt="Escanea el QR" 
+                                        fluid 
+                                        style={{ width: '85%', borderRadius: '10px' }} 
+                                    />
+                                    <p className="mt-4 text-muted small fw-bold">MOVIFLEX MOBILE</p>
+                                </div>
+                                
+                                {/* Reflection Effect */}
+                                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%)', pointerEvents: 'none' }}></div>
                             </div>
                         </div>
                     </Col>

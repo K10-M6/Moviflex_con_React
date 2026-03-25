@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Modal, Form, Card, Row, Col, Spinner } from 'react-bootstrap';
-import { 
-  BsCheckCircleFill, 
-  BsXCircleFill, 
-  BsEyeFill, 
-  BsCalendar3, 
-  BsFunnelFill, 
-  BsExclamationTriangleFill,
-  BsEnvelopeFill,
-  BsCashStack
+import {
+    BsCheckCircleFill,
+    BsXCircleFill,
+    BsEyeFill,
+    BsCalendar3,
+    BsFunnelFill,
+    BsExclamationTriangleFill,
+    BsEnvelopeFill,
+    BsCashStack
 } from 'react-icons/bs';
 import { useAuth } from '../../pages/context/AuthContext';
 import { API_URL } from '../../config';
@@ -323,8 +323,8 @@ function AdminReportesPago() {
                         disabled={procesando}
                     >
                         <span>
-                            {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> : 
-                             <BsEnvelopeFill style={{ marginRight: '0.25rem' }} />}
+                            {procesando ? <Spinner size="sm" style={{ marginRight: '0.25rem' }} /> :
+                                <BsEnvelopeFill style={{ marginRight: '0.25rem' }} />}
                         </span>
                         <span>Enviar Recordatorios</span>
                     </CustomButton>

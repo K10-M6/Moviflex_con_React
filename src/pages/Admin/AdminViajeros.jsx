@@ -3,7 +3,6 @@ import { useAuth } from "../context/AuthContext";
 import { API_URL } from '../../config';
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Form, InputGroup } from "react-bootstrap";
 import { BsSearch, BsXCircle, BsChevronDown } from "react-icons/bs";
-import fondo from "../Imagenes/AutoresContacto.png";
 
 const EstadoBadge = ({ estado }) => {
     const estilos = {
@@ -137,13 +136,13 @@ const AccionButton = ({ estado, onActivarDesactivar, onSuspender }) => {
                         color: estado === 'ACTIVO' ? '#ffffff' : '#62d8d9'
                     }}
                 >
-                    <BsChevronDown style={{ 
+                    <BsChevronDown style={{
                         transform: mostrarMenu ? 'rotate(180deg)' : 'none',
                         transition: 'transform 0.2s'
                     }} />
                 </Button>
             </div>
-            
+
             {mostrarMenu && (
                 <div style={{
                     position: 'absolute',
@@ -466,14 +465,7 @@ function AdminViajeros() {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundImage: `url(${fondo})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            position: 'relative'
-        }}>
+        <div style={{ position: 'relative' }}>
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>
@@ -635,8 +627,8 @@ function AdminViajeros() {
                                                                             flexShrink: 0
                                                                         }}>
                                                                             {viajero.fotoPerfil ? (
-                                                                                <img 
-                                                                                    src={viajero.fotoPerfil} 
+                                                                                <img
+                                                                                    src={viajero.fotoPerfil}
                                                                                     alt={viajero.nombre}
                                                                                     style={{
                                                                                         width: '100%',
@@ -646,14 +638,14 @@ function AdminViajeros() {
                                                                                     onError={(e) => {
                                                                                         e.target.onerror = null;
                                                                                         e.target.style.display = 'none';
-                                                                                        e.target.parentElement.innerHTML = '<span style="color: #113d69; font-weight: 600;">' + 
-                                                                                            viajero.nombre?.charAt(0).toUpperCase() + 
-                                                                                        '</span>';
+                                                                                        e.target.parentElement.innerHTML = '<span style="color: #113d69; font-weight: 600;">' +
+                                                                                            viajero.nombre?.charAt(0).toUpperCase() +
+                                                                                            '</span>';
                                                                                     }}
                                                                                 />
                                                                             ) : (
-                                                                                <span style={{ 
-                                                                                    color: '#113d69', 
+                                                                                <span style={{
+                                                                                    color: '#113d69',
                                                                                     fontWeight: '600',
                                                                                     fontSize: '1rem'
                                                                                 }}>

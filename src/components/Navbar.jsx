@@ -204,6 +204,7 @@ export default function NavbarCustom({ transparent }) {
                 boxShadow: 'none',
               }}>
                 {/* BOTÓN DE INICIO DE SESIÓN - SOLO ÍCONO EN CÍRCULO */}
+                {/* BOTÓN DE INICIO DE SESIÓN - SOLO ÍCONO EN CÍRCULO */}
                 <Nav.Link
                   as={Link}
                   to="/login"

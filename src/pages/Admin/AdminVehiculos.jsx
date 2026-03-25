@@ -4,7 +4,6 @@ import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Modal, Image, Form, InputGroup } from "react-bootstrap";
 import { FaCheckCircle, FaTimesCircle, FaEye, FaCar } from "react-icons/fa";
 import { BsSearch, BsXCircle, BsChevronDown } from "react-icons/bs";
-import fondo from "../Imagenes/AutoresContacto.png";
 
 function AdminVehiculos() {
     const { token } = useAuth();
@@ -637,14 +636,7 @@ function AdminVehiculos() {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundImage: `url(${fondo})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            position: 'relative'
-        }}>
+        <div style={{ position: 'relative' }}>
             <Container fluid className="py-4" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4">
                     <Col>

@@ -5,7 +5,6 @@ import { API_URL } from "../../config";
 import { Container, Row, Col, Card, Table, Button, Badge, Alert, Spinner, Modal, Form } from "react-bootstrap";
 import { FaCheck, FaTimes, FaUser, FaExchangeAlt } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
-import fondo from "../Imagenes/AutoresContacto.png";
 
 const AdminVehicleRequests = () => {
     const { token } = useAuth();
@@ -88,19 +87,7 @@ const AdminVehicleRequests = () => {
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundImage: `url(${fondo})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-            position: 'relative'
-        }}>
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.92)',
-                zIndex: 0
-            }} />
+        <div style={{ position: 'relative' }}>
             <Container className="py-5" style={{ position: 'relative', zIndex: 1 }}>
                 <Row className="mb-4 align-items-center">
                     <Col>
